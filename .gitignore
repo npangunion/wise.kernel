@@ -35,4 +35,5 @@
 # project ignore 
 
 .vs 
-genereated 
+generated 
+/generated
