@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{89AF369E-F58E-B539-FEA6-40106A051C9B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\wise.kernel">
+      <UniqueIdentifier>{3FE77F13-AB48-5D21-34B6-A3D3A01694E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\wise.kernel\base">
+      <UniqueIdentifier>{492F0789-3554-5609-5E9F-3B994A235527}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\base">
+      <UniqueIdentifier>{F7972DCF-E364-88DA-0C7E-7682F8A9BD68}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\wise.kernel\base\auto_cleaner.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\cleanup_stack.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\concurrent_queue.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\concurrent_queue.inl">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\config.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\date.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\exception.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\index.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\json.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\key_holder.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\logger.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\macros.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\memory.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\memory.inl">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\null_mutex.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\object_pool.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\result.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\sequence.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\spinlock.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\stacktrace.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\tick.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\timer.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\trim.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\utf8.h">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wise.kernel\base\util.hpp">
+      <Filter>include\wise.kernel\base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\base\logger.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\macros.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\memory.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\stacktrace.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\timer.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\util.cpp">
+      <Filter>src\base</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
