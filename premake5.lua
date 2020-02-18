@@ -50,6 +50,7 @@ end
 
 project "wise.kernel"
 	kind "StaticLib"
+	includedirs "include"
 	
 	files { "include/**", "src/**" }
 	
@@ -58,11 +59,8 @@ project "wise.kernel"
 
 
 function use_wise_kernel()
-	-- The library's public headers
 	includedirs "include"
 	
-	-- We link against a library that's in the same workspace, so we can just
-	-- use the project name - premake is really smart and will handle everything for us.
 	links "wise.kernel"
 	
 	-- Users of ExampleLib need to link GLFW
