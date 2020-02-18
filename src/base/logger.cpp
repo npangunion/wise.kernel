@@ -70,10 +70,17 @@ namespace wise {
 	}
 } // wise::kernel
 
+#include <filesystem>
+
+using namespace std::filesystem;
+
 namespace
 {
-	void create_folder_from(const char* path)
+	void create_folder_from(const char* apath)
 	{
+		path p(apath);
+		path pp = p.remove_filename();
 
+		create_directories(pp);
 	}
 }

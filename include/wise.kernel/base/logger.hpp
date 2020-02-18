@@ -2,7 +2,7 @@
 
 #include <wise.kernel/base/config.hpp>
 #include <wise.kernel/base/macros.hpp>
-#include <spdlog/spdlog.h>
+#include <memory>
 #include <mutex>
 
 namespace wise {
