@@ -44,8 +44,6 @@ namespace wise {
 			f << oss.str() << std::endl;
 
 			f.close();
-
-			// 	WISE_WARN("assert fail. {} in {} on {}@{}", msg, func, file, line);
 		}
 	} 
 } // wise

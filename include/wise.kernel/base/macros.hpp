@@ -1,7 +1,6 @@
 ﻿#pragma once 
 
-// #include <wise.kernel/base/config.hpp>
-
+#include <wise.kernel/base/config.hpp>
 #include <cassert>
 
 namespace wise {
@@ -26,10 +25,7 @@ namespace wise {
 #define WISE_ENSURE(c) WISE_ASSERT(c)
 
 #define WISE_RETURN_IF(c, v) if ((c)) return v;
-#define WISE_BREAK_IF(c, v) if ((c)) break; 
-#define WISE_CONTINUE_IF(c, v) if ((c)) continue;
 #define WISE_RETURN_CALL_IF(c, v, func) if ((c)) { func(); return (v); }
 
 #define WISE_UNUSED(v) v
-
 
