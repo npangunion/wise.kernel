@@ -51,6 +51,9 @@ end
 project "wise.kernel"
 	kind "StaticLib"
 	includedirs "include"
+
+	pchheader "pch.hpp"
+	pchsource "src/pch.cpp"
 	
 	files { "include/**", "src/**" }
 	
