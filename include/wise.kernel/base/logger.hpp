@@ -2,6 +2,8 @@
 
 #include <wise.kernel/base/config.hpp>
 #include <wise.kernel/base/macros.hpp>
+#include <spdlog/spdlog.h>
+#include <atomic>
 #include <memory>
 #include <mutex>
 
@@ -54,8 +56,6 @@ namespace wise {
 		{
 			return system_logger::get();
 		}
-
-
 	} 
 } // wise::kernel
 
@@ -65,18 +65,18 @@ namespace wise {
 
 #if	WISE_ENABLE_LOG_TRACE == 1
 #define WISE_NONE(...)			
-#define WISE_TRACE(...)			wise::log()->trace(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
-#define WISE_DEBUG(...)			wise::log()->debug(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
-#define WISE_INFO(...)			wise::log()->info(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
-#define WISE_WARN(...)			wise::log()->warn(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
-#define WISE_ERROR(...)			wise::log()->error(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
-#define WISE_CRITICAL(...)		wise::log()->critical(	"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_TRACE(...)			wise::kernel::log()->trace(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_DEBUG(...)			wise::kernel::log()->debug(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_INFO(...)			wise::kernel::log()->info(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_WARN(...)			wise::kernel::log()->warn(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_ERROR(...)			wise::kernel::log()->error(		"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define WISE_CRITICAL(...)		wise::kernel::log()->critical(	"[" __FUNCTION__ "@" WISE_STR_HELPER(__LINE__) "] " __VA_ARGS__)
 #else
 #define WISE_NONE(...)			
-#define WISE_TRACE(...)			wise::log()->trace(		__VA_ARGS__ )
-#define WISE_DEBUG(...)			wise::log()->debug(		__VA_ARGS__	)
-#define WISE_INFO(...)			wise::log()->info(		__VA_ARGS__	)
-#define WISE_WARN(...)			wise::log()->warn(		__VA_ARGS__	)
-#define WISE_ERROR(...)			wise::log()->error(		__VA_ARGS__	)
-#define WISE_CRITICAL(...)		wise::log()->critical(	__VA_ARGS__	)
+#define WISE_TRACE(...)			wise::kernel::log()->trace(		__VA_ARGS__ )
+#define WISE_DEBUG(...)			wise::kernel::log()->debug(		__VA_ARGS__	)
+#define WISE_INFO(...)			wise::kernel::log()->info(		__VA_ARGS__	)
+#define WISE_WARN(...)			wise::kernel::log()->warn(		__VA_ARGS__	)
+#define WISE_ERROR(...)			wise::kernel::log()->error(		__VA_ARGS__	)
+#define WISE_CRITICAL(...)		wise::kernel::log()->critical(	__VA_ARGS__	)
 #endif

@@ -42,21 +42,28 @@ namespace wise {
 
 			create_folder_from(file_prefix);
 
-			auto s1 = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+			std::vector<spdlog::sink_ptr> sinks;
 
-			s1->set_color(spdlog::level::info, s1->GREEN | s1->BOLD);
-			s1->set_color(spdlog::level::debug, s1->WHITE);
-			s1->set_color(spdlog::level::trace, s1->CYAN);
+			if (enable_console)
+			{
+				auto s1 = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+
+				s1->set_color(spdlog::level::info, s1->GREEN | s1->BOLD);
+				s1->set_color(spdlog::level::debug, s1->WHITE);
+				s1->set_color(spdlog::level::trace, s1->CYAN);
+				s1->set_pattern(log_pattern);
+
+				sinks.push_back(s1);
+			}
 
 			auto s2 = std::make_shared<spdlog::sinks::daily_file_sink<
 				std::mutex,
 				spdlog::sinks::daily_filename_calculator>
 			>(file_prefix, 0, 0);
 
-			s1->set_pattern(log_pattern);
 			s2->set_pattern(log_pattern);
 
-			std::vector<spdlog::sink_ptr> sinks{ s1, s2 };
+			sinks.push_back(s2);
 
 			auto logger = std::make_shared<spdlog::async_logger>(
 				name, sinks.begin(), sinks.end(),

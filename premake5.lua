@@ -1,4 +1,5 @@
 local BOOST_HOME = os.getenv("BOOST_HOME")
+local SPDLOG_HOME = os.getenv("SPDLOG_HOME")
 local CATCH_HOME = os.getenv("CATCH_HOME")
 local CATCH_INCLUDE_DIR = CATCH_HOME .. "/single_include/catch2"
 
@@ -21,11 +22,11 @@ workspace "wise.kernel"
     objdir ("build/obj/%{prj.name}/%{cfg.longname}")
 	
 function includeBOOST()
-	includedirs ("$(BOOST_HOME)/include")
+	includedirs (BOOST_HOME)
 end	
 
 function includeSPDLOG()
-	includedirs ("$(SPDLOG_HOME)/include")
+	includedirs (SPDLOG_HOME .. "/include")
 end	
 
 project "wise.kernel"
@@ -66,5 +67,8 @@ project "wise.kernel.test"
 	includeCatch()
 
 	use_wise_kernel()
+
+	includeBOOST()
+	includeSPDLOG()
 	
     
