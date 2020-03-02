@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #define CATCH_CONFIG_COLOUR_WINDOWS
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>

@@ -1,3 +1,4 @@
+#include "pch.hpp"
 #include <catch.hpp>
 #include <wise.kernel/base/logger.hpp>
 #include <wise.kernel/base/tick.hpp>

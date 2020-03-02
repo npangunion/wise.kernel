@@ -61,9 +61,12 @@ project "wise.kernel.test"
 	kind "ConsoleApp"
 	files "test/**"
 
+	pchheader "pch.hpp"
+	pchsource "test/pch.cpp"
+
 	buildoptions { "/std:c++17" }
 
-	includedirs "include"
+	includedirs "test"
 	includeCatch()
 
 	use_wise_kernel()
