@@ -41,8 +41,8 @@ TEST_CASE("spinlock")
 
 	SECTION("performance")
 	{
-		constexpr int test_count = 1000; // 백만 
-		// constexpr int test_count = 1;
+		// constexpr int test_count = 1000000; // 백만 
+		constexpr int test_count = 100;
 
 		SECTION("spinlock")
 		{
@@ -121,5 +121,8 @@ TEST_CASE("spinlock")
 		// 상황에 따라 다양하게 다르므로 항상 빠르다고 할 수는 없다. 
 		// 매우 짧게 실행되는 곳의 락은 스핀락이 나을 수 있다. 
 		// 
+		// 삼성랩탑. 릴리스: 1백만번 
+		// [2020-03-03 23:54:41.605][3940][I] spinlock. elapsed: 122
+		// [2020-03-03 23:54:41.742][3940][I] mutex. elapsed: 135
 	}
 }

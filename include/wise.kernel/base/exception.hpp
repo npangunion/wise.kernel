@@ -1,6 +1,5 @@
 #pragma once 
 
-#include <wise.kernel/base/stacktrace.hpp>
 #include <exception>
 #include <spdlog/fmt/fmt.h>
 
