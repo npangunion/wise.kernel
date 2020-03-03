@@ -128,4 +128,4 @@ namespace wise {
 			}
 		};
 	}
-} // wise
+} // wise::kernel
