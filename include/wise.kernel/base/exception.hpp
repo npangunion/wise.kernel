@@ -13,12 +13,10 @@ namespace wise {
 			explicit exception(const char* const m, const char* file, int line) throw()
 				: exception("exception", m, file, line)
 			{
-				stacktrace::dump(fmt::format("exception: {}/{}/{}", m, file, line).c_str());
 			}
 
 			explicit exception(const char* const m) throw()
 			{
-				stacktrace::dump(fmt::format("exception: {}", m).c_str());
 			}
 
 			virtual char const* what() const override

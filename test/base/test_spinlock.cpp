@@ -41,8 +41,8 @@ TEST_CASE("spinlock")
 
 	SECTION("performance")
 	{
-		// constexpr int test_count = 10000000; // 백만 
-		constexpr int test_count = 1;
+		constexpr int test_count = 1000; // 백만 
+		// constexpr int test_count = 1;
 
 		SECTION("spinlock")
 		{

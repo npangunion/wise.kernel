@@ -12,7 +12,7 @@ namespace wise {
 
 		constexpr int dump_trace_level = 10;
 
-		void stacktrace::dump(const char* msg)
+		std::string stacktrace::dump(const char* msg)
 		{
 			auto st = boost::stacktrace::stacktrace();
 
@@ -39,7 +39,11 @@ namespace wise {
 				}
 			}
 
-			WISE_WARN("dump: {}", oss.str());
+			std::string str = oss.str();
+
+			WISE_WARN("dump: {}", str);
+
+			return str;
 		}
 
 	} // kernel
@@ -49,9 +53,11 @@ namespace wise {
 namespace wise {
 	namespace kernel {
 
-		void stacktrace::dump(const char* msg)
+		std::string stacktrace::dump(const char* msg)
 		{
 			WISE_WARN("{} stacktrace is not enabled.", msg);
+
+			return std::string(msg);
 		}
 
 	} // kernel

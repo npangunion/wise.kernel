@@ -20,7 +20,7 @@
 
 #define WISE_ENABLE_LOG_TRACE		0	// enable function@line trace appended
 
-#define WISE_USE_STACKTRACE			1	// enable stacktrace
+#define WISE_USE_STACKTRACE			0	// enable stacktrace
 
 #ifdef _MSC_VER
 #define WISE_TRACK_MEMORY			1	// trace memory usage 

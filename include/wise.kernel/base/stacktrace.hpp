@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace wise {
     namespace kernel {
         /// boost의 스택트레이스로 로그 출력
@@ -10,7 +12,7 @@ namespace wise {
         {
         public:
 
-            static void dump(const char* msg);
+            static std::string dump(const char* msg);
         };
     } // kernel
 } // wise
