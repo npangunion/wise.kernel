@@ -6,7 +6,7 @@
 namespace wise {
 	namespace kernel {
 
-		/// simple object poo. thread-safe with a cocurrent queue
+		/// simple object pool. thread-safe with a cocurrent queue
 		/**
 		 * todo: set free count limit to return memory to os
 		 */
@@ -45,7 +45,10 @@ namespace wise {
 			ptr get(shared_ref& sr) { return sr->get(); }
 
 		public:
-			object_pool() {}
+			object_pool(const std::string& name) 
+				: name_(name)
+			{
+			}
 
 			~object_pool()
 			{
@@ -89,9 +92,14 @@ namespace wise {
 				dealloc(obj);
 			}
 
-			std::size_t unsafe_size() const
+			std::size_t free_count() const
 			{
-				return q_.unsafe_size();
+				return pool_free_count_;
+			}
+
+			std::size_t alloc_count() const
+			{
+				return pool_alloc_count_;
 			}
 
 		private:
@@ -101,26 +109,46 @@ namespace wise {
 
 				if (q_.pop(obj))
 				{
-					WISE_ASSERT(free_count_ > 0);
+					WISE_EXPECT(pool_free_count_ > 0);
+					--pool_free_count_;
 
-					--free_count_;
+					++pool_alloc_count_;
+					WISE_ENSURE(pool_alloc_count_ > 0);
 
 					return obj;
 				}
 
-				return allocator_.allocate(1);
+				ptr p = allocator_.allocate(1);
+
+				++pool_alloc_count_;
+				WISE_ENSURE(pool_alloc_count_ > 0);
+
+				return p;
 			}
 
 			void dealloc(ptr obj)
 			{
-				++free_count_;
+				WISE_EXPECT(pool_alloc_count_ > 0);
+				--pool_alloc_count_;
 
 				q_.push(obj);
+
+				++pool_free_count_;
+				WISE_ENSURE(pool_free_count_ > 0);
 			}
 
 			void cleanup()
 			{
 				ptr obj;
+
+				if (pool_alloc_count_ > 0)
+				{
+					WISE_ERROR(
+						"object_pool: {}. {} objects not freed.", 
+						name_.c_str(), 
+						pool_alloc_count_
+					);
+				}
 
 				while (q_.pop(obj))
 				{
@@ -132,9 +160,11 @@ namespace wise {
 			using queue = concurrent_queue<ptr>;
 
 		private:
+			std::string name_;
 			queue q_;
 			Allocator allocator_;
-			std::atomic<std::size_t> free_count_ = 0;
+			std::atomic<std::size_t> pool_free_count_ = 0;
+			std::atomic<std::size_t> pool_alloc_count_ = 0;
 		};
 
 		template <typename Obj, typename Allocator>

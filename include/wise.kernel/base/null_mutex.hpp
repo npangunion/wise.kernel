@@ -6,9 +6,14 @@ namespace wise {
 		{
 			null_mutex() = default;
 
-			void lock() {}
-			void unlock() noexcept {}
-			bool try_lock() { return true; }
+			int locked = 0;
+
+			void lock() { locked++; }
+			void unlock() noexcept { locked--; }
+			bool try_lock() { 
+				lock();  
+				return true; 
+			}
 		};
 	}
 } // wise::kernel
