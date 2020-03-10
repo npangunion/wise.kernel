@@ -6,20 +6,18 @@
 namespace wise {
 	namespace kernel {
 
-		/// simple object pool. thread-safe with a cocurrent queue
-		/**
-		 * todo: set free count limit to return memory to os
-		 */
+		// simple object pool. thread-safe with a cocurrent queue
 		template <typename Obj, typename Allocator = std::allocator<Obj>>
 		class object_pool
 		{
 		public:
 			using ptr = Obj*;
 
-			/// simple convenience uqniue ptr
+			// internal use only. automate free
 			class ref
 			{
 			public:
+				ref() {}
 				ref(ptr p, object_pool* pool);
 				~ref();
 
@@ -27,22 +25,37 @@ namespace wise {
 				ptr operator *();
 				ptr get() { return operator*(); }
 
-				// note: assignment invalidates rhs object
-				// WISE_ASSERT following again.
-				ref(ref& rhs) { move(rhs); }
-				ref& operator=(ref& rhs) { return move(rhs); }
+				ref(const ref& rhs) = delete;
+				ref& operator=(const ref& rhs) = delete;
 
 			private:
-				ref& move(ref& rhs);
+				void destroy();
 
 			private:
 				object_pool* pool_ = nullptr;
 				ptr p_ = nullptr;
 			};
 
-			using shared_ref = std::shared_ptr<ref>;
+			// wrapper shared_ptr to automate free and 
+			// to make pointer derefence easier
+			class shared_ref : public std::shared_ptr<ref>
+			{
+			public: 
+				shared_ref() 
+					: std::shared_ptr<ref>()
+				{
+				}
 
-			ptr get(shared_ref& sr) { return sr->get(); }
+				shared_ref(ref* r)
+					: std::shared_ptr<ref>(r)
+				{
+				}
+
+				Obj* operator->() const noexcept 
+				{
+					return get()->get();
+				}
+			};
 
 		public:
 			object_pool(const std::string& name) 
@@ -56,33 +69,13 @@ namespace wise {
 			}
 
 			template<class... Types>
-			ptr construct_raw(Types&&... args)
+			shared_ref create(Types&&... args)
 			{
 				ptr obj = alloc();
 
 				::new ((void*)obj) Obj(std::forward<Types>(args)...);
 
-				return obj;
-			}
-
-			template<class... Types>
-			ref construct(Types&&... args)
-			{
-				ptr obj = alloc();
-
-				::new ((void*)obj) Obj(std::forward<Types>(args)...);
-
-				return ref(obj, this);
-			}
-
-			template<class... Types>
-			shared_ref construct_shared(Types&&... args)
-			{
-				ptr obj = alloc();
-
-				::new ((void*)obj) Obj(std::forward<Types>(args)...);
-
-				return std::make_shared<ref>(obj, this);
+				return shared_ref(new ref(obj, this));
 			}
 
 			void destroy(ptr obj)
@@ -200,18 +193,13 @@ namespace wise {
 		}
 
 		template <typename Obj, typename Allocator>
-		typename object_pool<Obj, Allocator>::ref&
-			object_pool<Obj, Allocator>::ref::move(ref& rhs)
+		void object_pool<Obj, Allocator>::ref::destroy()
 		{
-			if (this == &rhs) return *this;
-
-			this->pool_ = rhs.pool_;
-			this->p_ = rhs.p_;
-
-			rhs.pool_ = nullptr;
-			rhs.p_ = nullptr;
-
-			return *this;
+			if (pool_ && p_)
+			{
+				pool_->destroy(p_);
+				p_ = 0;
+			}
 		}
 	} // kernel
 } // wise
