@@ -1,8 +1,8 @@
 #include "pch.hpp"
 #include <wise.kernel/base/mem_tracker.hpp>
 
-#include <wise.kernel/base/exception.hpp>
 #include <wise.kernel/base/logger.hpp>
+#include <wise.kernel/base/exception.hpp>
 #include <wise.kernel/util/crc32.hpp>
 #include <sstream>
 #include <iomanip>

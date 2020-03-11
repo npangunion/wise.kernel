@@ -61,7 +61,8 @@ total dealloc:                0 KB
 
 	SECTION("performance")
 	{
-		const int TEST_COUNT = 1000000;
+		// const int TEST_COUNT = 1000000;
+		const int TEST_COUNT = 1;
 
 		SECTION("tracked")
 		{

@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <sstream>
+#include "logger.hpp" // NOTE: fmt 관련 링크 에러 제거
 
 namespace wise {
 	namespace kernel {
