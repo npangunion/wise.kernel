@@ -1,20 +1,17 @@
 #include "pch.hpp"
-#include <wise.kernel/base/memory.hpp>
+#include <wise.kernel/base/mem_tracker.hpp>
 
 #include <wise.kernel/base/exception.hpp>
 #include <wise.kernel/base/logger.hpp>
 #include <wise.kernel/util/crc32.hpp>
-#include <vcruntime_new.h>
 #include <sstream>
 #include <iomanip>
 
 #if WISE_TRACK_MEMORY 
 
-// TODO: new, new[], delete, delete[] complete
-// -- we need it.
-// -- for MSVC, add annotations
+// WISE_TRACK_MEMORY´Â Visual C++ Àü¿ë. (as of Mar., 2020)
 
-void* operator new (std::size_t n) 
+void* operator new( std::size_t n)
 {
 	void* p = std::malloc(n);
 	return p;
@@ -36,7 +33,7 @@ namespace wise {
 		public:
 			void write(const char* stat) override
 			{
-				WISE_INFO("{}", stat);
+			 	WISE_INFO(stat);
 			}
 		};
 

@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <exception>
-#include <spdlog/fmt/fmt.h>
+#include <sstream>
 
 namespace wise {
 	namespace kernel {
@@ -15,6 +15,7 @@ namespace wise {
 			}
 
 			explicit exception(const char* const m) throw()
+				: std::exception(m)
 			{
 			}
 
@@ -27,7 +28,9 @@ namespace wise {
 			explicit exception(const char* cls, char const* const m, const char* file, int line) throw()
 				: std::exception(m)
 			{
-				desc_ = fmt::format("{}: {} on {}:{}", cls, std::exception::what(), file, line);
+				std::ostringstream oss;
+				oss << cls << ": " << std::exception::what() << " on " << file << ":" << line;
+				desc_ = oss.str();
 			}
 
 		private:

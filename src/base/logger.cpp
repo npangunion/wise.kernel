@@ -28,6 +28,9 @@ namespace wise {
 
 		void system_logger::init()
 		{
+			fmt::v6::internal::locale_ref loc;
+			fmt::v6::internal::decimal_point<char>(loc);
+
 			// 초기화 중 여러 곳에서 호출할 경우 블럭 시킴
 			std::lock_guard<std::recursive_mutex> lock(mutex_);
 

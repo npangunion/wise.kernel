@@ -17,6 +17,7 @@ workspace "wise.kernel"
 		optimize "On"
 	
 	filter { }
+
 	
 	targetdir ("build/bin/%{prj.name}/%{cfg.longname}")
     objdir ("build/obj/%{prj.name}/%{cfg.longname}")
@@ -38,6 +39,7 @@ project "wise.kernel"
 	
 	files { "include/**", "src/**" }
 
+	warnings "extra"
 	buildoptions { "/std:c++17" }
 	
 	includeBOOST()
@@ -64,6 +66,7 @@ project "wise.kernel.test"
 	pchheader "pch.hpp"
 	pchsource "test/pch.cpp"
 
+	warnings "extra"
 	buildoptions { "/std:c++17" }
 
 	includedirs "test"
