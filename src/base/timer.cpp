@@ -174,7 +174,7 @@ namespace wise {
 
 			auto e = sl.reqs_.top();
 
-			while (e.ptr_->next_run_tick_ < now)
+			while (e.ptr_->next_run_tick_ <= now)
 			{
 				sl.reqs_.pop();
 

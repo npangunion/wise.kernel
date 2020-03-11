@@ -37,7 +37,7 @@ namespace wise {
 			using actions = std::vector<action>;
 
 			static constexpr tick_t forever = 0;
-			static constexpr tick_t min_interval = 20;
+			static constexpr tick_t min_interval = 10;
 
 		public:
 			/// constructor

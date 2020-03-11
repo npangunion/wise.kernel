@@ -13,7 +13,7 @@ TEST_CASE("timer", "base")
 	{
 		timer tm;
 
-		int id = tm.set(1);
+		int id = tm.set(10); // timer::min_interval
 
 		int count = 0;
 
@@ -21,6 +21,7 @@ TEST_CASE("timer", "base")
 			WISE_UNUSED(tid);
 			++count;
 			});
+
 
 		std::this_thread::sleep_for(10ms);
 		tm.execute();
