@@ -1,10 +1,9 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include <catch.hpp>
-#include <wise/task/task_scheduler.hpp>
-#include <wise/base/util.hpp>
+#include <wise.kernel/core/task_scheduler.hpp>
 #include <spdlog/fmt/fmt.h>
 
-using namespace wise;
+using namespace wise::kernel;
 
 namespace
 {
@@ -45,7 +44,7 @@ TEST_CASE("task scheduler")
 
 		ts.add(tsk);
 
-		sleep(100);
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		CHECK(tsk->get_last_runner_id() > 0);
 		CHECK(tsk->get_last_execution_time() > 0);
@@ -76,7 +75,7 @@ TEST_CASE("task scheduler")
 
 		for (int i = 0; i < 10; ++i)
 		{
-			sleep(100);
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 			// ts.log_stat();
 		}

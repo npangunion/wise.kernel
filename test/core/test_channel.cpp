@@ -1,12 +1,12 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include <catch.hpp>
-#include <wise/channel/channel.hpp>
-#include <wise/base/logger.hpp>
-#include <wise/base/tick.hpp>
+#include <wise.kernel/core/channel.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/tick.hpp>
 
 #include <vector>
 
-using namespace wise;
+using namespace wise::kernel;
 
 struct CbHolder 
 {
@@ -46,7 +46,7 @@ TEST_CASE("channel")
 	{
 		// basic usage
 		{
-			auto ch1 = channel::create("ch1", wise::channel::config());
+			auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 			auto sk = ch1->subscribe(
 				topic{ 1, 2, 3 },
@@ -68,7 +68,7 @@ TEST_CASE("channel")
 
 		// group subscription
 		{
-			auto ch1 = channel::create("ch1", wise::channel::config());
+			auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 			auto sk1 = ch1->subscribe(
 				topic{ 1, 2, 0 },
@@ -105,7 +105,7 @@ TEST_CASE("channel")
 
 	SECTION("channel cb binder")
 	{
-		auto ch1 = channel::create("ch1", wise::channel::config());
+		auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 		topic pic{ 1, 2, 3 };
 
@@ -132,7 +132,7 @@ TEST_CASE("channel")
 
 	SECTION("channel pointer key")
 	{
-		auto ch1 = channel::create("ch1", wise::channel::config());
+		auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 		auto ch2 = channel::find(ch1->get_pkey());
 
@@ -149,7 +149,7 @@ TEST_CASE("channel")
 		{
 			const int test_count = 1;
 
-			auto ch1 = channel::create("ch1", wise::channel::config());
+			auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 			auto sk1 = ch1->subscribe(
 				topic{ 1, 2, 0 },
@@ -195,7 +195,7 @@ TEST_CASE("channel")
 	{
 		SECTION("no subscription")
 		{
-			auto ch1 = channel::create("ch1", wise::channel::config());
+			auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 			auto sk = ch1->subscribe(
 				topic{ 1, 2, 3 },
@@ -219,7 +219,7 @@ TEST_CASE("channel")
 		{
 			auto cb = wise_shared<CbHolder>();
 
-			auto ch1 = channel::create("ch1", wise::channel::config());
+			auto ch1 = channel::create("ch1", wise::kernel::channel::config());
 
 			cb->sub(ch1, topic{ 1, 2, 9 });
 

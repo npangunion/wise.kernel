@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wise.kernel/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <unordered_map>
 
 namespace wise {

@@ -2,6 +2,7 @@
 
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/tick.hpp>
+#include <wise.kernel/core/mem_tracker.hpp>
 #include <algorithm>
 #include <atomic>
 #include <memory>
