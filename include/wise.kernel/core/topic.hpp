@@ -137,8 +137,6 @@ namespace wise {
 	} // kernel
 } // wise
 
-// TODO: 
-//  - add hash function for topic
 #include <unordered_map>
 
 namespace std {
