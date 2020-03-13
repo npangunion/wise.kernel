@@ -1,13 +1,13 @@
 #pragma once 
 
-#include <wise.kernel/net/core/modifier/modifier.hpp>
+#include <wise.kernel/net/modifier/modifier.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 class checksum final : public modifier
 {
-public: 
+public:
 	static constexpr std::size_t checksum_size = 4;
 
 	checksum(std::size_t header_length);
@@ -18,7 +18,7 @@ public:
 	virtual result on_recv(
 		resize_buffer& buf,
 		std::size_t msg_pos,
-		std::size_t msg_len, 
+		std::size_t msg_len,
 		std::size_t& new_len
 	) override;
 
@@ -29,9 +29,10 @@ public:
 		std::size_t msg_len
 	) override;
 
-private: 
+private:
 	std::size_t header_length_;
 
 };
 
+} // kernel
 } // wise

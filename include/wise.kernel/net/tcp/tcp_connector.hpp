@@ -1,19 +1,22 @@
 #pragma once 
 
-#include <wise.kernel/net/network.hpp>
-#include <wise.kernel/net/addr.hpp>
+#include <wise.kernel/core/result.hpp>
+#include <wise.kernel/net/tcp/tcp_addr.hpp>
 
-#define ASIO_STANDALONE
-#include <asio.hpp>
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 #include <memory>
 
-using namespace asio::ip;
+using namespace boost::asio::ip;
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 class connector final
 {
+public:
+	using result = result<bool, std::string>;
+
 public:
 	using ptr = std::shared_ptr<connector>;
 
@@ -21,7 +24,7 @@ public:
 
 	~connector();
 
-	network::result connect();
+	result connect();
 
 	const addr& get_addr() const
 	{
@@ -38,10 +41,10 @@ public:
 		return pkey_;
 	}
 
-private: 
-	void on_connected(const asio::error_code& ec);
+private:
+	void on_connected(const boost::system::error_code& ec);
 
-private: 
+private:
 	uint16_t id_ = 0;
 	std::string protocol_;
 	addr addr_;
@@ -49,4 +52,5 @@ private:
 	uintptr_t pkey_ = 0;
 };
 
+} // kernel
 } // wise

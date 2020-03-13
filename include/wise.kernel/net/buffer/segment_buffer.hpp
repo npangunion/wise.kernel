@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/net/core/buffer/segment.hpp>
+#include <wise.kernel/net/buffer/segment.hpp>
 #include <wise.kernel/core/object_pool.hpp>
 
 #include <vector>

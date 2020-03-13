@@ -1,9 +1,10 @@
 #pragma once 
 
+#include <wise.kernel/core/channel/message.hpp>
+#include <wise.kernel/core/channel/sub_map.hpp>
+
 #include <wise.kernel/core/tick.hpp>
 #include <wise.kernel/core/mem_tracker.hpp>
-#include <wise.kernel/core/message.hpp>
-#include <wise.kernel/core/detail/sub_map.hpp>
 #include <wise.kernel/core/concurrent_queue.hpp>
 #include <atomic>
 #include <functional>

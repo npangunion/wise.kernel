@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/core/index.hpp>
-#include <wise.kernel/core/channel.hpp>
+#include <wise.kernel/core/channel/channel.hpp>
 #include <map>
 
 namespace wise {

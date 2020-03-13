@@ -1,12 +1,9 @@
 #pragma once 
 
-#include <wise/channel/channel.hpp>
-#include <wise.kernel/net/protocol/protocol.hpp>
+#include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/reason.hpp>
 #include <wise.kernel/net/packet.hpp>
-#include <wise.kernel/net/session_ref.hpp>
-#include <wise.kernel/net/detail/buffer/segment_buffer.hpp>
-#include <wise.kernel/net/detail/link_binder.hpp>
+#include <wise.kernel/net/buffer/segment_buffer.hpp>
 #include <wise.kernel/core/spinlock.hpp>
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/result.hpp>
@@ -16,23 +13,21 @@
 
 using namespace boost::asio::ip;
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 /// socket wrapper to use with asio
-/** 
- * 바이트 송수신 처리 세션. 
+/**
+ * 바이트 송수신 처리 세션.
  * - 각 프로토콜 처리는 protocol 클래스에서 처리
  *
  */
-class session final : public std::enable_shared_from_this<session>
+class tcp_session final
 {
 public:
-
-	using ptr = std::shared_ptr<session>;
-	using wptr = std::weak_ptr<session>;
 	using result = result<bool, reason>;
 	using lock_type = spinlock;
+	using error_code = boost::system::error_code;
 
 	friend class protocol; // to use send and error
 
@@ -70,14 +65,14 @@ public:
 
 public:
 	/// setup 
-	session(
+	tcp_session(
 		const id& id,
 		tcp::socket&& soc,
 		bool accepted,
 		const std::string& protocol);
 
 	/// clean up 
-	virtual ~session();
+	virtual ~tcp_session();
 
 	/// begin working 
 	void begin();
@@ -86,34 +81,13 @@ public:
 	result send(packet::ptr m);
 
 	/// close socket (shutdown and close) from application.
-	void close_from_application();
-
-	/// bind a channel to a session. 데이터로만 사용한다.
-	result bind_channel(uintptr_t pkey);
-	uintptr_t get_bound_channel() const;
-
-	/// auth data
-	uint64_t bind_oid(uint64_t v);
-	uint64_t get_bound_oid() const;
-
-	/// bind a link to link a channel
-	bool bind(const link& bp);
-
-	/// unbind
-	void unbind(link::suid_t suid);
-
-	/// 메세지 전달이 이 쪽을 거쳐야 브리지를 통해 채널로 전달됨
-	/// network::post()를 같이 호출함
-	void post(packet::ptr m);
+	void disconnect();
 
 	/// check 
 	bool is_open() const
 	{
 		return socket_.is_open();
 	}
-
-	/// get internal id
-	const id& get_id() const;
 
 	/// local endpoint address
 	const std::string& get_local_addr() const
@@ -138,7 +112,7 @@ public:
 		return accepted_;
 	}
 
-	bool is_busy() const; 
+	bool is_busy() const;
 
 	/// internal use only.  
 	lock_type& get_session_lock()
@@ -148,7 +122,7 @@ public:
 
 protected:
 	// get last error (for debug / test purpose)
-	const asio::error_code& get_last_error() const
+	const error_code& get_last_error() const
 	{
 		return last_error_;
 	}
@@ -158,10 +132,10 @@ private:
 	result send(const uint8_t* const data, std::size_t len);
 
 	/// close socket (shutdown and close).
-	void close(const asio::error_code& ec = asio::error::shut_down);
+	void close(const error_code& ec);
 
 	/// 에러 처리 함수
-	void error(const asio::error_code& ec);
+	void error(const error_code& ec);
 
 	/// 자체 에러 
 	void error(const result& rc);
@@ -173,10 +147,10 @@ private:
 	result request_send();
 
 	/// callback on recv
-	void on_recv_completed(asio::error_code& ec, std::size_t len, const id& sid);
+	void on_recv_completed(error_code& ec, std::size_t len, const id& sid);
 
 	/// callback on send 
-	void on_send_completed(asio::error_code& ec, std::size_t len);
+	void on_send_completed(error_code& ec, std::size_t len);
 
 	/// 패킷 전송 큐에서 하나 보내서 전송 시작
 	void begin_send_from_queue();
@@ -188,7 +162,7 @@ private:
 	using segment_buffer = segment_buffer<32 * 1024>;
 	using seg = typename segment_buffer::seg;
 
-	static segment_buffer			seg_buffer_accessor_; 
+	static segment_buffer			seg_buffer_accessor_;
 
 	tcp::socket						socket_;
 	id								id_;
@@ -209,15 +183,10 @@ private:
 	segment_buffer					send_buffer_;
 	std::size_t						send_request_size_ = 0;
 	std::vector<seg*>				sending_segs_;
-	std::vector<asio::const_buffer> sending_bufs_;
+	std::vector<boost::asio::const_buffer> sending_bufs_;
 
-	asio::error_code				last_error_;
+	error_code						last_error_;
 	bool							destroyed_ = false;
-
-	std::atomic<uintptr_t>			channel_bound_ = 0;
-	std::atomic<uint64_t>			oid_bound_ = 0;
-
-	link_binder						link_binder_;
 };
 
 //
@@ -227,21 +196,7 @@ private:
 // - per packet rate control w/ policy
 //
 
+} // kernel
 } // wise
 
-#include "session.inl"
 
-#include <unordered_map>
-
-  // hash function for id
-namespace std
-{
-template <>
-struct hash<wise::session::id>
-{
-	std::size_t operator() (const wise::session::id& id) const
-	{
-		return std::hash<std::size_t>()(id.get_value());
-	}
-};
-}

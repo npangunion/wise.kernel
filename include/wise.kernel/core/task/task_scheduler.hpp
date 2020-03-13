@@ -1,7 +1,7 @@
 #pragma once 
 
-#include <wise.kernel/core/task.hpp>
-#include <wise.kernel/core/task_runner.hpp>
+#include <wise.kernel/core/task/task.hpp>
+#include <wise.kernel/core/task/task_runner.hpp>
 #include <wise.kernel/core/concurrent_queue.hpp>
 #include <vector>
 

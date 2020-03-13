@@ -1,7 +1,7 @@
 #pragma once 
 
-#include <wise.kernel/net/core/buffer/multiple_size_buffer_pool.hpp>
-#include <wise.kernel/net/core/buffer/resize_buffer_iterator.hpp>
+#include <wise.kernel/net/buffer/multiple_size_buffer_pool.hpp>
+#include <wise.kernel/net/buffer/resize_buffer_iterator.hpp>
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/exception.hpp>
 

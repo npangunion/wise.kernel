@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/core/message.hpp>
+#include <wise.kernel/core/channel/message.hpp>
 
 #include <memory>
 #include <string>

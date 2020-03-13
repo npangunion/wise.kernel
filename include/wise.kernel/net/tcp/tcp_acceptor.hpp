@@ -1,20 +1,23 @@
 #pragma once 
 
-#include <wise.kernel/net/network.hpp>
-#include <wise.kernel/net/addr.hpp>
+#include <wise.kernel/net/tcp/tcp_addr.hpp>
+#include <wise.kernel/core/result.hpp>
 
-#define ASIO_STANDALONE
-#include <asio.hpp>
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 #include <memory>
 
-using namespace asio::ip;
+using namespace boost::asio::ip;
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 class acceptor final
 {
-public: 
+public:
+	using result = result<bool, std::string>;
+
+public:
 	using ptr = std::shared_ptr<acceptor>;
 
 	acceptor(uint16_t id, const std::string& protocol, const std::string& addr, uintptr_t pkey);
@@ -22,7 +25,7 @@ public:
 	~acceptor();
 
 	/// 지정된 주소에서 accept 시작.
-	network::result listen(); 
+	result listen();
 
 	const addr& get_addr() const
 	{
@@ -34,17 +37,17 @@ public:
 		return protocol_;
 	}
 
-	uintptr_t get_pkey() const 
+	uintptr_t get_pkey() const
 	{
 		return pkey_;
 	}
 
-private: 
+private:
 	void do_accept();
 
-	void on_accepted(const asio::error_code& ec);
+	void on_accepted(const boost::system::error_code& ec);
 
-private: 
+private:
 	uint16_t id_ = 0;
 	std::string protocol_;
 	addr addr_;
@@ -53,4 +56,5 @@ private:
 	uintptr_t pkey_ = 0;
 };
 
+} // kernel
 } // wise

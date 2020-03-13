@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/core/detail/sub.hpp>
+#include <wise.kernel/core/channel/sub.hpp>
 #include <wise.kernel/core/sequence.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/concurrent_queue.hpp>

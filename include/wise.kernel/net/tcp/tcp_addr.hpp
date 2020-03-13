@@ -2,14 +2,13 @@
 
 #include <wise.kernel/core/macros.hpp>
 
-#define ASIO_STANDALONE
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <string>
 
-using namespace asio::ip;
+using namespace boost::asio::ip;
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 class addr
 {
@@ -54,4 +53,5 @@ private:
 	bool valid_ = false;
 };
 
+} // kernel
 } // wise

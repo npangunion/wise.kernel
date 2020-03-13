@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/net/core/buffer/fixed_size_buffer_pool.hpp>
+#include <wise.kernel/net/buffer/fixed_size_buffer_pool.hpp>
 #include <wise.kernel/core/mem_tracker.hpp>
 
 #include <atomic>
