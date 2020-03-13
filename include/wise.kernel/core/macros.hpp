@@ -4,10 +4,12 @@
 #include <cassert>
 
 namespace wise {
-	namespace kernel {
-		void check__(bool cond, const char* msg, const char* func, const char* file, int line);
-	}
-}
+namespace kernel {
+
+void check__(bool cond, const char* msg, const char* func, const char* file, int line);
+
+} // kernel
+} // wise
 
 #ifdef _DEBUG
 	#define WISE_ASSERT(c) (void)(!!(c) || (wise::kernel::check__(!!(c), #c, __FUNCTION__, __FILE__, __LINE__), 0)); assert(c);

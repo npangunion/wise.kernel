@@ -5,40 +5,41 @@
 #include "logger.hpp" // NOTE: fmt 관련 링크 에러 제거
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		class exception : public std::exception
-		{
-		public:
-			explicit exception(const char* const m, const char* file, int line) throw()
-				: exception("exception", m, file, line)
-			{
-			}
-
-			explicit exception(const char* const m) throw()
-				: std::exception(m)
-			{
-			}
-
-			virtual char const* what() const override
-			{
-				return desc_.c_str();
-			}
-
-		protected:
-			explicit exception(const char* cls, char const* const m, const char* file, int line) throw()
-				: std::exception(m)
-			{
-				std::ostringstream oss;
-				oss << cls << ": " << std::exception::what() << " on " << file << ":" << line;
-				desc_ = oss.str();
-			}
-
-		private:
-			std::string desc_;
-		};
+class exception : public std::exception
+{
+public:
+	explicit exception(const char* const m, const char* file, int line) throw()
+		: exception("exception", m, file, line)
+	{
 	}
-} // wise::kernel
+
+	explicit exception(const char* const m) throw()
+		: std::exception(m)
+	{
+	}
+
+	virtual char const* what() const override
+	{
+		return desc_.c_str();
+	}
+
+protected:
+	explicit exception(const char* cls, char const* const m, const char* file, int line) throw()
+		: std::exception(m)
+	{
+		std::ostringstream oss;
+		oss << cls << ": " << std::exception::what() << " on " << file << ":" << line;
+		desc_ = oss.str();
+	}
+
+private:
+	std::string desc_;
+};
+
+} // kernel
+} // wise
 
 #define EXCEPTION(cls) \
 class cls : public wise::kernel::exception  \

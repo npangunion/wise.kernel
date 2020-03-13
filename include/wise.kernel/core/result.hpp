@@ -1,66 +1,66 @@
 #pragma once 
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		/// result and value passing.   
-		template <typename Code, typename Value>
-		struct result
+/// result and value passing.   
+template <typename Code, typename Value>
+struct result
+{
+	Code success = Code();
+	Code code = Code();
+	Value value = Value();
+
+	result() = default;
+
+	result(Code acode, const Value& avalue)
+		: code(acode)
+		, value(avalue)
+	{
+	}
+
+	result(Code acode, const Value&& avalue)
+		: code(acode)
+		, value(std::move(avalue))
+	{
+	}
+
+	operator bool() const
+	{
+		if (std::is_integral<Code>::value)
 		{
-			Code success = Code();
-			Code code = Code();
-			Value value = Value();
+			return code != 0;
+		}
 
-			result() = default;
+		return code == success;
+	}
+};
 
-			result(Code acode, const Value& avalue)
-				: code(acode)
-				, value(avalue)
-			{
-			}
+template <typename Value>
+struct result<bool, Value>
+{
+	bool code = true;
+	Value value = Value();
 
-			result(Code acode, const Value&& avalue)
-				: code(acode)
-				, value(std::move(avalue))
-			{
-			}
+	result() = default;
 
-			operator bool() const
-			{
-				if (std::is_integral<Code>::value)
-				{
-					return code != 0;
-				}
+	result(bool acode, const Value& avalue)
+		: code(acode)
+		, value(avalue)
+	{
+	}
 
-				return code == success;
-			}
-		};
+	result(bool acode, const Value&& avalue)
+		: code(acode)
+		, value(std::move(avalue))
+	{
+	}
 
-		template <typename Value>
-		struct result<bool, Value>
-		{
-			bool code = true;
-			Value value = Value();
+	operator bool() const
+	{
+		return code;
+	}
+};
 
-			result() = default;
-
-			result(bool acode, const Value& avalue)
-				: code(acode)
-				, value(avalue)
-			{
-			}
-
-			result(bool acode, const Value&& avalue)
-				: code(acode)
-				, value(std::move(avalue))
-			{
-			}
-
-			operator bool() const
-			{
-				return code;
-			}
-		};
-
-	} // kernel
+} // kernel
 } // wise

@@ -5,34 +5,34 @@
 #include <map>
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		class channel_map
-		{
-		public:
-			static channel_map& get();
+class channel_map
+{
+public:
+	static channel_map& get();
 
-			~channel_map();
+	~channel_map();
 
-			channel::ptr create(const channel::key_t& key, const channel::config& cfg);
+	channel::ptr create(const channel::key_t& key, const channel::config& cfg);
 
-			channel::ptr find(const channel::key_t& key);
+	channel::ptr find(const channel::key_t& key);
 
-			channel::ptr find_from_addr(uintptr_t pkey);
+	channel::ptr find_from_addr(uintptr_t pkey);
 
-			bool destroy(const channel::key_t& key);
+	bool destroy(const channel::key_t& key);
 
-		private:
-			using map = std::map<channel::key_t, channel::ptr>;
-			using pindex = index<uintptr_t, channel::key_t>;
+private:
+	using map = std::map<channel::key_t, channel::ptr>;
+	using pindex = index<uintptr_t, channel::key_t>;
 
-			channel_map();
+	channel_map();
 
-		private:
-			std::shared_timed_mutex		mutex_;
-			map							map_;
-			pindex						pkey_index_;
-		};
+private:
+	std::shared_timed_mutex		mutex_;
+	map							map_;
+	pindex						pkey_index_;
+};
 
-	} // kernel
+} // kernel
 } // wise

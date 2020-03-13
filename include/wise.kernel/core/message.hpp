@@ -5,59 +5,59 @@
 #include <string>
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		class message
-		{
-		public:
-			using ptr = std::shared_ptr<message>;
-			using proto_t = uint8_t;
-			using channel_key_t = std::string;
+class message
+{
+public:
+	using ptr = std::shared_ptr<message>;
+	using proto_t = uint8_t;
+	using channel_key_t = std::string;
 
-		public:
-			message(const topic& topic = topic(0))
-				: topic_(topic)
-			{
-			}
+public:
+	message(const topic& topic = topic(0))
+		: topic_(topic)
+	{
+	}
 
-			virtual ~message()
-			{
-			}
+	virtual ~message()
+	{
+	}
 
-			const topic& get_topic() const
-			{
-				return topic_;
-			}
+	const topic& get_topic() const
+	{
+		return topic_;
+	}
 
-			topic& get_topic()
-			{
-				return topic_;
-			}
+	topic& get_topic()
+	{
+		return topic_;
+	}
 
-			// for test 
-			void set_topic(const topic& tp)
-			{
-				topic_ = tp;
-			}
+	// for test 
+	void set_topic(const topic& tp)
+	{
+		topic_ = tp;
+	}
 
-			virtual const char* get_desc() const
-			{
-				return topic::get_desc(topic_).c_str();
-			}
+	virtual const char* get_desc() const
+	{
+		return topic::get_desc(topic_).c_str();
+	}
 
-		private:
-			topic topic_;
-		};
+private:
+	topic topic_;
+};
 
 
-		template <typename T>
-		inline
-			std::shared_ptr<T> cast(message::ptr mp)
-		{
-			return std::static_pointer_cast<T>(mp);
-		}
+template <typename T>
+inline
+std::shared_ptr<T> cast(message::ptr mp)
+{
+	return std::static_pointer_cast<T>(mp);
+}
 
-	} // kernel
+} // kernel
 } // wise
 
 // macro for channel class callback lambda 

@@ -1,14 +1,14 @@
 #pragma once 
 
-#include <wise.kernel/core/sub.hpp>
+#include <wise.kernel/core/detail/sub.hpp>
 #include <unordered_map>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 /// a simple message dispatcher
-/** 
- * 간단하게 하나의 클래스에서 사용하는 용도. 
+/**
+ * 간단하게 하나의 클래스에서 사용하는 용도.
  * - 람다 함수로 등록.
  * - 클래스와 수명을 같이 함.
  *
@@ -16,7 +16,7 @@ namespace wise
  */
 class dispatcher final
 {
-public: 
+public:
 	dispatcher() = default;
 
 	~dispatcher()
@@ -91,4 +91,5 @@ private:
 	uint32_t seq_ = 1;
 };
 
+} // kernel
 } // wise

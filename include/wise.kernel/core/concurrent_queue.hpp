@@ -11,39 +11,39 @@
 #endif
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		template <typename T, typename Alloc = std::allocator<T> >
-		class concurrent_queue
-		{
-		public:
-			concurrent_queue();
-			~concurrent_queue();
+template <typename T, typename Alloc = std::allocator<T> >
+class concurrent_queue
+{
+public:
+	concurrent_queue();
+	~concurrent_queue();
 
-			void push(T v);
+	void push(T v);
 
-			bool pop(T& v);
+	bool pop(T& v);
 
-			bool empty() const;
+	bool empty() const;
 
-			void clear()
-			{
-				q_.clear();
-			}
-
-			/// get size. note: thread unsafe. 
-			std::size_t unsafe_size() const;
-
-		private:
-#if WISE_ENABLE_CONCURRENT_QUEUE
-			concurrency::concurrent_queue<T, Alloc> q_;
-#else
-			std::deque<T, Alloc> q_;
-			mutable std::recursive_mutex mutex_;
-#endif
-		};
-
+	void clear()
+	{
+		q_.clear();
 	}
+
+	/// get size. note: thread unsafe. 
+	std::size_t unsafe_size() const;
+
+private:
+#if WISE_ENABLE_CONCURRENT_QUEUE
+	concurrency::concurrent_queue<T, Alloc> q_;
+#else
+	std::deque<T, Alloc> q_;
+	mutable std::recursive_mutex mutex_;
+#endif
+};
+
+}
 } // wise::kernel
 
 #include "concurrent_queue.inl"
