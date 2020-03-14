@@ -1,21 +1,20 @@
-#include "stdafx.h"
-#include <wise/net/protocol/zen/zen_protocol.hpp>
-#include <wise/net/protocol/zen/zen_factory.hpp>
-#include <wise/net/protocol/zen/zen_packer.hpp>
-#include <wise/net/network.hpp>
-#include <wise/base/exception.hpp>
-#include <wise/base/logger.hpp>
-#include <wise/base/macros.hpp>
+#include <pch.hpp>
+#include <wise.kernel/net/protocol/bits/bits_protocol.hpp>
+#include <wise.kernel/net/protocol/bits/bits_factory.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packer.hpp>
+#include <wise.kernel/core/exception.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 /// static configuration info
-zen_protocol::config zen_protocol::cfg;
+bits_protocol::config bits_protocol::cfg;
 
-zen_protocol::zen_protocol()
-	: checksum_(zen_message::header_length)
-	, cipher_(zen_message::header_length)
+bits_protocol::bits_protocol()
+	: checksum_(bits_message::header_length)
+	, cipher_(bits_message::header_length)
 {
 	if (cfg.enable_loopback)
 	{
@@ -23,11 +22,11 @@ zen_protocol::zen_protocol()
 	}
 }
 
-zen_protocol::~zen_protocol()
+bits_protocol::~bits_protocol()
 {
 }
 
-void zen_protocol::on_bind()
+void bits_protocol::on_bind()
 {
 	if (!cfg.enable_loopback)
 	{
@@ -39,17 +38,17 @@ void zen_protocol::on_bind()
 	cipher_.bind(this);
 }
 
-protocol::result zen_protocol::send(packet::ptr m)
+protocol::result bits_protocol::send(packet::ptr m)
 {
 	WISE_EXPECT(m);
 	WISE_RETURN_IF(!m, result(false, reason::fail_null_message_pointer));
 
-	auto mp = std::static_pointer_cast<zen_message>(m);
+	auto mp = std::static_pointer_cast<bits_message>(m);
 
 	if (!mp)
 	{
 		WISE_CRITICAL(
-			"zen_protocol expects zen_message to send. topic: {}/{}",
+			"bits_protocol expects bits_message to send. topic: {}/{}",
 			topic::get_desc(m->get_topic())
 		);
 
@@ -67,7 +66,7 @@ protocol::result zen_protocol::send(packet::ptr m)
 	return send_final(mp, *pbuf, pbuf->size());
 }
 
-protocol::result zen_protocol::pack(zen_message::ptr mp, resize_buffer& buf)
+protocol::result bits_protocol::pack(bits_message::ptr mp, resize_buffer& buf)
 {
 	uint32_t pad = 0xCAFEABBA;
 
@@ -86,7 +85,7 @@ protocol::result zen_protocol::pack(zen_message::ptr mp, resize_buffer& buf)
 
 	// size는 length와 topic 길이를 포함
 	packet::len_t size = static_cast<packet::len_t>(buf.size());
-	WISE_ASSERT(size >= zen_message::header_length);
+	WISE_ASSERT(size >= bits_message::header_length);
 
 	auto iter = buf.begin();
 
@@ -96,8 +95,8 @@ protocol::result zen_protocol::pack(zen_message::ptr mp, resize_buffer& buf)
 	return result(true, reason::success);
 }
 
-protocol::result zen_protocol::send_final(
-	zen_message::ptr mp,
+protocol::result bits_protocol::send_final(
+	bits_message::ptr mp,
 	resize_buffer& buf,
 	std::size_t len
 )
@@ -119,8 +118,8 @@ protocol::result zen_protocol::send_final(
 }
 
 
-protocol::result zen_protocol::send_final(
-	zen_message::ptr mp, 
+protocol::result bits_protocol::send_final(
+	bits_message::ptr mp, 
 	const uint8_t* const data, 
 	std::size_t len
 )
@@ -146,8 +145,8 @@ protocol::result zen_protocol::send_final(
 	return send_modified(mp, buf, len);
 }
 
-protocol::result zen_protocol::send_modified(
-	zen_message::ptr mp,
+protocol::result bits_protocol::send_modified(
+	bits_message::ptr mp,
 	resize_buffer& buf,
 	const std::size_t len
 )
@@ -195,7 +194,7 @@ protocol::result zen_protocol::send_modified(
 	return protocol::send(buf.data(), buf.size());
 }
 
-protocol::result zen_protocol::on_recv(
+protocol::result bits_protocol::on_recv(
 	const uint8_t* const bytes, 
 	std::size_t len)
 {
@@ -211,11 +210,11 @@ protocol::result zen_protocol::on_recv(
 	auto remained_len = recv_buf_.end() - iter;
 	std::size_t processed_len = 0;
 
-	while (remained_len >= zen_message::header_length)
+	while (remained_len >= bits_message::header_length)
 	{
 		auto msg_len = get_length(iter);	// 메세지 길이는 암호화 관련 변경을 포함
 
-		WISE_ASSERT(msg_len >= zen_message::header_length);
+		WISE_ASSERT(msg_len >= bits_message::header_length);
 
 		if (msg_len > cfg.max_packet_length)
 		{
@@ -239,7 +238,7 @@ protocol::result zen_protocol::on_recv(
 		if (!mp)
 		{
 			WISE_ERROR(
-				"zen_message for topic[{}:{}:{}] not registered",
+				"bits_message for topic[{}:{}:{}] not registered",
 				tp.get_category(), tp.get_group(), tp.get_type()
 			);
 
@@ -278,7 +277,7 @@ protocol::result zen_protocol::on_recv(
 
 		if (!res)
 		{
-			WISE_ERROR("zen_message unpack error. topic: ", topic::get_desc(tp));
+			WISE_ERROR("bits_message unpack error. topic: ", topic::get_desc(tp));
 			return result(false, reason::fail_zen_unpack_error);
 		}
 
@@ -298,7 +297,7 @@ protocol::result zen_protocol::on_recv(
 		}
 
 		// 다음 처리를 위한 정리 
-		auto payload_len = msg_len - zen_message::header_length;
+		auto payload_len = msg_len - bits_message::header_length;
 
 		processed_len += msg_len;
 		iter += payload_len;		
@@ -314,8 +313,8 @@ protocol::result zen_protocol::on_recv(
 }
 
 
-protocol::result zen_protocol::recv_modified(
-	zen_message::ptr mp,
+protocol::result bits_protocol::recv_modified(
+	bits_message::ptr mp,
 	resize_buffer& buf,
 	std::size_t msg_pos,
 	std::size_t msg_len,
@@ -357,21 +356,21 @@ protocol::result zen_protocol::recv_modified(
 }
 
 
-void zen_protocol::on_send(std::size_t len)
+void bits_protocol::on_send(std::size_t len)
 {
 	WISE_UNUSED(len); 
 	
 	// 특별히 할 일은 없다
 }
 
-void zen_protocol::on_error(const asio::error_code& ec)
+void bits_protocol::on_error(const asio::error_code& ec)
 {
 	WISE_UNUSED(ec);
 
 	// 특별히 할 일이 없다.
 }
 
-protocol::result zen_protocol::on_recv_to_test(
+protocol::result bits_protocol::on_recv_to_test(
 	const uint8_t* const bytes,
 	std::size_t len
 )
@@ -381,7 +380,7 @@ protocol::result zen_protocol::on_recv_to_test(
 	return on_recv(bytes, len);
 }
 
-void zen_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri) 
+void bits_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri) 
 {
 	*ri = key & 0x000000FF;
 	++ri; *ri = key >> 8 & 0x000000FF;
@@ -389,7 +388,7 @@ void zen_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri)
 	++ri; *ri = key >> 24 & 0x000000FF;
 }
 
-void zen_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri) 
+void bits_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri) 
 {
 	*ri = len & 0x000000FF;
 	++ri; *ri = len >> 8 & 0x000000FF;
@@ -397,7 +396,7 @@ void zen_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri)
 	++ri; *ri = len >> 24 & 0x000000FF;
 }
 
-uint32_t zen_protocol::get_length(resize_buffer::iterator& ri) 
+uint32_t bits_protocol::get_length(resize_buffer::iterator& ri) 
 {
 	uint32_t len = 0;
 
@@ -409,7 +408,7 @@ uint32_t zen_protocol::get_length(resize_buffer::iterator& ri)
 	return len;
 }
 
-uint32_t zen_protocol::get_topic(resize_buffer::iterator& ri) 
+uint32_t bits_protocol::get_topic(resize_buffer::iterator& ri) 
 {
 	uint32_t topic = 0;
 
@@ -421,7 +420,7 @@ uint32_t zen_protocol::get_topic(resize_buffer::iterator& ri)
 	return topic;
 }
 
-protocol::result zen_protocol::call_recv_for_test(
+protocol::result bits_protocol::call_recv_for_test(
 	const uint8_t* const bytes, 
 	std::size_t len
 )
@@ -429,7 +428,7 @@ protocol::result zen_protocol::call_recv_for_test(
 	return on_recv(bytes, len);
 }
 
-bool zen_protocol::needs_to_modify(zen_message::ptr m) const
+bool bits_protocol::needs_to_modify(bits_message::ptr m) const
 {
 	return
 		(cfg.enable_cipher		&& m->enable_cipher) ||

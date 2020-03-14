@@ -1,18 +1,18 @@
 #pragma once
 
-#include <wise/net/detail/buffer/resize_buffer.hpp>
-#include <wise/base/logger.hpp>
-#include <wise/base/date.hpp>
+#include <wise.kernel/net/buffer/resize_buffer.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/date.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
-class zen_packer;
+class bits_packer;
 
 struct ipackable
 {
-	virtual bool pack(zen_packer& packer) const = 0;
-	virtual bool unpack(zen_packer& packer)= 0;
+	virtual bool pack(bits_packer& packer) const = 0;
+	virtual bool unpack(bits_packer& packer) = 0;
 };
 
 #define DEFINE_PACK(Type) \
@@ -59,29 +59,29 @@ template <> bool unpack(Type& s) \
 	return is_valid_; \
 }
 
-template <typename T> 
-bool pack(zen_packer& packer, const T& tv)
+template <typename T>
+bool pack(bits_packer& packer, const T& tv)
 {
 	return tv.pack(packer);
 }
 
-template <typename T> 
-bool unpack(zen_packer& packer, T& tv)
+template <typename T>
+bool unpack(bits_packer& packer, T& tv)
 {
 	return tv.unpack(packer);
 }
 
 // serialize / deserialize to / from resize_buffer
-class zen_packer
+class bits_packer
 {
 public:
-	struct config 
+	struct config
 	{
 		static const std::size_t max_container_size = 8 * 1024;
 		static const std::size_t max_string_size = 8 * 1024;
 	};
 
-	zen_packer(resize_buffer& buf)
+	bits_packer(resize_buffer& buf)
 		: buf_(buf)
 	{
 		// 리틀 엔디언을 기본 (인텔 기준)으로 하고 빅 엔디언일 경우 swap한다.
@@ -156,30 +156,30 @@ public:
 		return is_valid_;
 	}
 
-private: 
+private:
 	template <typename T> T swap_endian(const T& u);
 
 	bool convert(const std::wstring& src, std::vector<uint8_t>& out);
-	
+
 	bool convert(const std::vector<uint8_t>& src, std::wstring& out);
 
-private: 
+private:
 	resize_buffer& buf_;
 	bool is_le_ = true;
 	bool is_valid_ = true;
 };
 
 
-inline bool zen_packer::pack(uint8_t* buf, std::size_t len)
+inline bool bits_packer::pack(uint8_t* buf, std::size_t len)
 {
-	WISE_RETURN_IF(!is_valid_, false); 
+	WISE_RETURN_IF(!is_valid_, false);
 
 	buf_.append(buf, len);
 
 	return is_valid_;
 }
 
-inline bool zen_packer::unpack(uint8_t* buf, std::size_t len)
+inline bool bits_packer::unpack(uint8_t* buf, std::size_t len)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -189,7 +189,7 @@ inline bool zen_packer::unpack(uint8_t* buf, std::size_t len)
 }
 
 template <class T>
-inline bool zen_packer::pack_enum(const T& s)
+inline bool bits_packer::pack_enum(const T& s)
 {
 	static_assert(
 		std::is_fundamental<T>::value || std::is_enum<T>::value,
@@ -198,14 +198,14 @@ inline bool zen_packer::pack_enum(const T& s)
 
 	WISE_RETURN_IF(!is_valid_, false);
 
-	int32_t val = static_cast<int32_t>(s); 
+	int32_t val = static_cast<int32_t>(s);
 	is_valid_ = pack(val);
 
 	return is_valid_;
 }
 
 template <class T>
-inline bool zen_packer::unpack_enum(T& s)
+inline bool bits_packer::unpack_enum(T& s)
 {
 	static_assert(
 		std::is_fundamental<T>::value || std::is_enum<T>::value,
@@ -224,16 +224,16 @@ inline bool zen_packer::unpack_enum(T& s)
 	return is_valid_;
 }
 
-template<class T> 
-inline bool zen_packer::pack(const T& s)
+template<class T>
+inline bool bits_packer::pack(const T& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
 	return ::wise::pack(*this, s);
 }
 
-template<class T> 
-inline bool zen_packer::unpack(T& s)
+template<class T>
+inline bool bits_packer::unpack(T& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -241,7 +241,7 @@ inline bool zen_packer::unpack(T& s)
 }
 
 template<>
-inline bool zen_packer::pack(const std::string& s)
+inline bool bits_packer::pack(const std::string& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -277,7 +277,7 @@ inline bool zen_packer::pack(const std::string& s)
 
 
 template<>
-inline bool zen_packer::unpack(std::string& s)
+inline bool bits_packer::unpack(std::string& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -317,7 +317,7 @@ inline bool zen_packer::unpack(std::string& s)
 }
 
 template<>
-inline bool zen_packer::pack(const std::wstring& s)
+inline bool bits_packer::pack(const std::wstring& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -343,7 +343,7 @@ inline bool zen_packer::pack(const std::wstring& s)
 }
 
 template<>
-inline bool zen_packer::unpack(std::wstring& s)
+inline bool bits_packer::unpack(std::wstring& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -369,10 +369,10 @@ inline bool zen_packer::unpack(std::wstring& s)
 	return is_valid_;
 }
 
-template<> 
-inline bool zen_packer::pack(const date& s)
+template<>
+inline bool bits_packer::pack(const date& s)
 {
-	WISE_RETURN_IF(!is_valid_, false); 
+	WISE_RETURN_IF(!is_valid_, false);
 
 	WISE_RETURN_IF(!pack(s.year), false);
 	WISE_RETURN_IF(!pack(s.month), false);
@@ -381,10 +381,10 @@ inline bool zen_packer::pack(const date& s)
 	return is_valid_;
 }
 
-template<> 
-inline bool zen_packer::unpack(date& s)
+template<>
+inline bool bits_packer::unpack(date& s)
 {
-	WISE_RETURN_IF(!is_valid_, false); 
+	WISE_RETURN_IF(!is_valid_, false);
 
 	WISE_RETURN_IF(!unpack(s.year), false);
 	WISE_RETURN_IF(!unpack(s.month), false);
@@ -393,10 +393,10 @@ inline bool zen_packer::unpack(date& s)
 	return is_valid_;
 }
 
-template<> 
-inline bool zen_packer::pack(const timestamp& s)
+template<>
+inline bool bits_packer::pack(const timestamp& s)
 {
-	WISE_RETURN_IF(!is_valid_, false); 
+	WISE_RETURN_IF(!is_valid_, false);
 
 	WISE_RETURN_IF(!pack(s.year), false);
 	WISE_RETURN_IF(!pack(s.month), false);
@@ -409,10 +409,10 @@ inline bool zen_packer::pack(const timestamp& s)
 	return is_valid_;
 }
 
-template<> 
-inline bool zen_packer::unpack(timestamp& s)
+template<>
+inline bool bits_packer::unpack(timestamp& s)
 {
-	WISE_RETURN_IF(!is_valid_, false); 
+	WISE_RETURN_IF(!is_valid_, false);
 
 	WISE_RETURN_IF(!unpack(s.year), false);
 	WISE_RETURN_IF(!unpack(s.month), false);
@@ -425,8 +425,8 @@ inline bool zen_packer::unpack(timestamp& s)
 	return is_valid_;
 }
 
-template<> 
-inline bool zen_packer::pack(const bool& s)
+template<>
+inline bool bits_packer::pack(const bool& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -438,7 +438,7 @@ inline bool zen_packer::pack(const bool& s)
 
 
 template<>
-inline bool zen_packer::unpack(bool& s)
+inline bool bits_packer::unpack(bool& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -453,7 +453,7 @@ inline bool zen_packer::unpack(bool& s)
 }
 
 template <class T>
-inline bool zen_packer::pack(const std::vector<T>& vec)
+inline bool bits_packer::pack(const std::vector<T>& vec)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -491,11 +491,11 @@ inline bool zen_packer::pack(const std::vector<T>& vec)
 }
 
 template <class T>
-inline bool zen_packer::unpack(std::vector<T>& vec)
+inline bool bits_packer::unpack(std::vector<T>& vec)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
-	uint16_t	len = 0; 
+	uint16_t	len = 0;
 
 	is_valid_ = unpack(len);
 
@@ -529,7 +529,7 @@ inline bool zen_packer::unpack(std::vector<T>& vec)
 }
 
 template <class T1, class T2>
-inline bool zen_packer::pack(const std::map<T1, T2>& v)
+inline bool bits_packer::pack(const std::map<T1, T2>& v)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -538,7 +538,7 @@ inline bool zen_packer::pack(const std::map<T1, T2>& v)
 	if (config::max_container_size < v.size())
 	{
 		WISE_ERROR(
-			"pack map<T1, T2> - size: {} over than maxSize: {}", 
+			"pack map<T1, T2> - size: {} over than maxSize: {}",
 			v.size(), config::max_container_size
 		);
 
@@ -567,7 +567,7 @@ inline bool zen_packer::pack(const std::map<T1, T2>& v)
 }
 
 template <class T1, class T2>
-inline bool zen_packer::unpack(std::map<T1, T2>& v)
+inline bool bits_packer::unpack(std::map<T1, T2>& v)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -582,7 +582,7 @@ inline bool zen_packer::unpack(std::map<T1, T2>& v)
 	if (config::max_container_size < len)
 	{
 		WISE_ERROR(
-			"unpack map<T1, T2> - size: {} over than maxSize: {}", 
+			"unpack map<T1, T2> - size: {} over than maxSize: {}",
 			len, config::max_container_size
 		);
 
@@ -597,7 +597,7 @@ inline bool zen_packer::unpack(std::map<T1, T2>& v)
 
 		is_valid_ = unpack(key);
 		WISE_RETURN_IF(!is_valid_, false);
-		
+
 		T2 value;
 
 		is_valid_ = unpack(value);
@@ -612,8 +612,8 @@ inline bool zen_packer::unpack(std::map<T1, T2>& v)
 	return is_valid_;
 }
 
-template <typename T> 
-inline T zen_packer::swap_endian(const T& u)
+template <typename T>
+inline T bits_packer::swap_endian(const T& u)
 {
 	static_assert(
 		std::is_fundamental<T>::value || std::is_enum<T>::value,
@@ -635,4 +635,5 @@ inline T zen_packer::swap_endian(const T& u)
 	return dest.u;
 }
 
+} // kernel
 } // wise

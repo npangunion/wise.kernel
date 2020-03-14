@@ -1,22 +1,23 @@
 #pragma once 
-#include <wise/net/protocol/zen/zen_message.hpp>
 
-namespace wise
-{
+#include <wise.kernel/net/protocol/bits/bits_message.hpp>
+
+namespace wise {
+namespace kernel {
 
 /// 수신한 메세지의 토픽을 보고 메세지를 생성한다.
-class zen_factory
+class bits_factory
 {
 public:
-	using creator = std::function<zen_message::ptr()>;
+	using creator = std::function<bits_message::ptr()>;
 
-	static zen_factory& inst();
+	static bits_factory& inst();
 
 	/// add a creator for a protocol
 	void add(const topic& pic, creator c);
 
 	/// create a protocol
-	zen_message::ptr create(const topic& pic) const;
+	bits_message::ptr create(const topic& pic) const;
 
 	template <typename Msg>
 	std::shared_ptr<Msg> create(const topic& pic) const
@@ -32,9 +33,10 @@ private:
 	map map_;
 };
 
+] // kernel
 } // wise
 
 
-#define ZEN_MSG_CREATE(pic) \
-wise::zen_factory::inst().create(wise::topic(pic))
+#define BITS_MSG_CREATE(pic) \
+wise::bits_factory::inst().create(wise::topic(pic))
 

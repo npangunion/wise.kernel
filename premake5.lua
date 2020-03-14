@@ -49,7 +49,6 @@ project "wise.kernel"
 	
 	includeBOOST()
 	includeSPDLOG()
-	includeBITSERY()
 
 
 function use_wise_kernel()
@@ -82,6 +81,5 @@ project "wise.kernel.test"
 
 	includeBOOST()
 	includeSPDLOG()
-	includeBITSERY()
 	
     
