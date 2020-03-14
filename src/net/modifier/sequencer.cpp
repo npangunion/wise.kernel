@@ -1,8 +1,8 @@
 #include <pch.hpp>
-#include <wise.kernel/net/protocol/util/sequencer.hpp>
+#include <wise.kernel/net/modifier/sequencer.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 modifier::result sequencer::on_bind()
 {
@@ -15,7 +15,7 @@ modifier::result sequencer::on_bind()
 modifier::result sequencer::on_recv(
 	resize_buffer& buf,
 	std::size_t msg_pos,
-	std::size_t msg_len, 
+	std::size_t msg_len,
 	std::size_t& new_len
 )
 {
@@ -25,7 +25,7 @@ modifier::result sequencer::on_recv(
 	// 순서대로 msg_len을 조절하면서 호출할 것임
 
 	uint8_t seq = buf.data()[msg_pos + msg_len - sequence_size];
-	
+
 	if (seq == recv_seq_++)
 	{
 		new_len = msg_len - sequence_size;
@@ -50,4 +50,6 @@ modifier::result sequencer::on_send(
 	return result(true, reason::success);
 }
 
+} // kernel
 } // wise
+

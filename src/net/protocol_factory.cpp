@@ -1,12 +1,12 @@
 #include <pch.hpp>
-#include <wise.kernel/net/protocol/protocol_factory.hpp>
+#include <wise.kernel/net/protocol_factory.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 protocol_factory& protocol_factory::inst()
 {
-	static protocol_factory inst_; 
+	static protocol_factory inst_;
 
 	return inst_;
 }
@@ -16,7 +16,7 @@ void protocol_factory::add(const std::string& name, creator c)
 	auto iter = map_.find(name);
 	WISE_RETURN_IF(iter != map_.end());
 
-	map_[name] = c; 
+	map_[name] = c;
 }
 
 bool protocol_factory::has(const std::string& name)
@@ -34,4 +34,5 @@ protocol::ptr protocol_factory::create(const std::string& name) const
 	return iter->second();
 }
 
+} // kernel
 } // wise

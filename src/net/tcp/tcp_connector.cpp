@@ -1,52 +1,60 @@
 #include <pch.hpp>
 
-#include <wise.kernel/net/detail/connector.hpp>
-#include <wise.kernel/net/detail/network_impl.hpp>
+#include <wise.kernel/net/tcp/tcp_connector.hpp>
+#include <wise.kernel/net/tcp/tcp_node.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
-connector::connector(uint16_t id, const std::string& protocol, const std::string& addr, uintptr_t pkey)
-	: id_(id)
-	, protocol_(protocol)
+tcp_connector::tcp_connector(
+	tcp_node* node,
+	const std::string& proto,
+	uint16_t id,
+	const std::string& addr,
+	channel::ptr ch)
+	: node_(node)
+	, proto_(proto)
+	, id_(id)
 	, addr_(addr)
-	, socket_(network::inst().impl().get_ios())
-	, pkey_(pkey)
+	, channel_(ch)
+	, socket_(node->ios())
 {
 }
 
-connector::~connector()
+tcp_connector::~tcp_connector()
 {
 }
 
-network::result connector::connect()
+tcp_connector::result tcp_connector::connect()
 {
 	// 의도적으로 callback으로 실패하게 만듦
 
 	socket_.async_connect(
-		addr_.get_endpoint(), 
-		[this](const asio::error_code& ec) { on_connected(ec); }
+		addr_.get_endpoint(),
+		[this](const error_code& ec) { on_connected(ec); }
 	);
 
-	return network::result(true, success);
+	return result(true, reason::success);
 }
 
-void connector::on_connected(const asio::error_code& ec)
+void tcp_connector::on_connected(const error_code& ec)
 {
 	if (!ec) // 이 쪽이 성공
 	{
-		network::inst().impl().on_connected(id_, std::move(socket_));
+		node_->on_connected(id_, std::move(socket_));
 	}
 	else
 	{
 		WISE_ERROR(
-			"connector failed to connect. endpoint: {0}, reason: {1}",
+			"tcp_connector failed to connect. endpoint: {0}, reason: {1}",
 			addr_.get_raw(),
 			ec.message()
 		);
 
-		network::inst().impl().on_connect_failed(id_, ec);
+		node_->on_connect_failed(id_, ec);
 	}
 }
 
+} // kernel
 } // wise
+

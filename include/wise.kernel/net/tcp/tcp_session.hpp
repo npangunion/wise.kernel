@@ -8,6 +8,7 @@
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/result.hpp>
 
+#include <boost/asio.hpp>
 #include <memory>
 #include <mutex>
 
@@ -16,11 +17,11 @@ using namespace boost::asio::ip;
 namespace wise {
 namespace kernel {
 
-/// socket wrapper to use with asio
+/// tcp socket wrapper to use with asio
 /**
  * 바이트 송수신 처리 세션.
  * - 각 프로토콜 처리는 protocol 클래스에서 처리
- *
+ * - protocol 클래스에서 처리하고 send() 호출
  */
 class tcp_session final
 {
@@ -29,47 +30,14 @@ public:
 	using lock_type = spinlock;
 	using error_code = boost::system::error_code;
 
-	friend class protocol; // to use send and error
-
-public:
-	union id
-	{
-		using full_t = uint32_t;
-		using seq_t = uint16_t;
-		using index_t = uint16_t;
-
-		full_t value_ = 0;
-
-		struct full
-		{
-			seq_t seq_;
-			index_t index_;
-		} full_;
-
-		explicit id(full_t value = 0);
-		id(seq_t seq, index_t index);
-
-		/// seq_ > 0 
-		bool is_valid() const;
-
-		const full_t get_value() const;
-		const seq_t get_seq() const;
-		const index_t get_index() const;
-
-		bool operator==(const id& rhs) const;
-		bool operator!=(const id& rhs) const;
-		bool operator < (const id& rhs) const;
-	};
-
-	using sid_t = id::full_t;
+	friend class tcp_protocol; 
 
 public:
 	/// setup 
 	tcp_session(
-		const id& id,
+		tcp_protocol* proto,
 		tcp::socket&& soc,
-		bool accepted,
-		const std::string& protocol);
+		bool accepted);
 
 	/// clean up 
 	virtual ~tcp_session();
@@ -77,8 +45,8 @@ public:
 	/// begin working 
 	void begin();
 
-	/// send through a protocol. call following send
-	result send(packet::ptr m);
+	/// send a packet to socket
+	result send(const uint8_t* const data, std::size_t len);
 
 	/// close socket (shutdown and close) from application.
 	void disconnect();
@@ -128,8 +96,6 @@ protected:
 	}
 
 private:
-	/// send a packet to socket
-	result send(const uint8_t* const data, std::size_t len);
 
 	/// close socket (shutdown and close).
 	void close(const error_code& ec);
@@ -147,16 +113,10 @@ private:
 	result request_send();
 
 	/// callback on recv
-	void on_recv_completed(error_code& ec, std::size_t len, const id& sid);
+	void on_recv_completed(error_code& ec, std::size_t len);
 
 	/// callback on send 
 	void on_send_completed(error_code& ec, std::size_t len);
-
-	/// 패킷 전송 큐에서 하나 보내서 전송 시작
-	void begin_send_from_queue();
-
-	/// IO 쓰레드에서 큐에 있는 것들 모두 모아서 보냄
-	void send_from_queue();
 
 private:
 	using segment_buffer = segment_buffer<32 * 1024>;
@@ -164,11 +124,9 @@ private:
 
 	static segment_buffer			seg_buffer_accessor_;
 
+	tcp_protocol*					protocol_ = nullptr;
 	tcp::socket						socket_;
-	id								id_;
 	bool							accepted_ = false;
-	std::string						protocol_name_;
-	protocol::ptr					protocol_;
 	std::string						local_addr_;
 	std::string						remote_addr_;
 	std::string						desc_;
@@ -179,7 +137,6 @@ private:
 	std::array<uint8_t, 32 * 1024>	recv_buf_;			// 32K를 넘으면 느려지는 현상이 x64, i7 장비에서 발생. 확인 필요
 
 	lock_type						send_mutex_;
-	concurrent_queue<packet::ptr>	send_queue_;
 	segment_buffer					send_buffer_;
 	std::size_t						send_request_size_ = 0;
 	std::vector<seg*>				sending_segs_;
@@ -188,13 +145,6 @@ private:
 	error_code						last_error_;
 	bool							destroyed_ = false;
 };
-
-//
-// TODO: 
-// - per session packet rate control w/ policy
-// - per session traffic control w/ policy
-// - per packet rate control w/ policy
-//
 
 } // kernel
 } // wise

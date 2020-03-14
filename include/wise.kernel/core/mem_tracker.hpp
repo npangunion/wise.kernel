@@ -4,7 +4,7 @@
 #include "spinlock.hpp"
 #include "tick.hpp"
 #include "concurrent_queue.hpp"
-#include "detail/malloc_allocator.hpp"
+#include "malloc_allocator.hpp"
 #include <map>
 
 namespace wise {

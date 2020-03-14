@@ -1,113 +1,120 @@
 #include <pch.hpp>
 
-#include <wise.kernel/net/detail/acceptor.hpp>
-#include <wise.kernel/net/detail/network_impl.hpp>
+#include <wise.kernel/net/tcp/tcp_acceptor.hpp>
+#include <wise.kernel/net/tcp/tcp_node.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
-acceptor::acceptor(uint16_t id, const std::string& protocol, const std::string& addr, uintptr_t pkey)
-	: id_(id)
+tcp_acceptor::tcp_acceptor(
+	tcp_node* node,
+	uint16_t id, 
+	const std::string& proto,
+	const std::string& addr, 
+	channel::ptr ch)
+	: node_(node)
+	, id_(id)
+	, proto_(proto)
 	, addr_(addr)
-	, protocol_(protocol)
-	, socket_(network::inst().impl().get_ios())
-	, acceptor_(network::inst().impl().get_ios())
-	, pkey_(pkey)
+	, socket_(node->ios())
+	, acceptor_(node->ios())
+	, channel_(ch)
 {
 }
 
-acceptor::~acceptor()
+tcp_acceptor::~tcp_acceptor()
 {
 	acceptor_.close();
 }
 
-network::result acceptor::listen()
+tcp_acceptor::result tcp_acceptor::listen()
 {
 	WISE_RETURN_IF(
 		!addr_.is_valid(),
-		network::result(false, reason::fail_invalid_address)
+		result(false, reason::fail_invalid_address)
 	);
 
 	try
 	{
 		acceptor_.open(addr_.get_endpoint().protocol());
 	}
-	catch (asio::system_error& se)
+	catch (boost::system::system_error & se)
 	{
 		WISE_ERROR(
-			"acceptor failed to open. endpoint: {0}, reason: {1}", 
-			addr_.get_raw(),  
+			"tcp_acceptor failed to open. endpoint: {0}, reason: {1}",
+			addr_.get_raw(),
 			se.what()
 		);
 
-		return network::result(true, reason::fail_acceptor_open);
+		return result(true, reason::fail_acceptor_open);
 	}
 
 	try
 	{
 		acceptor_.bind(addr_.get_endpoint());
 	}
-	catch (asio::system_error& se)
+	catch (boost::system::system_error & se)
 	{
 		WISE_ERROR(
-			"acceptor failed to bind. endpoint: {0}, reason: {1}",
+			"tcp_acceptor failed to bind. endpoint: {0}, reason: {1}",
 			addr_.get_raw(),
 			se.what()
 		);
 
-		return network::result(true, reason::fail_acceptor_bind);
+		return result(true, reason::fail_acceptor_bind);
 	}
 
 	try
 	{
 		acceptor_.listen();
 	}
-	catch (asio::system_error& se)
+	catch (boost::system::system_error & se)
 	{
 		WISE_ERROR(
-			"acceptor failed to listen. endpoint: {0}, reason: {1}",
+			"tcp_acceptor failed to listen. endpoint: {0}, reason: {1}",
 			addr_.get_raw(),
 			se.what()
 		);
 
-		return network::result(true, reason::fail_acceptor_listen);
+		return result(true, reason::fail_acceptor_listen);
 	}
 
-	WISE_INFO("accepting on addr: {}, protocol: {}", addr_.port(), protocol_);
+	WISE_INFO("accepting on addr: {}", addr_.port());
 
 	do_accept();
 
-	return network::result(true, reason::success);
+	return result(true, reason::success);
 }
 
-void acceptor::do_accept()
+void tcp_acceptor::do_accept()
 {
 	WISE_RETURN_IF(!acceptor_.is_open());
 
 	acceptor_.async_accept(
 		socket_,
-		[this](const asio::error_code& ec) {this->on_accepted(ec);}
+		[this](const error_code& ec) {this->on_accepted(ec); }
 	);
 }
 
-void acceptor::on_accepted(const asio::error_code& ec)
+void tcp_acceptor::on_accepted(const error_code& ec)
 {
-	if (!ec) 
+	if (!ec)
 	{
-		network::inst().impl().on_accepted(id_, std::move(socket_));
+		node_->on_accepted(id_, std::move(socket_));
 	}
 	else
 	{
 		WISE_ERROR(
-			"acceptor failed to accept. endpoint: {0}, reason: {1}",
+			"tcp_acceptor failed to accept. endpoint: {0}, reason: {1}",
 			addr_.get_raw(),
 			ec.message()
 		);
 
-		network::inst().impl().on_accept_failed(id_, ec);
+		node_->on_accept_failed(id_, ec);
 	}
 
 	do_accept();
 }
 
+} // kernel
 } // wise

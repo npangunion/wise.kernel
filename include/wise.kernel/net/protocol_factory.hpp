@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/net/core/protocol.hpp>
+#include <wise.kernel/net/protocol.hpp>
 
 #include <functional>
 #include <map>

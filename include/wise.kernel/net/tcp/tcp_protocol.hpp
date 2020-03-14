@@ -2,45 +2,63 @@
 
 #include <wise.kernel/net/protocol.hpp>
 
+using namespace boost::asio::ip;
+
 namespace wise {
 namespace kernel {
 
-/// tcp protocol
+class tcp_node;
+class tcp_session;
+
+/// base tcp protocol
+/**
+ * 하위 클래스에서 아래 함수 구현
+ * - send, on_recv, on_send, on_error 
+ */
 class tcp_protocol : public protocol
 {
+	friend class tcp_session;
+
+public:
+	using ptr = std::shared_ptr<tcp_protocol>;
+
 public:
 	/// constructor
-	tcp_protocol(const std::string& name) 
-		: protocol(name)
-	{
-	}
+	tcp_protocol();
 
 	/// destructor
 	virtual ~tcp_protocol();
 
-	result listen(const std::string& address, int backLog) override;
+	result init(tcp_node* node, tcp::socket&& sock, bool accepted);
 
-	result connect(const std::string address) override;
+	void begin();
 
-	void disconnect() override;
+	void disconnect();
 
-	result send(packet::ptr m) override;
-
-	result on_recv(const uint8_t* const bytes, std::size_t len);
-
-	/// session calls this when sent data 
-	void on_send(std::size_t len);
-
-	/// session calls this when error ocurrs
-	void on_error(const boost::system::error_code& ec);
-
-	const std::string& get_name() const
+	bool is_accepted() const
 	{
-		return name_;
+		return accepted_;
 	}
 
+	const tcp_node* get_node() const
+	{
+		return node_;
+	}
+
+protected:
+	/// tcp_session calls when data received
+	virtual result on_recv(const uint8_t* const bytes, std::size_t len) = 0;
+
+	/// tcp_session calls this when sent data 
+	virtual void on_send(std::size_t len) = 0;
+
+	/// tcp_session calls this when error ocurrs
+	virtual void on_error(const boost::system::error_code& ec) = 0;
+
 private:
-	std::string name_;
+	tcp_node* node_ = nullptr;
+	tcp_session* session_ = nullptr;
+	bool accepted_;
 };
 
 } // kernel

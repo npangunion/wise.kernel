@@ -8,16 +8,16 @@
 namespace wise {
 namespace kernel {
 
-class session;
-using session_ptr = std::shared_ptr<session>;
+class protocol;
+using protocol_ptr = std::shared_ptr<protocol>;
 
-struct packet : public message
+class packet : public message
 {
+public:
 	using ptr = std::shared_ptr<packet>;
 	using len_t = uint32_t;
 
-	session_ptr session;
-
+public:
 	explicit packet(const topic::key_t key)
 		: packet(topic(key))
 	{
@@ -28,10 +28,18 @@ struct packet : public message
 	{
 	}
 
+	void bind(protocol_ptr proto)
+	{
+		protocol_ = proto;
+	}
+
 	const char* get_desc() const override
 	{
 		return "packet";
 	}
+
+private:
+	protocol_ptr protocol_;
 };
 
 } // kernel

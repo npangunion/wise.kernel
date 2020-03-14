@@ -181,7 +181,7 @@ private:
 
 		for (std::size_t i = 0; i < required_segs; ++i)
 		{
-			segs_.push_back(pool_.construct_raw());
+			segs_.push_back(pool_.create_raw());
 		}
 	}
 
@@ -202,7 +202,7 @@ private:
 
 // per class pool instance
 template <std::size_t Length>
-typename segment_buffer<Length>::pool segment_buffer<Length>::pool_;
+typename segment_buffer<Length>::pool segment_buffer<Length>::pool_("segment_pool");
 
 } // kernel
 } // wise

@@ -1,7 +1,9 @@
 #pragma once 
 
+#include <wise.kernel/net/reason.hpp>
 #include <wise.kernel/core/result.hpp>
 #include <wise.kernel/net/tcp/tcp_addr.hpp>
+#include <wise.kernel/core/channel/channel.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -12,17 +14,25 @@ using namespace boost::asio::ip;
 namespace wise {
 namespace kernel {
 
-class connector final
+class tcp_node;
+
+class tcp_connector final
 {
 public:
-	using result = result<bool, std::string>;
+	using result = result<bool, reason>;
+	using error_code = boost::system::error_code;
 
 public:
-	using ptr = std::shared_ptr<connector>;
+	using ptr = std::shared_ptr<tcp_connector>;
 
-	connector(uint16_t id, const std::string& protocol, const std::string& addr, uintptr_t pkey);
+	tcp_connector(
+		tcp_node* node,
+		uint16_t id, 
+		const std::string& proto,
+		const std::string& addr, 
+		channel::ptr ch);
 
-	~connector();
+	~tcp_connector();
 
 	result connect();
 
@@ -31,25 +41,26 @@ public:
 		return addr_;
 	}
 
-	const std::string& get_protocol() const
+	channel::ptr get_channel() const
 	{
-		return protocol_;
+		return channel_;
 	}
 
-	uintptr_t get_pkey() const
+	const std::string& get_protocol() const
 	{
-		return pkey_;
+		return proto_;
 	}
 
 private:
 	void on_connected(const boost::system::error_code& ec);
 
 private:
+	tcp_node* node_ = nullptr;
 	uint16_t id_ = 0;
-	std::string protocol_;
+	std::string proto_;
 	addr addr_;
+	channel::ptr channel_;
 	tcp::socket socket_;
-	uintptr_t pkey_ = 0;
 };
 
 } // kernel

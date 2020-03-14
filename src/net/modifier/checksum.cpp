@@ -1,9 +1,9 @@
 #include <pch.hpp>
-#include <wise.kernel/net/protocol/util/checksum.hpp>
+#include <wise.kernel/net/modifier/checksum.hpp>
 #include <wise.kernel/core/botan/botan_all.h>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 checksum::checksum(std::size_t header_length)
 	: header_length_(header_length)
@@ -29,7 +29,7 @@ modifier::result checksum::on_recv(
 
 	// payload 없으면 성공으로 처리
 	WISE_RETURN_IF(
-		msg_len == header_length_, 
+		msg_len == header_length_,
 		result(true, reason::success)
 	);
 
@@ -41,7 +41,7 @@ modifier::result checksum::on_recv(
 	hash->clear();
 
 	hash->update(
-		buf.data() + msg_pos + header_length_, 
+		buf.data() + msg_pos + header_length_,
 		msg_len - checksum_size - header_length_
 	);
 
@@ -49,8 +49,8 @@ modifier::result checksum::on_recv(
 	hash->final(crc);
 
 	auto rc = std::memcmp(
-		buf.data() + msg_pos + msg_len- checksum_size, 
-		crc, 
+		buf.data() + msg_pos + msg_len - checksum_size,
+		crc,
 		checksum_size
 	);
 
@@ -74,7 +74,7 @@ modifier::result checksum::on_send(
 
 	// payload 없으면 성공으로 처리
 	WISE_RETURN_IF(
-		msg_len == header_length_, 
+		msg_len == header_length_,
 		result(true, reason::success)
 	);
 
@@ -85,7 +85,7 @@ modifier::result checksum::on_send(
 	hash->clear();
 
 	hash->update(
-		buf.data() + msg_pos + header_length_, 
+		buf.data() + msg_pos + header_length_,
 		msg_len - header_length_
 	);
 
@@ -101,4 +101,5 @@ modifier::result checksum::on_send(
 	return result(true, reason::success);
 }
 
+} // kernel
 } // wise

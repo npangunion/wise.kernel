@@ -78,6 +78,16 @@ public:
 		return shared_ref(new ref(obj, this));
 	}
 
+	template<class... Types>
+	ptr create_raw(Types&&... args)
+	{
+		ptr obj = alloc();
+
+		::new ((void*)obj) Obj(std::forward<Types>(args)...);
+
+		return obj;
+	}
+
 	void destroy(ptr obj)
 	{
 		(obj)->~Obj();

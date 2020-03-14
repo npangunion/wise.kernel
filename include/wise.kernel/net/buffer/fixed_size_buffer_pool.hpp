@@ -43,7 +43,7 @@ public:
 
 		~buffer()
 		{
-			delete data_;
+			delete[] data_;
 		}
 
 		uint8_t* data()
@@ -117,7 +117,7 @@ public:
 			return block;
 		}
 
-		return wise_shared<buffer>(this, wise_new_array<uint8_t>(get_length()), get_length());
+		return wise_shared<buffer>(this, new uint8_t[get_length()], get_length());
 	}
 
 	void release(buffer::ptr& block)
