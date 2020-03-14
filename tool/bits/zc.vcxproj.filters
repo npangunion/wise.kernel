@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="idl">
+      <UniqueIdentifier>{3eef76e7-f026-4c8d-ade8-c4e3dde41df6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{368c74f6-ccc2-4bd9-aaa5-fc9b16744652}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="idl\generate">
+      <UniqueIdentifier>{aa4bc685-93ee-435a-a274-76cac1dabdb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="idl\parse">
+      <UniqueIdentifier>{d1df0edc-8042-4fec-9712-fabd44ea20e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{55fc8d7c-1d83-44b0-abac-d45cd0fabf3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="idl\parse\tx">
+      <UniqueIdentifier>{0bf3ef52-813a-49fa-b2f6-a45e9ed0f016}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\idl_parser.hpp">
+      <Filter>idl</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\idl_main.h">
+      <Filter>idl</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_enum.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_message.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_struct.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_program.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_full.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_simple.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_enum_value.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_field.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_field_value.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_expression_value.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_expression.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\generate\generator.hpp">
+      <Filter>idl\generate</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\idl_symbol_table.hpp">
+      <Filter>idl</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\generate\cplus_generator.hpp">
+      <Filter>idl\generate</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_namespace.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_include.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\idl_context.h">
+      <Filter>idl</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_vec.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_container.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_map.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_topic.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_macro.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_node_tx.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\tx\tx_result.h">
+      <Filter>idl\parse\tx</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\tx\tx_bind.h">
+      <Filter>idl\parse\tx</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\tx\tx_result_set.h">
+      <Filter>idl\parse\tx</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\tx\tx_topic.h">
+      <Filter>idl\parse\tx</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\tx\tx_query.h">
+      <Filter>idl\parse\tx</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\parse\idl_type_opt.h">
+      <Filter>idl\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="idl\generate\csharp_generator.hpp">
+      <Filter>idl\generate</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\idl_parser.cpp">
+      <Filter>idl</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\idl_lexer.cpp">
+      <Filter>idl</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\idl_main.cpp">
+      <Filter>idl</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\idl_symbol_table.cpp">
+      <Filter>idl</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\generate\cplus_generator.cpp">
+      <Filter>idl\generate</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\idl_context.cpp">
+      <Filter>idl</Filter>
+    </ClCompile>
+    <ClCompile Include="zc.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\parse\idl_node_message.cpp">
+      <Filter>idl\parse</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\generate\csharp_generator.cpp">
+      <Filter>idl\generate</Filter>
+    </ClCompile>
+    <ClCompile Include="idl\generate\generator.cpp">
+      <Filter>idl\generate</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="idl\idl_lexer.ll">
+      <Filter>idl</Filter>
+    </None>
+    <None Include="idl\idl_parser.yy">
+      <Filter>idl</Filter>
+    </None>
+    <None Include="doc\construction.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="test\simple_msg.zen">
+      <Filter>test</Filter>
+    </None>
+    <None Include="test\sample2.zen">
+      <Filter>test</Filter>
+    </None>
+    <None Include="test\tx_test.zen">
+      <Filter>test</Filter>
+    </None>
+    <None Include="test\tx_test.sql">
+      <Filter>test</Filter>
+    </None>
+    <None Include="test\simple_topic.zen">
+      <Filter>test</Filter>
+    </None>
+  </ItemGroup>
+</Project>

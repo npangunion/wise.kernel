@@ -1,0 +1,10 @@
+namespace play
+
+enum shop
+{
+	category = 16, 
+	group = 1, 
+	req_buy_item = 1,
+	hx_example 
+}
+

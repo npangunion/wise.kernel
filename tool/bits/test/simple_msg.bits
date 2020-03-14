@@ -1,0 +1,55 @@
+include "sample2.zen"    
+
+// 토픽을 분리해서 포함한다.
+include "simple_topic.zen"
+include "shop_topic.zen"
+
+namespace shop    
+
+enum types 
+{
+	v1, 
+	v2 = 1, 
+	v3,
+}
+
+// 아이템
+struct item 
+{
+	u32 			id = 0; 
+#if _DEBUG
+	i32 			v = 5;	
+#else 
+	double 			v = 5;
+#endif
+	float 			key = 0;
+	string   		name;
+	ustring  		desc;
+	common::hello	he;
+	common::TestEnum te;
+}
+
+message req_buy_item 
+{
+	topic play.shop.req_buy_item;
+
+	opt ( enable_sequence );
+
+	vec<item> 	items;	
+#if _DEBUG
+	types 		v1;
+#endif
+}
+
+message hx_example_with_options : wise::hx
+{
+	topic play.shop.hx_example;
+
+	opt( enable_cipher );
+	opt( enable_checksum );
+	opt( enable_sequence );
+
+	vec<item> 	items;	
+}
+
+

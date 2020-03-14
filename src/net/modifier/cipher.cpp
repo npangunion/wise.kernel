@@ -1,7 +1,7 @@
 #include <pch.hpp>
 #include <wise.kernel/net/modifier/cipher.hpp>
 #include <wise.kernel/core/botan/botan_all.h>
-#include <wise.kernel/core/memory.hpp>
+#include <wise.kernel/core/mem_tracker.hpp>
 
 namespace wise {
 namespace kernel {

@@ -1,0 +1,9 @@
+namespace db
+
+enum query
+{
+	category = 17, 
+	group = 1, 
+	simple = 1,
+}
+

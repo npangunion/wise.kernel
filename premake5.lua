@@ -2,6 +2,7 @@ local BOOST_HOME = os.getenv("BOOST_HOME")
 local SPDLOG_HOME = os.getenv("SPDLOG_HOME")
 local CATCH_HOME = os.getenv("CATCH_HOME")
 local CATCH_INCLUDE_DIR = CATCH_HOME .. "/single_include/catch2"
+local BITSERY_HOME = os.getenv("BITSERY_HOME")
 
 workspace "wise.kernel"
 	location "generated"
@@ -30,6 +31,10 @@ function includeSPDLOG()
 	includedirs (SPDLOG_HOME .. "/include")
 end	
 
+function includeBITSERY()
+	includedirs (BITSERY_HOME .. "/include")
+end	
+
 project "wise.kernel"
 	kind "StaticLib"
 	includedirs "include"
@@ -44,6 +49,7 @@ project "wise.kernel"
 	
 	includeBOOST()
 	includeSPDLOG()
+	includeBITSERY()
 
 
 function use_wise_kernel()
@@ -76,5 +82,6 @@ project "wise.kernel.test"
 
 	includeBOOST()
 	includeSPDLOG()
+	includeBITSERY()
 	
     

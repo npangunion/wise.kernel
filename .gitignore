@@ -39,3 +39,7 @@ generated
 /generated
 /build/bin
 /build/obj
+/tool/bits/bin/*.iobj
+/tool/bits/bin/*.pdb
+/tool/bits/bin/*.ilk
+/tool/bits/bin/*.ipdb

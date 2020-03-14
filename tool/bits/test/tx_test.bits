@@ -1,0 +1,56 @@
+
+include "query_topic.zen"
+
+namespace query; 
+
+struct option 
+{
+	u32 add_hp; 
+	u32 add_sp;
+}
+
+struct item 
+{
+	u64 id; 
+	u32 price;
+}
+
+/**
+ * A very simple query to test a simple generation
+ */
+tx simple_query 
+{    
+	topic db.query.simple;
+
+	tx_query [Usp.Hello];
+
+	tx_bind 
+	{
+		u32				result : tx_out;
+#if USE_NAME_FIELD
+		string			name; 
+#endif
+		item			item1;
+		bool			is_ok;
+
+		vec<option, 5>	options;
+		vec<u32, 10>	items;
+	}
+    
+	tx_result 
+	{
+        tx_single 
+		{
+#if USE_ID_FIELD
+            u32 id; 
+#endif
+			ustring sname;
+        }
+
+		tx_multi 
+		{
+			u8 id;
+			float fv;
+		}
+	}
+}

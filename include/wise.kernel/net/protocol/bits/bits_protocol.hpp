@@ -1,18 +1,16 @@
 #pragma once 
 
-#include <lax/net/protocol/protocol.hpp>
-#include <lax/net/protocol/bits/bits_message.hpp>
-#include <lax/net/protocol/util/sequencer.hpp>
-#include <lax/net/protocol/util/checksum.hpp>
-#include <lax/net/protocol/util/cipher.hpp>
-#include <lax/net/detail/buffer/resize_buffer.hpp>
+#include <wise/net/protocol/protocol.hpp>
+#include <wise/net/protocol/zen/zen_message.hpp>
+#include <wise/net/protocol/util/sequencer.hpp>
+#include <wise/net/protocol/util/checksum.hpp>
+#include <wise/net/protocol/util/cipher.hpp>
+#include <wise/net/detail/buffer/resize_buffer.hpp>
 
-namespace lax
-{
-namespace net
+namespace wise
 {
 
-/// bitsery serialization protocol 
+/// a simple message protocol
 /** 
  * Header
  * - length: 4 bytes
@@ -25,7 +23,7 @@ namespace net
  *   - key and IV change on recv and send w/ sha1 and obfusfication
  *   - initial random cipher message sent
  */
-class bits_protocol final : public protocol
+class zen_protocol final : public protocol
 {
 public:
 	/// static configuration for bits protocol
@@ -49,47 +47,45 @@ public:
 
 public:
 	/// constructor
-	bits_protocol(); 
+	zen_protocol(); 
 
 	/// ensure session is closed
-	~bits_protocol();
+	~zen_protocol();
 
 	/// send to a session after processing packet
 	virtual result send(packet::ptr m) override;
 
-	/// 미리 serialize 해서 요청을 보낼 필요. --> 멀티캐스팅
-	/** 
-	 * 멀티캐스트 같은 경우 미리 시리얼라이즈 해서 전송
-	 * packet도 포함하도록 해서 그냥 바이트 보내지 않도록 한다.  
-	 */
-	virtual result send(
-		packet::ptr m, 
-		const uint8_t* const data, 
+	/// 길이 / 토픽을 추가하면서 메세지 pack
+	static result pack(zen_message::ptr mp, resize_buffer& buf);
+
+	/// 수신 처리 테스트를 위한 함수. 부분 수신 등 확인 용도
+	result on_recv_to_test(
+		const uint8_t* const bytes,
 		std::size_t len
 	);
 
 private:
 	/// cipher, checksum, then send to session
 	result send_final(
-		bits_message::ptr mp, 
+		zen_message::ptr mp, 
 		const uint8_t* const data, 
 		std::size_t len
 	);
 
 	result send_final(
-		bits_message::ptr mp, 
+		zen_message::ptr mp, 
 		resize_buffer& buf, 
 		std::size_t len
 	);
 
 	result send_modified(
-		bits_message::ptr mp, 
+		zen_message::ptr mp, 
 		resize_buffer& buf, 
 		std::size_t len
 	);
 
 	result recv_modified(
-		bits_message::ptr mp, 
+		zen_message::ptr mp, 
 		resize_buffer& buf, 
 		std::size_t msg_pos,  
 		std::size_t msg_len, 
@@ -111,11 +107,15 @@ private:
 	/// session calls this when error ocurrs
 	virtual void on_error(const asio::error_code& ec) override;
 
-	uint32_t get_length(resize_buffer::iterator& iter) const; 
+	static void set_topic(topic::key_t key, resize_buffer::iterator& iter); 
 
-	uint32_t get_topic(resize_buffer::iterator& iter) const; 
+	static void set_length(packet::len_t len, resize_buffer::iterator& iter); 
 
-	bool needs_to_modify(bits_message::ptr m) const;
+	static uint32_t get_length(resize_buffer::iterator& iter); 
+
+	static uint32_t get_topic(resize_buffer::iterator& iter); 
+
+	bool needs_to_modify(zen_message::ptr m) const;
 
 public:
 	/// for packetiziation test only.  
@@ -128,5 +128,4 @@ private:
 	cipher			cipher_;
 };
 
-} // net
-} // lax
+} // wise

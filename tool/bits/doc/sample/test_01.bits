@@ -1,0 +1,35 @@
+// include, namespace 를 제외한 기본 파싱 기능의 동작을 확인 
+// 
+
+namespace Test::Message
+
+enum Hello 
+{
+	V1,		// 기본 값이 없으면 0으로 됨
+	V2,
+	V3 = 97
+}; 
+
+struct Test 
+{
+	i32 v1 = 3;
+	double ff = 3.0; 
+	Hello Hv;
+};
+
+// whole line comment
+struct Level2
+{
+	Test Field1; 
+	vec<Test> tests;  // trailing comment
+};
+
+message ReqMove
+{
+	topic		game.test.req_move;
+
+	CUnique					Who;
+	T3D						Pos;	
+	TPosDir					Dir;
+	i32						Hp;	
+};

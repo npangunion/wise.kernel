@@ -1,0 +1,8 @@
+namespace topics    
+
+// 재컴파일 범위를 줄이기 위해 각 group별 enum은 별도 파일로 한다. 
+
+enum shop 
+{
+	req_buy_item = 1
+}
