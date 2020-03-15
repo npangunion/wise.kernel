@@ -30,5 +30,10 @@ void tcp_protocol::disconnect()
 	session_->disconnect();
 }
 
+protocol::result tcp_protocol::send(const uint8_t* bytes, std::size_t len)
+{
+	return session_->send(bytes, len);
+}
+
 } // kernel
 } // wise

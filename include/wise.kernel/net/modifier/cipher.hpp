@@ -27,12 +27,12 @@ public:
 
 	static config cfg;
 
-	cipher(std::size_t header_length);
+	cipher(protocol* _protocol, std::size_t header_length);
 
 	/// destructor. required to genereate cipher_impl destructor
 	~cipher();
 
-	virtual result on_bind() override;
+	virtual result begin() override;
 
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(

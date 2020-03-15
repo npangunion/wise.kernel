@@ -5,13 +5,14 @@
 namespace wise {
 namespace kernel {
 
-checksum::checksum(std::size_t header_length)
-	: header_length_(header_length)
+checksum::checksum(protocol* _protocol, std::size_t header_length)
+	: modifier(_protocol)
+	, header_length_(header_length)
 {
 
 }
 
-modifier::result checksum::on_bind()
+modifier::result checksum::begin()
 {
 	return result(true, reason::success);
 }

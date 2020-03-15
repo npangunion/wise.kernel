@@ -67,8 +67,9 @@ struct cipher_impl
 	void complete();
 };
 
-cipher::cipher(std::size_t header_length)
-	: header_length_(header_length)
+cipher::cipher(protocol* _protocol, std::size_t header_length)
+	: modifier(_protocol)
+	, header_length_(header_length)
 {
 }
 
@@ -76,7 +77,7 @@ cipher::~cipher()
 {
 }
 
-modifier::result cipher::on_bind()
+modifier::result cipher::begin()
 {
 	WISE_ASSERT(!bound_);
 

@@ -10,9 +10,9 @@ class checksum final : public modifier
 public:
 	static constexpr std::size_t checksum_size = 4;
 
-	checksum(std::size_t header_length);
+	checksum(protocol* _protocol, std::size_t header_length);
 
-	virtual result on_bind() override;
+	virtual result begin() override;
 
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(

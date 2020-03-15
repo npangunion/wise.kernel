@@ -4,7 +4,12 @@
 namespace wise {
 namespace kernel {
 
-modifier::result sequencer::on_bind()
+sequencer::sequencer(protocol* _protocol)
+	: modifier(_protocol)
+{
+}
+
+modifier::result sequencer::begin()
 {
 	send_seq_ = 1; // sender sends with 1
 	recv_seq_ = 1; // receiver expect 1 for next recv

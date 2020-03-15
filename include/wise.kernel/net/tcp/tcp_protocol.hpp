@@ -44,6 +44,9 @@ public:
 	}
 
 protected:
+	result send(const uint8_t* bytes, std::size_t len);
+
+protected:
 	/// tcp_session calls when data received
 	virtual result on_recv(const uint8_t* const bytes, std::size_t len) = 0;
 

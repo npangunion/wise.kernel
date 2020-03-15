@@ -1,7 +1,7 @@
 #pragma once 
 
-#include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packet.hpp>
+#include <wise.kernel/net/tcp/tcp_protocol.hpp>
 #include <wise.kernel/net/modifier/sequencer.hpp>
 #include <wise.kernel/net/modifier/checksum.hpp>
 #include <wise.kernel/net/modifier/cipher.hpp>
@@ -23,7 +23,7 @@ namespace kernel {
  *   - key and IV change on recv and send w/ sha1 and obfusfication
  *   - initial random cipher message sent
  */
-class bits_protocol final : public protocol
+class bits_protocol final : public tcp_protocol
 {
 public:
 	/// static configuration for bits protocol
@@ -37,9 +37,6 @@ public:
 
 		bool enable_detail_log = false;
 
-		/// 테스트를 위해 send에서 on_recv, 생성자에서 on_bind() 호출
-		bool enable_loopback = false;
-
 		std::size_t max_packet_length = 512 * 1024;  // 512K
 	};
 
@@ -47,16 +44,13 @@ public:
 
 public:
 	/// constructor
-	bits_protocol();
+	bits_protocol(tcp_node* node, tcp::socket& sock, bool accepted);
 
 	/// ensure session is closed
 	~bits_protocol();
 
-	/// send to a session after processing packet
-	virtual result send(packet::ptr m) override;
-
-	/// 길이 / 토픽을 추가하면서 메세지 pack
-	static result pack(bits_packet::ptr mp, resize_buffer& buf);
+	/// override protocol::send 
+	result send(packet::ptr m) override;
 
 	/// 수신 처리 테스트를 위한 함수. 부분 수신 등 확인 용도
 	result on_recv_to_test(
@@ -65,6 +59,8 @@ public:
 	);
 
 private:
+	result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf);
+
 	/// cipher, checksum, then send to session
 	result send_final(
 		bits_packet::ptr mp,
@@ -92,20 +88,15 @@ private:
 		std::size_t& final_len
 	);
 
-	/// session is bound
-	virtual void on_bind() override;
+	/// tcp_protocol::on_recv
+	result on_recv(const uint8_t* const bytes, std::size_t len) override;
 
-	/// session calls this when received data
-	virtual result on_recv(
-		const uint8_t* const bytes,
-		std::size_t len
-	) override;
+	/// tcp_protocol::on_send
+	void on_send(std::size_t len) override;
 
-	/// session calls this when sent data 
-	virtual void on_send(std::size_t len) override;
+	/// tcp_protocol::on_error
+	void on_error(const boost::system::error_code& ec) override;
 
-	/// session calls this when error ocurrs
-	virtual void on_error(const asio::error_code& ec) override;
 
 	static void set_topic(topic::key_t key, resize_buffer::iterator& iter);
 

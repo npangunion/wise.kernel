@@ -1,8 +1,8 @@
 #include <pch.hpp>
-#include <wise.kernel/net/protocol/util/modifier.hpp>
+#include <wise.kernel/net/modifier/modifier.hpp>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 void modifier::update_length_field(
 	resize_buffer& buf,
@@ -17,4 +17,5 @@ void modifier::update_length_field(
 	++iter; *iter = new_len >> 8 & 0x000000FF;
 }
 
+} //kernel
 } // wise

@@ -21,7 +21,7 @@ using packet_ptr = std::shared_ptr<packet>;
  * bind, unbind로 채널을 연결할 수 있다.
  * 수신한 메세지들은 연결된 모든 채널로 배부된다.
  */
-class protocol
+class protocol : public std::enable_shared_from_this<protocol>
 {
 public:
 	using ptr = std::shared_ptr<protocol>;

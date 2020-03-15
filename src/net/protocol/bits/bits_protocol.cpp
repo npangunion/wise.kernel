@@ -12,30 +12,16 @@ namespace kernel {
 /// static configuration info
 bits_protocol::config bits_protocol::cfg;
 
-bits_protocol::bits_protocol()
-	: checksum_(bits_packet::header_length)
-	, cipher_(bits_packet::header_length)
+bits_protocol::bits_protocol(tcp_node* node, tcp::socket& sock, bool accepted)
+	: tcp_protocol(node, std::move(sock), accepted)
+	, checksum_(this, bits_packet::header_length)
+	, cipher_(this, bits_packet::header_length)
+	, sequencer_(this)
 {
-	if (cfg.enable_loopback)
-	{
-		on_bind();
-	}
 }
 
 bits_protocol::~bits_protocol()
 {
-}
-
-void bits_protocol::on_bind()
-{
-	if (!cfg.enable_loopback)
-	{
-		WISE_ENSURE(get_session());
-	}
-
-	sequencer_.bind(this);
-	checksum_.bind(this);
-	cipher_.bind(this);
 }
 
 protocol::result bits_protocol::send(packet::ptr m)
@@ -66,34 +52,7 @@ protocol::result bits_protocol::send(packet::ptr m)
 	return send_final(mp, *pbuf, pbuf->size());
 }
 
-protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
-{
-	uint32_t pad = 0xCAFEABBA;
 
-	buf.append(&pad, sizeof(packet::len_t));	// length field
-	buf.append(&pad, sizeof(topic::key_t));		// topic field
-
-	zen_packer packer(buf);
-
-	bool rc = mp->pack(packer); // message의 pack할 때 토픽을 포함
-
-	if (!rc)
-	{
-		WISE_ERROR("failed to pack. topic:  0x{:x}", mp->get_topic().get_key());
-		return result(false, reason::fail_zen_pack_error);
-	}
-
-	// size는 length와 topic 길이를 포함
-	packet::len_t size = static_cast<packet::len_t>(buf.size());
-	WISE_ASSERT(size >= bits_packet::header_length);
-
-	auto iter = buf.begin();
-
-	set_length(size, iter);
-	set_topic(mp->get_topic().get_key(), ++iter);
-
-	return result(true, reason::success);
-}
 
 protocol::result bits_protocol::send_final(
 	bits_packet::ptr mp,
@@ -103,15 +62,7 @@ protocol::result bits_protocol::send_final(
 {
 	if (!needs_to_modify(mp))
 	{
-		if (cfg.enable_loopback)
-		{
-			// 테스트 모드일 경우 
-			return on_recv(buf.data(), len);
-		}
-
-		// else
-
-		return protocol::send(buf.data(), len);
+		return tcp_protocol::send(buf.data(), len);
 	}
 
 	return send_modified(mp, buf, len);
@@ -119,26 +70,18 @@ protocol::result bits_protocol::send_final(
 
 
 protocol::result bits_protocol::send_final(
-	bits_packet::ptr mp, 
-	const uint8_t* const data, 
+	bits_packet::ptr mp,
+	const uint8_t* const data,
 	std::size_t len
 )
 {
 	if (!needs_to_modify(mp))
 	{
-		if (cfg.enable_loopback)
-		{
-			// 테스트 모드일 경우 
-			return on_recv(data, len);
-		}
-
-		// else
-
-		return protocol::send(data, len);
+		return  tcp_protocol::send(data, len);
 	}
 
 	// TODO: TLS buffer
-	resize_buffer buf; 
+	resize_buffer buf;
 
 	buf.append(data, len);
 
@@ -175,12 +118,6 @@ protocol::result bits_protocol::send_modified(
 		WISE_RETURN_IF(!rc, rc);
 	}
 
-	if (cfg.enable_loopback)
-	{
-		// 테스트 모드일 경우 
-		return on_recv(buf.data(), buf.size());
-	}
-
 	WISE_ASSERT(buf.size() >= len);
 
 	if (buf.size() > len)
@@ -191,11 +128,40 @@ protocol::result bits_protocol::send_modified(
 		set_length(size, iter);
 	}
 
-	return protocol::send(buf.data(), buf.size());
+	return tcp_protocol::send(buf.data(), buf.size());
+}
+
+protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
+{
+	uint32_t pad = 0xCAFEABBA;
+
+	buf.append(&pad, sizeof(packet::len_t));	// length field
+	buf.append(&pad, sizeof(topic::key_t));		// topic field
+
+	bits_packer packer(buf);
+
+	bool rc = mp->pack(packer); // message의 pack할 때 토픽을 포함
+
+	if (!rc)
+	{
+		WISE_ERROR("failed to pack. topic:  0x{:x}", mp->get_topic().get_key());
+		return result(false, reason::fail_zen_pack_error);
+	}
+
+	// size는 length와 topic 길이를 포함
+	packet::len_t size = static_cast<packet::len_t>(buf.size());
+	WISE_ASSERT(size >= bits_packet::header_length);
+
+	auto iter = buf.begin();
+
+	set_length(size, iter);
+	set_topic(mp->get_topic().get_key(), ++iter);
+
+	return result(true, reason::success);
 }
 
 protocol::result bits_protocol::on_recv(
-	const uint8_t* const bytes, 
+	const uint8_t* const bytes,
 	std::size_t len)
 {
 	WISE_EXPECT(bytes);
@@ -233,7 +199,7 @@ protocol::result bits_protocol::on_recv(
 		auto pic = get_topic(iter);			// forward iter while getting topic 
 		auto tp = topic(pic);
 
-		auto mp = ZEN_MSG_CREATE(pic);
+		auto mp = BITS_MSG_CREATE(pic);
 
 		if (!mp)
 		{
@@ -254,11 +220,11 @@ protocol::result bits_protocol::on_recv(
 		{
 			WISE_ERROR(
 				"fail to modify while recv. topic: {}. error:{} ",
-				topic::get_desc(tp), rc.value 
+				topic::get_desc(tp), rc.value
 			);
 
 			return rc; // close
-		} 
+		}
 
 		// 메세지 내용 가져오기
 		uint32_t pad = 0;
@@ -267,7 +233,7 @@ protocol::result bits_protocol::on_recv(
 		recv_buf_.read((uint8_t*)&pad, sizeof(packet::len_t));
 		recv_buf_.read((uint8_t*)&pad, sizeof(topic::key_t));
 
-		zen_packer packer(recv_buf_);
+		bits_packer packer(recv_buf_);
 
 		auto res = mp->unpack(packer);
 
@@ -281,26 +247,16 @@ protocol::result bits_protocol::on_recv(
 			return result(false, reason::fail_zen_unpack_error);
 		}
 
-		if (cfg.enable_loopback)
-		{
-			// 테스트에서 글로벌 채널로는 전달 된다고 가정
-			network::post(mp);
-		}
-		else
-		{
-			WISE_ASSERT(get_session());
+		mp->bind(shared_from_this());
 
-			mp->sid = get_session()->get_id().get_value();
-
-			// 세션의 채널로 전달
-			get_session()->post(mp);
-		}
+		// 채널로 전달
+		publish(mp);
 
 		// 다음 처리를 위한 정리 
 		auto payload_len = msg_len - bits_packet::header_length;
 
 		processed_len += msg_len;
-		iter += payload_len;		
+		iter += payload_len;
 		remained_len = recv_buf_.end() - iter;
 	}
 
@@ -358,16 +314,16 @@ protocol::result bits_protocol::recv_modified(
 
 void bits_protocol::on_send(std::size_t len)
 {
-	WISE_UNUSED(len); 
-	
+	WISE_UNUSED(len);
+
 	// 특별히 할 일은 없다
 }
 
-void bits_protocol::on_error(const asio::error_code& ec)
+void bits_protocol::on_error(const boost::system::error_code& ec)
 {
 	WISE_UNUSED(ec);
 
-	// 특별히 할 일이 없다.
+	// TODO: 통지. 
 }
 
 protocol::result bits_protocol::on_recv_to_test(
@@ -380,7 +336,7 @@ protocol::result bits_protocol::on_recv_to_test(
 	return on_recv(bytes, len);
 }
 
-void bits_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri) 
+void bits_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri)
 {
 	*ri = key & 0x000000FF;
 	++ri; *ri = key >> 8 & 0x000000FF;
@@ -388,7 +344,7 @@ void bits_protocol::set_topic(topic::key_t key, resize_buffer::iterator& ri)
 	++ri; *ri = key >> 24 & 0x000000FF;
 }
 
-void bits_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri) 
+void bits_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri)
 {
 	*ri = len & 0x000000FF;
 	++ri; *ri = len >> 8 & 0x000000FF;
@@ -396,7 +352,7 @@ void bits_protocol::set_length(packet::len_t len, resize_buffer::iterator& ri)
 	++ri; *ri = len >> 24 & 0x000000FF;
 }
 
-uint32_t bits_protocol::get_length(resize_buffer::iterator& ri) 
+uint32_t bits_protocol::get_length(resize_buffer::iterator& ri)
 {
 	uint32_t len = 0;
 
@@ -408,7 +364,7 @@ uint32_t bits_protocol::get_length(resize_buffer::iterator& ri)
 	return len;
 }
 
-uint32_t bits_protocol::get_topic(resize_buffer::iterator& ri) 
+uint32_t bits_protocol::get_topic(resize_buffer::iterator& ri)
 {
 	uint32_t topic = 0;
 
@@ -421,7 +377,7 @@ uint32_t bits_protocol::get_topic(resize_buffer::iterator& ri)
 }
 
 protocol::result bits_protocol::call_recv_for_test(
-	const uint8_t* const bytes, 
+	const uint8_t* const bytes,
 	std::size_t len
 )
 {
@@ -431,9 +387,10 @@ protocol::result bits_protocol::call_recv_for_test(
 bool bits_protocol::needs_to_modify(bits_packet::ptr m) const
 {
 	return
-		(cfg.enable_cipher		&& m->enable_cipher) ||
-		(cfg.enable_checksum	&& m->enable_checksum) ||
-		(cfg.enable_sequence	&& m->enable_sequence);
+		(cfg.enable_cipher && m->enable_cipher) ||
+		(cfg.enable_checksum && m->enable_checksum) ||
+		(cfg.enable_sequence && m->enable_sequence);
 }
 
+} // kernel
 } // wise

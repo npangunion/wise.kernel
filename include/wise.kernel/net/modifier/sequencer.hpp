@@ -12,7 +12,9 @@ class sequencer final : public modifier
 public:
 	static constexpr std::size_t sequence_size = 1;
 
-	virtual result on_bind() override;
+	sequencer(protocol* _protocol);
+
+	virtual result begin() override;
 
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(

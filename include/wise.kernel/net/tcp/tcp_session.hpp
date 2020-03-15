@@ -45,7 +45,7 @@ public:
 	void begin();
 
 	/// send a packet to socket
-	result send(const uint8_t* const data, std::size_t len);
+	result send(const uint8_t* data, std::size_t len);
 
 	/// close socket (shutdown and close) from application.
 	void disconnect();

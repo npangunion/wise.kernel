@@ -79,7 +79,7 @@ tcp_session::~tcp_session()
 	WISE_DEBUG("bye! {0}", get_desc());
 }
 
-tcp_session::result tcp_session::send(const uint8_t* const data, std::size_t len)
+tcp_session::result tcp_session::send(const uint8_t* data, std::size_t len)
 {
 	WISE_RETURN_IF(!socket_.is_open(), result(false, reason::fail_socket_closed));
 
@@ -182,6 +182,8 @@ void tcp_session::error(const error_code& ec)
 	log()->flush();
 
 	close(ec);		// will call destroy
+
+	protocol_->on_error(ec);
 }
 
 void tcp_session::error(const result& rc)
@@ -355,6 +357,8 @@ void tcp_session::on_send_completed(error_code& ec, std::size_t len)
 		if (!ec)
 		{
 			WISE_ASSERT(send_request_size_ == len);
+
+			protocol_->on_send(len);
 		}
 
 		send_buffer_.release(sending_segs_);

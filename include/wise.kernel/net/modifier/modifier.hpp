@@ -8,7 +8,6 @@ namespace wise {
 namespace kernel {
 
 class protocol;
-using protocol_ptr = std::shared_ptr<protocol>;
 
 /// modifies and verifies messages
 /**
@@ -29,24 +28,13 @@ public:
 	using result = result<bool, reason>;
 
 public:
-	modifier() = default;
+	modifier(protocol* _protocol)
+		: protocol_(_protocol)
+	{}
 
 	virtual ~modifier() = default;
 
-	result bind(protocol_ptr proto)
-	{
-		WISE_EXPECT(proto);
-		WISE_RETURN_IF(!proto, result(false, reason::fail_null_pointer));
-
-		protocol_ = proto;
-
-		auto rc = on_bind();
-		bound_ = !!rc;
-
-		return rc;
-	}
-
-	virtual result on_bind() = 0;
+	virtual result begin() = 0;
 
 	/// after recv. buf has other messages in buffer. 
 	/**
@@ -79,7 +67,7 @@ public:
 	) = 0;
 
 protected:
-	protocol_ptr get_protocol()
+	protocol* get_protocol()
 	{
 		return protocol_;
 	}
@@ -95,7 +83,7 @@ protected:
 	std::atomic<bool> bound_ = false;
 
 private:
-	protocol_ptr protocol_ = nullptr;
+	protocol* protocol_ = nullptr;
 };
 
 } // kernel

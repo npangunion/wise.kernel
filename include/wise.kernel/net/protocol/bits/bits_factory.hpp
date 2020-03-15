@@ -38,5 +38,5 @@ private:
 
 
 #define BITS_MSG_CREATE(pic) \
-wise::bits_factory::inst().create(wise::topic(pic))
+wise::kernel::bits_factory::inst().create(wise::kernel::topic(pic))
 
