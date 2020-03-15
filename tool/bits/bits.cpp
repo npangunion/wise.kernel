@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include <idl/idl_context.h>
 #include <idl/idl_main.h>
 #include <wise/base/logger.hpp>

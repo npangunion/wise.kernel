@@ -4,7 +4,7 @@ local CATCH_HOME = os.getenv("CATCH_HOME")
 local CATCH_INCLUDE_DIR = CATCH_HOME .. "/single_include/catch2"
 local BITSERY_HOME = os.getenv("BITSERY_HOME")
 
-workspace "wise.kernel"
+workspace "wise.bits"
 	location "generated"
 	language "C++"
 	architecture "x86_64"
@@ -35,34 +35,6 @@ function includeBITSERY()
 	includedirs (BITSERY_HOME .. "/include")
 end	
 
-project "wise.kernel"
-	kind "StaticLib"
-	includedirs "include"
-
-	pchheader "pch.hpp"
-	pchsource "src/pch.cpp"
-	
-	files { "include/**", "src/**" }
-	excludes { "src/core/botan/arch/**" }
-
-	defines "_ENABLE_EXTENDED_ALIGNED_STORAGE"
-	warnings "extra"
-	buildoptions { "/std:c++17" }
-	
-	includeBOOST()
-	includeSPDLOG()
-
-	staticruntime "On"
-
-	configuration "Debug"
-		targetdir "lib"
-		targetname "wise.kerneld.lib"
-
-	configuration "Release"
-		targetdir "lib"
-		targetname "wise.kernel.lib"
-
-
 function use_wise_kernel()
 	includedirs "include"
 	
@@ -76,22 +48,21 @@ end
 
 
 -- The windowed app
-project "wise.kernel.test"
+project "wise.bits"
 	kind "ConsoleApp"
-	files "test/**"
+
+	files "idl/**"
+	files("bits.cpp")
+	files("pch.cpp")
+	files("pch.hpp")
 
 	pchheader "pch.hpp"
-	pchsource "test/pch.cpp"
+	pchsource "pch.cpp"
 
 	warnings "extra"
 	buildoptions { "/std:c++17" }
 
-	includedirs "test"
-	includeCatch()
-
-	staticruntime "On"
-
-	use_wise_kernel()
+	includedirs  "." 
 
 	includeBOOST()
 	includeSPDLOG()

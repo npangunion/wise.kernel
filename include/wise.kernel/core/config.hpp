@@ -41,3 +41,21 @@
 #define WISE_FIBERS_SPIN_BEFORE_SLEEP0 256
 #define WISE_FIBERS_SPIN_BEFORE_YIELD 128
 
+// botan 
+
+#ifdef _MSC_VER 
+
+#if defined(_M_IX86)
+
+#define BOTAN_X86 
+
+#elif defined(_M_X64)
+
+#define BOTAN_X64 
+
+#endif
+
+#else // _MSC_VER
+
+
+#endif

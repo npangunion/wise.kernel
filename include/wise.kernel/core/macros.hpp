@@ -29,5 +29,5 @@ void check__(bool cond, const char* msg, const char* func, const char* file, int
 #define WISE_RETURN_IF(c, v) if ((c)) return v;
 #define WISE_RETURN_CALL_IF(c, v, func) if ((c)) { func(); return (v); }
 
-#define WISE_UNUSED(v) v
+#define WISE_UNUSED(v) static_cast<void>(v)
 
