@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <catch.hpp>
-#include <wise.kernel/net/protocol/bits/bits_message.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packet.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
 
 using namespace wise::kernel;

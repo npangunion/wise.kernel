@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/net/protocol.hpp>
-#include <wise.kernel/net/protocol/bits/bits_message.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packet.hpp>
 #include <wise.kernel/net/modifier/sequencer.hpp>
 #include <wise.kernel/net/modifier/checksum.hpp>
 #include <wise.kernel/net/modifier/cipher.hpp>
@@ -56,7 +56,7 @@ public:
 	virtual result send(packet::ptr m) override;
 
 	/// 길이 / 토픽을 추가하면서 메세지 pack
-	static result pack(bits_message::ptr mp, resize_buffer& buf);
+	static result pack(bits_packet::ptr mp, resize_buffer& buf);
 
 	/// 수신 처리 테스트를 위한 함수. 부분 수신 등 확인 용도
 	result on_recv_to_test(
@@ -67,25 +67,25 @@ public:
 private:
 	/// cipher, checksum, then send to session
 	result send_final(
-		bits_message::ptr mp,
+		bits_packet::ptr mp,
 		const uint8_t* const data,
 		std::size_t len
 	);
 
 	result send_final(
-		bits_message::ptr mp,
+		bits_packet::ptr mp,
 		resize_buffer& buf,
 		std::size_t len
 	);
 
 	result send_modified(
-		bits_message::ptr mp,
+		bits_packet::ptr mp,
 		resize_buffer& buf,
 		std::size_t len
 	);
 
 	result recv_modified(
-		bits_message::ptr mp,
+		bits_packet::ptr mp,
 		resize_buffer& buf,
 		std::size_t msg_pos,
 		std::size_t msg_len,
@@ -115,7 +115,7 @@ private:
 
 	static uint32_t get_topic(resize_buffer::iterator& iter);
 
-	bool needs_to_modify(bits_message::ptr m) const;
+	bool needs_to_modify(bits_packet::ptr m) const;
 
 public:
 	/// for packetiziation test only.  

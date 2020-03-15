@@ -24,12 +24,10 @@ public:
 
 public:
 	/// constructor
-	tcp_protocol();
+	tcp_protocol(tcp_node* node, tcp::socket&& sock, bool accepted);
 
 	/// destructor
 	virtual ~tcp_protocol();
-
-	result init(tcp_node* node, tcp::socket&& sock, bool accepted);
 
 	void begin();
 

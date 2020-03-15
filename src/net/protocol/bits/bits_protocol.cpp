@@ -13,8 +13,8 @@ namespace kernel {
 bits_protocol::config bits_protocol::cfg;
 
 bits_protocol::bits_protocol()
-	: checksum_(bits_message::header_length)
-	, cipher_(bits_message::header_length)
+	: checksum_(bits_packet::header_length)
+	, cipher_(bits_packet::header_length)
 {
 	if (cfg.enable_loopback)
 	{
@@ -43,12 +43,12 @@ protocol::result bits_protocol::send(packet::ptr m)
 	WISE_EXPECT(m);
 	WISE_RETURN_IF(!m, result(false, reason::fail_null_message_pointer));
 
-	auto mp = std::static_pointer_cast<bits_message>(m);
+	auto mp = std::static_pointer_cast<bits_packet>(m);
 
 	if (!mp)
 	{
 		WISE_CRITICAL(
-			"bits_protocol expects bits_message to send. topic: {}/{}",
+			"bits_protocol expects bits_packet to send. topic: {}/{}",
 			topic::get_desc(m->get_topic())
 		);
 
@@ -66,7 +66,7 @@ protocol::result bits_protocol::send(packet::ptr m)
 	return send_final(mp, *pbuf, pbuf->size());
 }
 
-protocol::result bits_protocol::pack(bits_message::ptr mp, resize_buffer& buf)
+protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
 {
 	uint32_t pad = 0xCAFEABBA;
 
@@ -85,7 +85,7 @@ protocol::result bits_protocol::pack(bits_message::ptr mp, resize_buffer& buf)
 
 	// size는 length와 topic 길이를 포함
 	packet::len_t size = static_cast<packet::len_t>(buf.size());
-	WISE_ASSERT(size >= bits_message::header_length);
+	WISE_ASSERT(size >= bits_packet::header_length);
 
 	auto iter = buf.begin();
 
@@ -96,7 +96,7 @@ protocol::result bits_protocol::pack(bits_message::ptr mp, resize_buffer& buf)
 }
 
 protocol::result bits_protocol::send_final(
-	bits_message::ptr mp,
+	bits_packet::ptr mp,
 	resize_buffer& buf,
 	std::size_t len
 )
@@ -119,7 +119,7 @@ protocol::result bits_protocol::send_final(
 
 
 protocol::result bits_protocol::send_final(
-	bits_message::ptr mp, 
+	bits_packet::ptr mp, 
 	const uint8_t* const data, 
 	std::size_t len
 )
@@ -146,7 +146,7 @@ protocol::result bits_protocol::send_final(
 }
 
 protocol::result bits_protocol::send_modified(
-	bits_message::ptr mp,
+	bits_packet::ptr mp,
 	resize_buffer& buf,
 	const std::size_t len
 )
@@ -210,11 +210,11 @@ protocol::result bits_protocol::on_recv(
 	auto remained_len = recv_buf_.end() - iter;
 	std::size_t processed_len = 0;
 
-	while (remained_len >= bits_message::header_length)
+	while (remained_len >= bits_packet::header_length)
 	{
 		auto msg_len = get_length(iter);	// 메세지 길이는 암호화 관련 변경을 포함
 
-		WISE_ASSERT(msg_len >= bits_message::header_length);
+		WISE_ASSERT(msg_len >= bits_packet::header_length);
 
 		if (msg_len > cfg.max_packet_length)
 		{
@@ -238,7 +238,7 @@ protocol::result bits_protocol::on_recv(
 		if (!mp)
 		{
 			WISE_ERROR(
-				"bits_message for topic[{}:{}:{}] not registered",
+				"bits_packet for topic[{}:{}:{}] not registered",
 				tp.get_category(), tp.get_group(), tp.get_type()
 			);
 
@@ -277,7 +277,7 @@ protocol::result bits_protocol::on_recv(
 
 		if (!res)
 		{
-			WISE_ERROR("bits_message unpack error. topic: ", topic::get_desc(tp));
+			WISE_ERROR("bits_packet unpack error. topic: ", topic::get_desc(tp));
 			return result(false, reason::fail_zen_unpack_error);
 		}
 
@@ -297,7 +297,7 @@ protocol::result bits_protocol::on_recv(
 		}
 
 		// 다음 처리를 위한 정리 
-		auto payload_len = msg_len - bits_message::header_length;
+		auto payload_len = msg_len - bits_packet::header_length;
 
 		processed_len += msg_len;
 		iter += payload_len;		
@@ -314,7 +314,7 @@ protocol::result bits_protocol::on_recv(
 
 
 protocol::result bits_protocol::recv_modified(
-	bits_message::ptr mp,
+	bits_packet::ptr mp,
 	resize_buffer& buf,
 	std::size_t msg_pos,
 	std::size_t msg_len,
@@ -428,7 +428,7 @@ protocol::result bits_protocol::call_recv_for_test(
 	return on_recv(bytes, len);
 }
 
-bool bits_protocol::needs_to_modify(bits_message::ptr m) const
+bool bits_protocol::needs_to_modify(bits_packet::ptr m) const
 {
 	return
 		(cfg.enable_cipher		&& m->enable_cipher) ||

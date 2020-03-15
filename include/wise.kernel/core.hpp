@@ -1,15 +1,15 @@
 #pragma once 
 
-#include "base/config.hpp"
-#include "base/macros.hpp"
-#include "base/logger.hpp"
-#include "base/result.hpp"
-#include "base/exception.hpp"
-#include "base/concurrent_queue.hpp"
-#include "base/sequence.hpp"
-#include "base/spinlock.hpp"
-#include "base/tick.hpp"
-#include "base/timer.hpp"
+#include "core/config.hpp"
+#include "core/macros.hpp"
+#include "core/logger.hpp"
+#include "core/result.hpp"
+#include "core/exception.hpp"
+#include "core/concurrent_queue.hpp"
+#include "core/sequence.hpp"
+#include "core/spinlock.hpp"
+#include "core/tick.hpp"
+#include "core/timer.hpp"
 
 // TODO: 메모리까지만. 
 // 

@@ -1,5 +1,5 @@
 #include <pch.hpp>
-#include <wise.kernel/core/task_scheduler.hpp>
+#include <wise.kernel/core/task/task_scheduler.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/mem_tracker.hpp>
 

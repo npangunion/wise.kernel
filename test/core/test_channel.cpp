@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <catch.hpp>
-#include <wise.kernel/core/channel.hpp>
+#include <wise.kernel/core/channel/channel.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/tick.hpp>
 

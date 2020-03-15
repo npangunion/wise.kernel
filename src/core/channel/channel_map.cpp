@@ -1,5 +1,5 @@
 #include <pch.hpp>
-#include <wise.kernel/core/detail/channel_map.hpp>
+#include <wise.kernel/core/channel/channel_map.hpp>
 #include <wise.kernel/core/mem_tracker.hpp>
 
 namespace wise {

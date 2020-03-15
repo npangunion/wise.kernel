@@ -6,23 +6,18 @@
 namespace wise {
 namespace kernel {
 
-tcp_protocol::tcp_protocol()
+tcp_protocol::tcp_protocol(tcp_node* node, tcp::socket&& sock, bool accepted)
 	: protocol()
+	, accepted_(accepted)
 {
+	node_ = node;
+	session_ = new tcp_session(this, std::move(sock));
 }
 
 /// destructor
 tcp_protocol::~tcp_protocol()
 {
 	delete session_;
-}
-
-protocol::result tcp_protocol::init(tcp_node* node, tcp::socket&& sock, bool accepted)
-{
-	node_ = node;
-	session_ = new tcp_session(this, std::move(sock), accepted);
-
-	return result(true, reason::success);
 }
 
 void tcp_protocol::begin()

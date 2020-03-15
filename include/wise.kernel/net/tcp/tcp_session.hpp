@@ -36,8 +36,7 @@ public:
 	/// setup 
 	tcp_session(
 		tcp_protocol* proto,
-		tcp::socket&& soc,
-		bool accepted);
+		tcp::socket&& soc);
 
 	/// clean up 
 	virtual ~tcp_session();
@@ -75,10 +74,7 @@ public:
 	}
 
 	/// accept ¿©ºÎ
-	bool is_accepted() const
-	{
-		return accepted_;
-	}
+	bool is_accepted() const;
 
 	bool is_busy() const;
 
@@ -126,7 +122,6 @@ private:
 
 	tcp_protocol*					protocol_ = nullptr;
 	tcp::socket						socket_;
-	bool							accepted_ = false;
 	std::string						local_addr_;
 	std::string						remote_addr_;
 	std::string						desc_;

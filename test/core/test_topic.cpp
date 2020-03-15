@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <catch.hpp>
-#include <wise.kernel/core/topic.hpp>
+#include <wise.kernel/core/channel/topic.hpp>
 
 TEST_CASE("topic")
 {

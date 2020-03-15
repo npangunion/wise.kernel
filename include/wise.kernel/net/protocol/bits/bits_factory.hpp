@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/net/protocol/bits/bits_message.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packet.hpp>
 
 namespace wise {
 namespace kernel {
@@ -9,7 +9,7 @@ namespace kernel {
 class bits_factory
 {
 public:
-	using creator = std::function<bits_message::ptr()>;
+	using creator = std::function<bits_packet::ptr()>;
 
 	static bits_factory& inst();
 
@@ -17,7 +17,7 @@ public:
 	void add(const topic& pic, creator c);
 
 	/// create a protocol
-	bits_message::ptr create(const topic& pic) const;
+	bits_packet::ptr create(const topic& pic) const;
 
 	template <typename Msg>
 	std::shared_ptr<Msg> create(const topic& pic) const
@@ -33,7 +33,7 @@ private:
 	map map_;
 };
 
-] // kernel
+} // kernel
 } // wise
 
 

@@ -15,10 +15,9 @@ namespace kernel {
 
 tcp_session::segment_buffer tcp_session::seg_buffer_accessor_;
 
-tcp_session::tcp_session(tcp_protocol* proto, tcp::socket&& soc, bool accepted)
+tcp_session::tcp_session(tcp_protocol* proto, tcp::socket&& soc)
 	: protocol_(proto)
 	, socket_(std::move(soc))
-	, accepted_(accepted)
 {
 }
 
@@ -67,7 +66,7 @@ void tcp_session::begin()
 
 	WISE_DEBUG(
 		"welcome! {}. local: {} remote: {}",
-		accepted_ ? "accepted" : "connected",
+		is_accepted() ? "accepted" : "connected",
 		local_addr_,
 		remote_addr_
 	);
@@ -155,6 +154,11 @@ void tcp_session::close(const error_code& ec)
 		(void)protocol_->on_error(ec);
 
 	}// locked
+}
+
+bool tcp_session::is_accepted() const
+{
+	return protocol_->is_accepted();
 }
 
 bool tcp_session::is_busy() const

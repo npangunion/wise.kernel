@@ -12,10 +12,10 @@ using namespace wise::kernel;
 namespace
 {
 
-struct bits_test_message : public bits_message
+struct bits_test_message : public bits_packet
 {
 	bits_test_message()
-		: bits_message(topic(1, 1, 1))
+		: bits_packet(topic(1, 1, 1))
 	{
 	}
 	
@@ -420,7 +420,7 @@ TEST_CASE("bits protocol")
 
 		wise::network::inst().finish();
 
-		CHECK(bits_message::alloc_ == bits_message::dealloc_);
+		CHECK(bits_packet::alloc_ == bits_packet::dealloc_);
 
 		// 10¸¸. 1ÃÊ. 
 		// - ±¦ÂúÀº Á¤µµ 

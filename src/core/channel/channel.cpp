@@ -1,6 +1,6 @@
 #include <pch.hpp>
-#include <wise.kernel/core/channel.hpp>
-#include <wise.kernel/core/detail/channel_map.hpp>
+#include <wise.kernel/core/channel/channel.hpp>
+#include <wise.kernel/core/channel/channel_map.hpp>
 
 namespace wise {
 	namespace kernel {

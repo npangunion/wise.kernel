@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <catch.hpp>
-#include <wise.kernel/core/task_scheduler.hpp>
+#include <wise.kernel/core/task/task_scheduler.hpp>
 #include <spdlog/fmt/fmt.h>
 
 using namespace wise::kernel;

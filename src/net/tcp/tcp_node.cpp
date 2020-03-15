@@ -212,6 +212,8 @@ void tcp_node::on_new_socket(
 	 */
 	auto tp = std::static_pointer_cast<tcp_protocol>(proto);
 	tp->begin();
+
+	// TODO: notify
 }
 
 } // kernel

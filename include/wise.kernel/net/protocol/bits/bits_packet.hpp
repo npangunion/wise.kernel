@@ -10,29 +10,29 @@ namespace kernel {
 
 class bits_packer;
 
-/// base class for zen messages
+/// base class for bits messages
 /**
  */
-struct bits_message : public packet
+struct bits_packet : public packet
 {
 	/// type overloading. required for factory
-	using ptr = std::shared_ptr<bits_message>;
+	using ptr = std::shared_ptr<bits_packet>;
 
 	/// header length
 	static constexpr std::size_t header_length = sizeof(len_t) + sizeof(topic::key_t);
 
-	bits_message(const topic& pic)
+	bits_packet(const topic& pic)
 		: packet(pic)
 	{
 		++alloc_;
 	}
 
-	bits_message(const topic::key_t key)
-		: bits_message(topic(key))
+	bits_packet(const topic::key_t key)
+		: bits_packet(topic(key))
 	{
 	}
 
-	~bits_message()
+	~bits_packet()
 	{
 		++dealloc_;
 	}
@@ -43,7 +43,7 @@ struct bits_message : public packet
 
 	const char* get_desc() const override
 	{
-		return "bits_message";
+		return "bits_packet";
 	}
 
 	/// modification options
