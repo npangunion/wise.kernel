@@ -3,6 +3,7 @@ local SPDLOG_HOME = os.getenv("SPDLOG_HOME")
 local CATCH_HOME = os.getenv("CATCH_HOME")
 local CATCH_INCLUDE_DIR = CATCH_HOME .. "/single_include/catch2"
 local BITSERY_HOME = os.getenv("BITSERY_HOME")
+local BOTAN_HOME = os.getenv("BOTAN_HOME")
 
 workspace "wise.kernel"
 	location "generated"
@@ -35,6 +36,13 @@ function includeBITSERY()
 	includedirs (BITSERY_HOME .. "/include")
 end	
 
+function useBOTAN()
+	filter "architecture:x86_64"
+		includedirs (BOTAN_HOME .. "/x64/include")
+		libdirs (BOTAN_HOME .. "/x64/lib")
+		links "botan.lib"
+end
+
 project "wise.kernel"
 	kind "StaticLib"
 	includedirs "include"
@@ -61,6 +69,8 @@ project "wise.kernel"
 	configuration "Release"
 		targetdir "lib"
 		targetname "wise.kernel.lib"
+
+	useBOTAN()
 
 
 function use_wise_kernel()
@@ -96,4 +106,4 @@ project "wise.kernel.test"
 	includeBOOST()
 	includeSPDLOG()
 	
-    
+	useBOTAN()

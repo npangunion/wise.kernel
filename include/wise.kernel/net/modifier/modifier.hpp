@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/net/buffer/resize_buffer.hpp>
+#include <wise.kernel/net/reason.hpp>
 #include <wise.kernel/core/result.hpp>
 
 namespace wise {
@@ -24,13 +25,6 @@ using protocol_ptr = std::shared_ptr<protocol>;
  */
 class modifier
 {
-public:
-	enum class reason
-	{
-		success = 0,
-		fail_null_pointer
-	};
-
 public:
 	using result = result<bool, reason>;
 

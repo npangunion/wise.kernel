@@ -4,7 +4,7 @@
 namespace wise {
 namespace kernel {
 
-multiple_size_buffer_pool wise::resize_buffer::pool_;
+multiple_size_buffer_pool resize_buffer::pool_;
 
 } // kernel
 } // wise

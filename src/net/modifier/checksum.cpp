@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <wise.kernel/net/modifier/checksum.hpp>
-#include <wise.kernel/core/botan/botan_all.h>
+#include <botan/botan.h>
 
 namespace wise {
 namespace kernel {
