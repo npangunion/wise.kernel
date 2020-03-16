@@ -1,11 +1,11 @@
 #include <pch.hpp>
-#include <wise.kernel/net/addr.hpp>
+#include <wise.kernel/net/tcp/tcp_addr.hpp>
 #include <spdlog/fmt/fmt.h>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
-addr::addr(const std::string& s)
+tcp_addr::tcp_addr(const std::string& s)
 	: raw_(s)
 {
 	std::size_t pos = s.find_first_of(':');
@@ -14,14 +14,14 @@ addr::addr(const std::string& s)
 	WISE_RETURN_IF(pos + 1 >= s.length());
 
 	auto sip = s.substr(0, pos);
-	auto sport = s.substr(pos+1);
+	auto sport = s.substr(pos + 1);
 	auto port = static_cast<uint16_t>(::atoi(sport.c_str()));
 
 	WISE_RETURN_IF(port == 0);
 
-	asio::error_code ec;
+	boost::system::error_code ec;
 
-	ep_ = tcp::endpoint(asio::ip::address::from_string(sip, ec), port);
+	ep_ = tcp::endpoint(boost::asio::ip::address::from_string(sip, ec), port);
 
 	if (!ec)
 	{
@@ -29,9 +29,10 @@ addr::addr(const std::string& s)
 	}
 }
 
-addr::addr(const std::string& ip, uint16_t port)
-	: addr(fmt::format("{}:{}", ip, port))
+tcp_addr::tcp_addr(const std::string& ip, uint16_t port)
+	: tcp_addr(fmt::format("{}:{}", ip, port))
 {
 }
 
+} // kernel
 } // wise

@@ -9,6 +9,7 @@ namespace wise {
 	namespace kernel {
 
         // Generates a lookup table for the checksums of all 8-bit values.
+        inline
         std::array<std::uint_fast32_t, 256> generate_crc_lookup_table() noexcept
         {
             auto const reversed_polynomial = std::uint_fast32_t{ 0xEDB88320uL };

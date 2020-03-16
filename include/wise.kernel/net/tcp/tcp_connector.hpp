@@ -36,7 +36,7 @@ public:
 
 	result connect();
 
-	const addr& get_addr() const
+	const tcp_addr& get_addr() const
 	{
 		return addr_;
 	}
@@ -58,7 +58,7 @@ private:
 	tcp_node* node_ = nullptr;
 	uint16_t id_ = 0;
 	std::string proto_;
-	addr addr_;
+	tcp_addr addr_;
 	channel::ptr channel_;
 	tcp::socket socket_;
 };

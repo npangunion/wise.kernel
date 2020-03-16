@@ -3,6 +3,7 @@
 #include <wise.kernel/core/macros.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 #include <string>
 
 using namespace boost::asio::ip;
@@ -10,16 +11,16 @@ using namespace boost::asio::ip;
 namespace wise {
 namespace kernel {
 
-class addr
+class tcp_addr
 {
 public:
-	addr(const std::string& s);
+	tcp_addr(const std::string& s);
 
-	addr(const std::string& ip, uint16_t port);
+	tcp_addr(const std::string& ip, uint16_t port);
 
-	addr(const addr& rhs) = default;
+	tcp_addr(const tcp_addr& rhs) = default;
 
-	addr& operator=(const addr& rhs) = default;
+	tcp_addr& operator=(const tcp_addr& rhs) = default;
 
 	const std::string& get_raw() const
 	{

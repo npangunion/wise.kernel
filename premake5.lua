@@ -24,8 +24,9 @@ workspace "wise.kernel"
 	targetdir ("build/bin/%{prj.name}/%{cfg.longname}")
     objdir ("build/obj/%{prj.name}/%{cfg.longname}")
 	
-function includeBOOST()
+function useBOOST()
 	includedirs (BOOST_HOME)
+	libdirs (BOOST_HOME .. "/stage/lib")
 end	
 
 function includeSPDLOG()
@@ -57,26 +58,32 @@ project "wise.kernel"
 	warnings "extra"
 	buildoptions { "/std:c++17" }
 	
-	includeBOOST()
+	useBOOST()
 	includeSPDLOG()
 
 	staticruntime "On"
 
 	configuration "Debug"
 		targetdir "lib"
-		targetname "wise.kerneld.lib"
+		targetname "wise.kerneld"
 
 	configuration "Release"
 		targetdir "lib"
-		targetname "wise.kernel.lib"
+		targetname "wise.kernel"
 
 	useBOTAN()
 
 
 function use_wise_kernel()
 	includedirs "include"
+
+	filter "configurations:Debug"
+		links "wise.kernel"
 	
-	links "wise.kernel"
+	filter "configurations:Release"
+		links "wise.kernel"
+
+	filter {}
 end    
 
 function includeCatch()
@@ -103,7 +110,7 @@ project "wise.kernel.test"
 
 	use_wise_kernel()
 
-	includeBOOST()
+	useBOOST()
 	includeSPDLOG()
 	
 	useBOTAN()
