@@ -8,8 +8,8 @@ namespace kernel {
 
 tcp_connector::tcp_connector(
 	tcp_node* node,
-	const std::string& proto,
 	uint16_t id,
+	const std::string& proto,
 	const std::string& addr,
 	channel::ptr ch)
 	: node_(node)

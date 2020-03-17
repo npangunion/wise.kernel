@@ -229,7 +229,7 @@ inline bool bits_packer::pack(const T& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
-	return ::wise::pack(*this, s);
+	return ::wise::kernel::pack(*this, s);
 }
 
 template<class T>
@@ -237,7 +237,7 @@ inline bool bits_packer::unpack(T& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
-	return ::wise::unpack(*this, s);
+	return ::wise::kernel::unpack(*this, s);
 }
 
 template<>

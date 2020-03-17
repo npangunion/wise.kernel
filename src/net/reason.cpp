@@ -1,7 +1,7 @@
 #include <pch.hpp>
 #include <wise.kernel/net/reason.hpp>
 
-std::string wise::get_reason_desc(reason r)
+std::string wise::kernel::get_reason_desc(reason r)
 {
 	static std::string desc[] = { 
 		"success",

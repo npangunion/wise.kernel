@@ -2,6 +2,7 @@
 #include <catch.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packet.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
+#include <wise.kernel/util/util.hpp>
 
 using namespace wise::kernel;
 

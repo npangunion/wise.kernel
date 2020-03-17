@@ -9,13 +9,13 @@ namespace kernel {
 
 bool protocol::bind(channel::ptr chan)
 {
-	if (has_channel(ch->get_key()))
+	if (has_channel(chan->get_key()))
 	{
 		return true; // allow it
 	}
 
 	std::unique_lock<std::shared_mutex> lock(mutex_);
-	channels_.insert(channel_map::value_type(ch->get_key(), ch));
+	channels_.insert(channel_map::value_type(chan->get_key(), chan));
 	
 	return true;
 }
@@ -32,7 +32,7 @@ void protocol::publish(packet_ptr m)
 
 void protocol::unbind(channel::ptr chan)
 {
-	unbind(ch->get_key());
+	unbind(chan->get_key());
 }
 
 void protocol::unbind(channel::key_t key)
