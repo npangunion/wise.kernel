@@ -8,13 +8,14 @@ namespace kernel {
 /// a contiguous, random iterator for resize_buffer
 template <typename Elem>
 class resize_buffer_iterator
-	: public std::iterator<
-	std::random_access_iterator_tag,
-	Elem,
-	ptrdiff_t,
-	Elem*,
-	Elem&>
 {
+public: 
+	using iterator_category = std::random_access_iterator_tag;
+	using value_type = Elem;
+	using difference_type = ptrdiff_t;
+	using pointer = Elem*;
+	using reference = Elem&;
+
 public:
 	resize_buffer_iterator(Elem* ptr = nullptr)
 		: elem_(ptr)
