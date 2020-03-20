@@ -3,7 +3,7 @@
 #include <wise.kernel/dbc/error.hpp>
 #include <wise.kernel/dbc/statement.hpp>
 #include <wise.kernel/core/macros.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <wise.kernel/core/fmt.hpp>
 
 #include <clocale>
 #include <map>

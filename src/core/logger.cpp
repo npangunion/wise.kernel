@@ -6,11 +6,6 @@
 #include <spdlog/sinks/wincolor_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
 
-
-template <> FMT_API char fmt::internal::decimal_point_impl<char>(locale_ref loc);
-template <> FMT_API std::string fmt::internal::grouping_impl<char>(locale_ref loc);
-
-
 namespace
 {
 void create_folder_from(const char* path);

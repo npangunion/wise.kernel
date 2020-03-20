@@ -3,8 +3,8 @@
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/exception.hpp>
 #include <wise.kernel/core/null_mutex.hpp>
+#include <wise.kernel/core/fmt.hpp>
 
-#include <spdlog/fmt/fmt.h>
 #include <algorithm>
 #include <deque>
 #include <exception>

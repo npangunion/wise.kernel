@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/core/macros.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <wise.kernel/core/fmt.hpp>
 #include <memory>
 
 namespace wise {
