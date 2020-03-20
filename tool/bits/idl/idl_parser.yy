@@ -10,7 +10,7 @@
 #pragma warning(disable:4244)
 
 #include "idl_main.h"
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/logger.hpp>
 
 %}
 

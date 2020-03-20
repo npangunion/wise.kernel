@@ -1,11 +1,11 @@
-#include "stdafx.h"
+#include <pch.hpp>
 
 #include "idl_main.h"
 #include "idl_context.h"
 #include "idl_parser.hpp"
 #include <idl/generate/csharp_generator.hpp>
 #include <idl/generate/cplus_generator.hpp>
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/logger.hpp>
 #include <boost/filesystem.hpp>
 
 /**

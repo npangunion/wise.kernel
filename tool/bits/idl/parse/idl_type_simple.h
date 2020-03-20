@@ -171,7 +171,7 @@ public:
 		case TYPE_DOUBLE:
 			return "double";
 		case TYPE_TIMESTAMP:
-			return "wise::timestamp";
+			return "wise::kernel::timestamp";
 		default:
 			return "(unknown)";
 		}

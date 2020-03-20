@@ -2,7 +2,7 @@
 
 #include "idl_type_full.h"
 #include "idl_type_simple.h"
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 
 /**
 *

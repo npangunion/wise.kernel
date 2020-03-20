@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "csharp_generator.hpp"
 #include <idl/idl_symbol_table.hpp>
 #include <idl/parse/idl_program.h>
@@ -14,9 +14,9 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise/base/logger.hpp>
-#include <wise/base/macros.hpp>
-#include <wise/base/util.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
+#include <wise.kernel/core/util.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -156,11 +156,11 @@ result csharp_generator::generate_factory()
 
 	namespace fs = boost::filesystem;
 
-	std::string ext_removed = wise::remove_file_extension(program_->get_path());
+	std::string ext_removed = wise::kernel::remove_file_extension(program_->get_path());
 
 	fs::path er_file(ext_removed);
 
-	std::string filename = wise::get_filename(ext_removed);
+	std::string filename = wise::kernel::get_filename(ext_removed);
 
 	// cs file
 	{
@@ -674,7 +674,7 @@ result csharp_generator::generate_topic(const idl_type_topic* ttype, const std::
 {
 	WISE_UNUSED(ttype);
 
-	auto ids = wise::split(id, ".");
+	auto ids = wise::kernel::split(id, ".");
 
 	if (ids.size() != 3)
 	{

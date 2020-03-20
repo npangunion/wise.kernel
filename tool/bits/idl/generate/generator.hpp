@@ -3,8 +3,8 @@
 #include <idl/parse/idl_expression.h>
 #include <idl/parse/idl_field.h>
 #include <idl/parse/idl_node_struct.h>
-#include <wise/base/result.hpp>
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/result.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <iostream>
 
 class idl_program;
@@ -13,7 +13,7 @@ class idl_symbol_table;
 extern idl_program* g_program;
 extern idl_symbol_table* g_symbols;
 
-using result = wise::result<bool, std::string>;
+using result = wise::kernel::result<bool, std::string>;
 
 class generator
 {

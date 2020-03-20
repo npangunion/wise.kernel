@@ -15,7 +15,7 @@ public:
 		bool continue_generation_on_error = true;
 		bool generate_cplus = false;
 		bool generate_csharp = false;
-		std::string main_file = "main.zen";
+		std::string main_file = "main.bits";
 		std::string log_level = "info";
 		std::string output_dir = "";
 	};

@@ -7,7 +7,7 @@
 #include "tx/tx_result_set.h"
 #include "tx/tx_query.h"
 
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <sstream>
 #include <vector>
 

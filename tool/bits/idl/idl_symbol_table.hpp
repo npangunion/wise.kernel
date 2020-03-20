@@ -1,7 +1,7 @@
 #pragma once
 
 #include "parse/idl_node.h"
-#include <wise/base/result.hpp>
+#include <wise.kernel/core/result.hpp>
 #include <string>
 #include <unordered_map>
 
@@ -26,7 +26,7 @@ struct idl_symbol
 class idl_symbol_table
 {
 public: 
-	using result = wise::result<bool, idl_symbol>;
+	using result = wise::kernel::result<bool, idl_symbol>;
 
 public:
 	result add(const idl_symbol& sym);

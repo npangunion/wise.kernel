@@ -1,7 +1,7 @@
 #pragma once
 
 #include "idl_expression_value.h"
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <vector>
 
 /**

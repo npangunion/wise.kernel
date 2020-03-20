@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "cplus_generator.hpp"
 #include <idl/idl_symbol_table.hpp>
 #include <idl/parse/idl_program.h>
@@ -15,9 +15,8 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise/base/logger.hpp>
-#include <wise/base/macros.hpp>
-#include <wise/base/util.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -152,7 +151,8 @@ result cplus_generator::generate_nodes()
 	if ( program_->has_struct())
 	{
 		os_ << "// struct serialization section" << std::endl;
-		os_ << "namespace wise {" << std::endl;
+		os_ << "namespace wise { " << std::endl;
+		os_ << "namespace kernel { " << std::endl;
 
 		// TODO: generate struct serialize code in wise namespace
 		for (auto& node : nodes)
@@ -165,6 +165,7 @@ result cplus_generator::generate_nodes()
 		}
 
 		os_ << std::endl;
+		os_ << "} // kernel" << std::endl;
 		os_ << "} // wise" << std::endl;
 	}
 
@@ -194,11 +195,11 @@ result cplus_generator::generate_factory()
 
 	namespace fs = boost::filesystem;
 
-	std::string ext_removed = wise::remove_file_extension(program_->get_path());
+	std::string ext_removed = wise::kernel::remove_file_extension(program_->get_path());
 
 	fs::path er_file(ext_removed);
 
-	std::string filename = wise::get_filename(ext_removed);
+	std::string filename = wise::kernel::get_filename(ext_removed);
 
 	// header file
 	{
@@ -226,14 +227,14 @@ result cplus_generator::generate_factory()
 
 		// TODO: make it optional 
 
-		os << "#include \"stdafx.h\"" << std::endl;
-		os << "#include <wise/net/protocol/zen/zen_factory.hpp>" << std::endl;
-		os << "#include <wise/base/memory.hpp>" << std::endl;
+		os << "#include \"pch.hpp\"" << std::endl;
+		os << "#include <wise.kernel/net/protocol/bits/bits_factory.hpp>" << std::endl;
+		os << "#include <wise.kernel/core/mem_tracker.hpp>" << std::endl;
 		os << "#include \"" << inc.string() << "\"";
 		os << std::endl;
 		os << std::endl;
 
-		os << "#define WISE_ADD_ZEN(cls) wise::zen_factory::inst().add( "
+		os << "#define WISE_ADD_BITS(cls) wise::kernel::bits_factory::inst().add( "
 			"cls::get_topic(), []() { return wise_shared<cls>(); "
 			"} );";
 
@@ -251,13 +252,13 @@ result cplus_generator::generate_factory()
 		{
 			if (node->get_type() == idl_node::Message)
 			{
-				indent(os) << "WISE_ADD_ZEN(" << get_namespace() 
+				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
 					<< std::endl;
 			}
 			else if (node->get_type() == idl_node::Tx)
 			{
-				indent(os) << "WISE_ADD_ZEN(" << get_namespace() 
+				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
 					<< std::endl;
 			}
@@ -388,7 +389,7 @@ result cplus_generator::generate_struct_pack(const idl_node* node)
 	auto sn = static_cast<const idl_node_message*>(node);
 	WISE_ASSERT(sn);
 
-	indent(os_) << "template<> inline bool pack(zen_packer& packer, "; 
+	indent(os_) << "template<> inline bool pack(bits_packer& packer, "; 
 	os_ << "const " << get_namespace() << node->get_name() << "& tv) " << std::endl;
 	indent(os_) << "{" << std::endl;
 
@@ -436,7 +437,7 @@ result cplus_generator::generate_struct_unpack(const idl_node* node)
 	auto sn = static_cast<const idl_node_message*>(node);
 	WISE_ASSERT(sn);
 
-	indent(os_) << "template<> inline bool unpack(zen_packer& packer, ";
+	indent(os_) << "template<> inline bool unpack(bits_packer& packer, ";
 	os_ << get_namespace() << node->get_name() << "& tv) " << std::endl;
 	indent(os_) << "{" << std::endl;
 
@@ -486,7 +487,7 @@ result cplus_generator::generate_message(const idl_node* node)
 
 	os_ << std::endl;
 
-	std::string super_class = "wise::zen_message";
+	std::string super_class = "wise::kernel::bits_packet";
 
 	auto sc = sn->get_super_class();
 	if (sc)
@@ -622,7 +623,7 @@ result cplus_generator::generate_message_pack(const idl_node* node)
 
 	inc_indent();
 
-	indent(os_) << "bool pack(::wise::zen_packer& packer) override" << std::endl;
+	indent(os_) << "bool pack(::wise::kernel::bits_packer& packer) override" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 	// fields
@@ -679,7 +680,7 @@ result cplus_generator::generate_message_unpack(const idl_node* node)
 
 	inc_indent();
 
-	indent(os_) << "bool unpack(::wise::zen_packer& packer) override" << std::endl;
+	indent(os_) << "bool unpack(::wise::kernel::bits_packer& packer) override" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 	// fields
@@ -810,7 +811,7 @@ result cplus_generator::generate_tx_decl(const idl_node* node)
 
 	os_ << std::endl;
 
-	indent(os_) << "class " << sn->get_name() << " : public wise::tx" << std::endl;
+	indent(os_) << "class " << sn->get_name() << " : public wise::kernel::tx" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 
@@ -840,7 +841,7 @@ result cplus_generator::generate_tx_decl(const idl_node* node)
 	{
 		// constructor
 		indent(os_) << node->get_name() << "()" << std::endl;
-		indent(os_) << ": wise::tx(get_topic())" << std::endl;
+		indent(os_) << ": wise::kernel::tx(get_topic())" << std::endl;
 		indent(os_) << "{" << std::endl;
 		indent(os_) << "\tquery_ = query;" << std::endl;
 		indent(os_) << "}" << std::endl;
@@ -945,8 +946,8 @@ result cplus_generator::generate_tx_bind_decl(const tx_bind* bind)
 
 		inc_indent();
 		{
-			indent(os_) << "bool pack(wise::zen_packer& packer); " << std::endl;
-			indent(os_) << "bool unpack(wise::zen_packer& packer); " << std::endl;
+			indent(os_) << "bool pack(wise::kernel::bits_packer& packer); " << std::endl;
+			indent(os_) << "bool unpack(wise::kernel::bits_packer& packer); " << std::endl;
 		}
 		dec_indent();
 
@@ -984,8 +985,8 @@ result cplus_generator::generate_tx_result_set_decl(std::size_t index, const tx_
 
 		inc_indent();
 		{
-			indent(os_) << "bool pack(wise::zen_packer& packer); " << std::endl;
-			indent(os_) << "bool unpack(wise::zen_packer& packer); " << std::endl;
+			indent(os_) << "bool pack(wise::kernel::bits_packer& packer); " << std::endl;
+			indent(os_) << "bool unpack(wise::kernel::bits_packer& packer); " << std::endl;
 		}
 		dec_indent();
 
@@ -1019,8 +1020,8 @@ result cplus_generator::generate_tx_serialize_decl(const idl_node* node)
 	// pack
 	inc_indent();
 	{
-		indent(os) << "bool pack(wise::zen_packer& packer) override;" << std::endl;
-		indent(os) << "bool unpack(wise::zen_packer& packer) override;" << std::endl;
+		indent(os) << "bool pack(wise::kernel::bits_packer& packer) override;" << std::endl;
+		indent(os) << "bool unpack(wise::kernel::bits_packer& packer) override;" << std::endl;
 	}
 	dec_indent();
 
@@ -1082,7 +1083,7 @@ result cplus_generator::generate_tx_execute(const idl_node* node)
 {
 	oscpp_ << std::endl;
 
-	indent(oscpp_) << "wise::tx::result " 
+	indent(oscpp_) << "wise::kernel::tx::result " 
 		<< node->get_name() << "::execute_query(dbc::statement::ptr stmt)" 
 		<< std::endl;
 
@@ -1579,12 +1580,12 @@ result cplus_generator::generate_tx_serialize_impl(const idl_node* node)
 
 	// pack
 	{
-		indent(os) << "bool " << node->get_name() << "::pack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << node->get_name() << "::pack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os) << "wise::tx::pack(packer);" << std::endl;
+			indent(os) << "wise::kernel::tx::pack(packer);" << std::endl;
 			indent(os) << "bind.pack(packer);" << std::endl;
 
 			// result
@@ -1633,12 +1634,12 @@ result cplus_generator::generate_tx_serialize_impl(const idl_node* node)
 
 	// unpack
 	{
-		indent(os) << "bool " << node->get_name() << "::unpack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << node->get_name() << "::unpack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os) << "wise::tx::unpack(packer);" << std::endl;
+			indent(os) << "wise::kernel::tx::unpack(packer);" << std::endl;
 			indent(os) << "bind.unpack(packer);" << std::endl;
 
 			// result
@@ -1694,7 +1695,7 @@ result cplus_generator::generate_tx_field_serialize(const std::string& cls, cons
 
 	// pack 
 	{
-		indent(os) << "bool " << cls << "::pack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << cls << "::pack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
@@ -1739,7 +1740,7 @@ result cplus_generator::generate_tx_field_serialize(const std::string& cls, cons
 
 	//unpack
 	{
-		indent(os) << "bool " << cls << "::unpack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << cls << "::unpack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
@@ -1788,7 +1789,7 @@ result cplus_generator::generate_topic(const idl_type_topic* ttype, const std::s
 {
 	WISE_UNUSED(ttype);
 
-	auto ids = wise::split(id, ".");
+	auto ids = wise::kernel::split(id, ".");
 
 	if (ids.size() != 3)
 	{
@@ -1801,24 +1802,24 @@ result cplus_generator::generate_topic(const idl_type_topic* ttype, const std::s
 
 	inc_indent();
 	{
-		indent(os_) << "static const wise::topic& get_topic() " << std::endl;
+		indent(os_) << "static const wise::kernel::topic& get_topic() " << std::endl;
 		indent(os_) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os_) << "static wise::topic topic_( " << std::endl;
+			indent(os_) << "static wise::kernel::topic topic_( " << std::endl;
 
 			inc_indent();
 			{
-				indent(os_) << "static_cast<wise::topic::category_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::category_t>(" 
 					<< cat << "::" << grp << "::category), " 
 					<< std::endl;
 
-				indent(os_) << "static_cast<wise::topic::group_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::group_t>(" 
 					<< cat << "::" << grp << "::group), " 
 					<< std::endl;
 
-				indent(os_) << "static_cast<wise::topic::type_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::type_t>(" 
 					<< cat << "::" << grp << "::" << typ << ")" 
 					<< std::endl;
 			}
@@ -2117,8 +2118,8 @@ result cplus_generator::generate_expression_value(const idl_field* field, const 
 result cplus_generator::generate_prolog()
 {
 	os_ << "#pragma once" << std::endl;
-	os_ << "#include <wise/net/protocol/zen/zen_message.hpp>" << std::endl;
-	os_ << "#include <wise/net/protocol/zen/zen_packer.hpp>" << std::endl;
+	os_ << "#include <wise/net/protocol/bits/bits_packet.hpp>" << std::endl;
+	os_ << "#include <wise/net/protocol/bits/bits_packer.hpp>" << std::endl;
 	os_ << std::endl;
 
 	if (program_->has_tx())
@@ -2205,9 +2206,9 @@ result cplus_generator::generate_cpp_prolog()
 	fs::path h(program_->get_path());
 	h.replace_extension(".hpp");
 	
-	oscpp_ << "#include \"stdafx.h\"" << std::endl;
+	oscpp_ << "#include \"pch.hpp\"" << std::endl;
 	oscpp_ << "#include \"" <<  h.string() << "\"" << std::endl;
-	oscpp_ << "#include <wise/base/logger.hpp>" << std::endl;
+	oscpp_ << "#include <wise.kernel/core/logger.hpp>" << std::endl;
 
 	oscpp_ << std::endl;
 
