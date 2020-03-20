@@ -61,6 +61,7 @@ public:
 		: stmt_()
 		, rowset_size_(0)
 		, row_count_(0)
+		, rs_changed_(false)
 		, bound_columns_(0)
 		, bound_columns_size_(0)
 		, rowset_position_(0)
