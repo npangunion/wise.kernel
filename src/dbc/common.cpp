@@ -1,7 +1,7 @@
-#include "stdafx.h"
+#include <pch.hpp>
 
-#include "common.hpp"
-#include "error.hpp"
+#include <wise.kernel/dbc/common.hpp>
+#include <wise.kernel/dbc/error.hpp>
 
 namespace dbc
 {

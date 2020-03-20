@@ -10,7 +10,7 @@
 class idl_expression_value
 {
 public: 
-	enum Type
+	enum class Type
 	{
 		None,
 		Full, 
@@ -32,39 +32,39 @@ public:
 	{
 		WISE_EXPECT(f);
 		WISE_EXPECT(!id.empty());
-		WISE_EXPECT(type_ == None);
+		WISE_EXPECT(type_ == Type::None);
 		WISE_EXPECT(full_type_ == nullptr);
 
 		full_type_ = f; 
 		id_ = id; 
-		type_ = Full;
+		type_ = Type::Full;
 	}
 
 	void set_full_id(idl_type_full* f)
 	{
 		WISE_EXPECT(f);
-		WISE_EXPECT(type_ == None);
+		WISE_EXPECT(type_ == Type::None);
 		WISE_EXPECT(full_type_ == nullptr);
 
 		full_type_ = f; 
-		type_ = Full;
+		type_ = Type::Full;
 	}
 
 	void set_simple_id(const std::string& id)
 	{
 		WISE_EXPECT(!id.empty());
-		WISE_EXPECT(type_ == None);
+		WISE_EXPECT(type_ == Type::None);
 		WISE_EXPECT(id_.empty());
 
 		id_ = id;
-		type_ = Simple;
+		type_ = Type::Simple;
 	}
 
 	void set_const_value(int v)
 	{
-		WISE_EXPECT(type_ == None);
+		WISE_EXPECT(type_ == Type::None);
 		ivalue_ = v; 
-		type_ = Const;
+		type_ = Type::Const;
 	}
 
 	Type get_type() const
@@ -88,7 +88,7 @@ public:
 	}
 
 private: 
-	Type type_ = None;
+	Type type_ = Type::None;
 	idl_type_full* full_type_ = nullptr; 
 	std::string id_;
 	int ivalue_ = 0;

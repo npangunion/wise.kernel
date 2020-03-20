@@ -13,6 +13,8 @@ namespace kernel {
 class mem_writer
 {
 public:
+	virtual ~mem_writer() {}
+
 	virtual void write(const char* stat) = 0;
 };
 

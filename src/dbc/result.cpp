@@ -1,16 +1,14 @@
-#include "stdafx.h"
-#include "result.hpp"
-#include "error.hpp"
-#include "statement.hpp"
-
-#include <wise/base/macros.hpp>
+#include <pch.hpp>
+#include <wise.kernel/dbc/result.hpp>
+#include <wise.kernel/dbc/error.hpp>
+#include <wise.kernel/dbc/statement.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <spdlog/fmt/fmt.h>
 
 #include <clocale>
 #include <map>
 
-namespace dbc
-{
+namespace dbc {
 
 // Encapsulates resources needed for column binding.
 class bound_column

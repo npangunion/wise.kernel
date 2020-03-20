@@ -1,11 +1,11 @@
-#include "stdafx.h"
+#include <pch.hpp>
 
-#include "convert.hpp"
-#include <wise/base/macros.hpp>
+#include <wise.kernel/dbc/convert.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <algorithm>
 
-namespace wise
-{
+namespace wise {
+namespace kernel {
 
 #ifdef _MSC_VER
 
@@ -101,4 +101,5 @@ bool convert(const std::wstring& s, std::string& out, int32_t code_page)
 
 #endif // windows
 
+} // kernel
 } // wise

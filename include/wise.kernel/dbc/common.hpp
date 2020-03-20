@@ -25,16 +25,16 @@
 //! THE SOFTWARE.
 
 /// To include winsock through asio.
-#include <wise/net/session.hpp>
 #include "convert.hpp"
 
-#include <wise/base/date.hpp>
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/date.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <string>
 #include <exception>
 
 namespace dbc
 {
+
 #ifndef DOXYGEN
 
 #define DBC_USE_UNICODE 1
@@ -259,8 +259,8 @@ struct sql_ctype<std::string>
 	static const SQLSMALLINT value = SQL_C_CHAR;
 };
 
-using date = wise::date;
-using timestamp = wise::timestamp;
+using date = wise::kernel::date;
+using timestamp = wise::kernel::timestamp;
 
 template<>
 struct sql_ctype<dbc::date>

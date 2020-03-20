@@ -1,6 +1,6 @@
-#include "stdafx.h"
-#include "connection.hpp"
-#include "error.hpp"
+#include <pch.hpp>
+#include <wise.kernel/dbc/connection.hpp>
+#include <wise.kernel/dbc/error.hpp>
 
 namespace dbc
 {

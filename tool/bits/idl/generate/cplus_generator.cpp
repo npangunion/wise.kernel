@@ -62,7 +62,7 @@ result cplus_generator::generate_nodes()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Include)
+			if (node->get_type() == idl_node::Type::Include)
 			{
 				auto rc = generate_include(node);
 				WISE_RETURN_IF(!rc, rc);
@@ -91,36 +91,36 @@ result cplus_generator::generate_nodes()
 
 		switch (node->get_type())
 		{
-			case idl_node::Enum:
+		case idl_node::Type::Enum:
 			{
 				auto rc = generate_enum(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Struct: 
+			case idl_node::Type::Struct: 
 			{
 				auto rc = generate_struct(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Message:
+			case idl_node::Type::Message:
 			{
 				auto rc = generate_message(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break;
-			case idl_node::Tx:
+			case idl_node::Type::Tx:
 			{
 				auto rc = generate_tx(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break;
-			case idl_node::Include:
+			case idl_node::Type::Include:
 			{
 				// ignore
 			}
 			break;
-			case idl_node::Namespace:
+			case idl_node::Type::Namespace:
 			{
 				// ignore
 			}
@@ -157,7 +157,7 @@ result cplus_generator::generate_nodes()
 		// TODO: generate struct serialize code in wise namespace
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Struct)
+			if (node->get_type() == idl_node::Type::Struct)
 			{
 				auto rc = generate_struct_serialize(node);
 				WISE_RETURN_IF(!rc, rc);
@@ -250,13 +250,13 @@ result cplus_generator::generate_factory()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Message)
+			if (node->get_type() == idl_node::Type::Message)
 			{
 				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
 					<< std::endl;
 			}
-			else if (node->get_type() == idl_node::Tx)
+			else if (node->get_type() == idl_node::Type::Tx)
 			{
 				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
@@ -604,7 +604,7 @@ result cplus_generator::generate_message_topic(const idl_node* node)
 	{
 		auto ttype = field->get_type();
 
-		if (ttype->get_type() == idl_type::topic)
+		if (ttype->get_type() == idl_type::type::topic)
 		{
 			const auto topic_type = static_cast<const idl_type_topic*>(ttype);
 			auto id = topic_type->get_identifier();
@@ -1149,39 +1149,39 @@ result cplus_generator::generate_tx_execute_bind(const idl_node* node)
 
 		switch (ft->get_type())
 		{
-		case idl_type::simple:
+		case idl_type::type::simple:
 		{
 			auto rc = generate_tx_execute_bind_simple(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::vec:
+		case idl_type::type::vec:
 		{
 			auto rc = generate_tx_execute_bind_vec(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::full:
+		case idl_type::type::full:
 		{
 			auto rc = generate_tx_execute_bind_full(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::macro:
+		case idl_type::type::macro:
 		{
 			(void)generate_field_macro(oscpp_, fields[i]);
 		}
 		break;
-		case idl_type::map:
-		case idl_type::topic:
+		case idl_type::type::map:
+		case idl_type::type::topic:
 		{
-			WISE_ERROR("Tx supported bind type. name: {}", ft->get_name());
+			WISE_ERROR("Tx unsupported bind type. name: {}", ft->get_name());
 			return result(false, "Tx unsupported bind type");
 		}
 		break;
 		default: 
 		{
-			WISE_ERROR("Tx supported bind type. name: {}", ft->get_name());
+			WISE_ERROR("Tx unsupported bind type. name: {}", ft->get_name());
 		}
 		}
 	}
@@ -1201,15 +1201,15 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 	switch (stype->get_simple_type())
 	{
-	case idl_type_simple::TYPE_BOOL:
+	case idl_type_simple::types::TYPE_BOOL:
 		postfix = "_bool";
 		prefix = "";
 		break;
-	case idl_type_simple::TYPE_I8:
+	case idl_type_simple::types::TYPE_I8:
 		postfix = "_int8";
 		prefix = "";
 		break;
-	case idl_type_simple::TYPE_U8:
+	case idl_type_simple::types::TYPE_U8:
 		postfix = "_uint8";
 		prefix = "";
 		break;
@@ -1219,8 +1219,8 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 	if (fv != nullptr && fv->is_output())
 	{
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			WISE_ERROR("Tx string does not support PARAM_OUT binding");
 			return result(false, "Tx string does not support PARAM_OUT binding");
@@ -1249,8 +1249,8 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 		ossql_ << "@" << field->get_variable_name() << " " << stype->get_typename_in("sql") << std::endl;
 
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			indent(oscpp_) << "stmt->bind_strings( "
 				<< ctx.bind_seq << ", "
@@ -1298,7 +1298,7 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 
 	switch (vft->get_type())
 	{
-	case idl_type::simple:
+	case idl_type::type::simple:
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -1316,7 +1316,7 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 		}
 	}
 	break;
-	case idl_type::full:
+	case idl_type::type::full:
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -1334,10 +1334,10 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 		}
 	}
 	break;
-	case idl_type::vec:
-	case idl_type::map:
-	case idl_type::topic:
-	case idl_type::macro:
+	case idl_type::type::vec:
+	case idl_type::type::map:
+	case idl_type::type::topic:
+	case idl_type::type::macro:
 	{
 		WISE_ERROR("Tx not supported bind type in vector. name: {}", vft->get_name());
 		return result(false, "Tx unsupported bind type in vector");
@@ -1395,7 +1395,7 @@ result cplus_generator::generate_tx_execute_bind_full(tx_gen_context& ctx, const
 	{
 		auto ft2 = fields[i]->get_type();
 
-		if (ft2->get_type() != idl_type::simple)
+		if (ft2->get_type() != idl_type::type::simple)
 		{
 			WISE_ERROR(
 				"Tx bind struct supports only simple types. name: {} var: {}",
@@ -1415,8 +1415,8 @@ result cplus_generator::generate_tx_execute_bind_full(tx_gen_context& ctx, const
 		ossql_ << "@" << field->get_variable_name() << "." << fields[i]->get_variable_name()  
 			<< " " << stype->get_typename_in("sql") << std::endl;
 
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			indent(oscpp_) << "stmt->bind_strings( "
 				<< ctx.bind_seq << ", "
@@ -1486,8 +1486,8 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 				for (auto& field : fields)
 				{
-					if (field->get_type()->get_type() != idl_type::simple && 
-						field->get_type()->get_type() != idl_type::macro )
+					if (field->get_type()->get_type() != idl_type::type::simple && 
+						field->get_type()->get_type() != idl_type::type::macro )
 					{
 						WISE_ERROR(
 							"Tx result set should have simple types or macro only. tx: {}, field: {}",
@@ -1507,7 +1507,7 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 					for (auto& field : fields)
 					{
-						if (field->get_type()->get_type() == idl_type::macro)
+						if (field->get_type()->get_type() == idl_type::type::macro)
 						{
 							(void)generate_field_macro(oscpp_, field);
 						}
@@ -1535,7 +1535,7 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 					for (auto& field : fields)
 					{
-						if (field->get_type()->get_type() == idl_type::macro)
+						if (field->get_type()->get_type() == idl_type::type::macro)
 						{
 							(void)generate_field_macro(oscpp_, field);
 						}
@@ -1857,25 +1857,25 @@ result cplus_generator::generate_field(const idl_field* field)
 
 	switch (ttype->get_type())
 	{
-	case idl_type::simple:
+	case idl_type::type::simple:
 		return generate_field_simple_type(field);
 
-	case idl_type::full: 
+	case idl_type::type::full: 
 		return generate_field_full_type(field);
 
-	case idl_type::vec:
+	case idl_type::type::vec:
 		return generate_field_vec(field);
 
-	case idl_type::map:
+	case idl_type::type::map:
 		return generate_field_map(field);
 
-	case idl_type::macro:
+	case idl_type::type::macro:
 		return generate_field_macro(os_, field);
 
-	case idl_type::topic:
+	case idl_type::type::topic:
 		return result(true, "Topic is generated already.");
 
-	case idl_type::option:
+	case idl_type::type::option:
 		return result(true, "skip");
 
 	default: 
@@ -1939,7 +1939,7 @@ result cplus_generator::generate_field_vec(const idl_field* field)
 
 	inc_indent();
 	{
-		if ( vtype->get_type() == idl_type::simple)
+		if ( vtype->get_type() == idl_type::type::simple)
 		{ 
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 
@@ -1974,7 +1974,7 @@ result cplus_generator::generate_field_map(const idl_field* field)
 	{
 		indent(os_) << "std::map<"; 
 
-		if (ktype->get_type() == idl_type::simple)
+		if (ktype->get_type() == idl_type::type::simple)
 		{
 			auto stype = static_cast<const idl_type_simple*>(ktype);
 
@@ -1987,7 +1987,7 @@ result cplus_generator::generate_field_map(const idl_field* field)
 		os_ << ", ";
 
 
-		if (vtype->get_type() == idl_type::simple)
+		if (vtype->get_type() == idl_type::type::simple)
 		{
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 
@@ -2087,7 +2087,7 @@ result cplus_generator::generate_expression_value(const idl_field* field, const 
 		{
 			auto ttype = static_cast<const idl_type_simple*>(field->get_type());
 
-			if (ttype && ttype->get_simple_type() == idl_type_simple::TYPE_FLOAT)
+			if (ttype && ttype->get_simple_type() == idl_type_simple::types::TYPE_FLOAT)
 			{
 				os_ << ".f";
 			}

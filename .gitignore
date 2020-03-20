@@ -43,3 +43,4 @@ generated
 /tool/bits/bin/*.pdb
 /tool/bits/bin/*.ilk
 /tool/bits/bin/*.ipdb
+/tool/bits/build

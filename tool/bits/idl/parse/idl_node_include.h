@@ -11,7 +11,7 @@ public:
 	idl_node_include()
 		: idl_node()
 	{
-		type_ = Include;
+		type_ = Type::Include;
 	}
 
 	~idl_node_include()

@@ -1,13 +1,13 @@
-#include "stdafx.h"
+#include <pch.hpp>
 
-#include "statement.hpp"
-#include "error.hpp"
-#include "result.hpp"
+#include <wise.kernel/dbc/statement.hpp>
+#include <wise.kernel/dbc/error.hpp>
+#include <wise.kernel/dbc/result.hpp>
+#include <wise.kernel/core/mem_tracker.hpp>
 
 #include <map>
 
-namespace dbc
-{
+namespace dbc {
 
 class statement::statement_impl
 {

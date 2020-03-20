@@ -117,7 +117,7 @@ inline void convert(const std::wstring& in, std::string& out)
 	using boost::locale::conv::utf_to_utf;
 	out = utf_to_utf<char>(in.c_str(), in.c_str() + in.size());
 #elif defined(_MSC_VER)
-	wise::convert(in, out);
+	wise::kernel::convert(in, out);
 #else 
 	using convert_type = std::codecvt_utf8<wchar_t>;
 	std::wstring_convert<convert_type, wchar_t> converter;
@@ -132,7 +132,7 @@ inline void convert(const std::string& in, std::wstring& out)
 	using boost::locale::conv::utf_to_utf;
 	out = utf_to_utf<wide_char_t>(in.c_str(), in.c_str() + in.size());
 #elif defined(_MSC_VER)
-	wise::convert(in, out);
+	wise::kernel::convert(in, out);
 #else
 	using convert_type = std::codecvt_utf8<wchar_t>;
 	std::wstring_convert<convert_type, wchar_t> converter;
@@ -153,88 +153,11 @@ inline void convert(const std::string& in, std::string& out)
 
 // Attempts to get the most recent ODBC error as a string.
 // Always returns std::string, even in unicode mode.
-inline std::string recent_error(
+std::string recent_error(
 	SQLHANDLE handle
 	, SQLSMALLINT handle_type
-	, long &native
-	, std::string &state)
-{
-	std::wstring result;
-	std::string rvalue;
-	std::vector<DBC_SQLCHAR> sql_message(SQL_MAX_MESSAGE_LENGTH);
-	sql_message[0] = '\0';
-
-	SQLINTEGER i = 1;
-	SQLINTEGER native_error;
-	SQLSMALLINT total_bytes;
-	DBC_SQLCHAR sql_state[6];
-	RETCODE rc;
-
-	do
-	{
-		DBC_CALL_RC(
-			DBC_FUNC(SQLGetDiagRec)
-			, rc
-			, handle_type
-			, handle
-			, (SQLSMALLINT)i
-			, sql_state
-			, &native_error
-			, 0
-			, 0
-			, &total_bytes);
-
-		if (success(rc) && total_bytes > 0)
-			sql_message.resize(total_bytes + 1);
-
-		if (rc == SQL_NO_DATA)
-			break;
-
-		DBC_CALL_RC(
-			DBC_FUNC(SQLGetDiagRec)
-			, rc
-			, handle_type
-			, handle
-			, (SQLSMALLINT)i
-			, sql_state
-			, &native_error
-			, sql_message.data()
-			, (SQLSMALLINT)sql_message.size()
-			, &total_bytes);
-
-		if (!success(rc))
-		{
-			convert(result, rvalue);
-			return rvalue;
-		}
-
-		if (!result.empty())
-			result += ' ';
-
-		result += std::wstring(sql_message.begin(), sql_message.end());
-		i++;
-
-		// NOTE: unixODBC using PostgreSQL and SQLite drivers crash if you call SQLGetDiagRec()
-		// more than once. So as a (terrible but the best possible) workaround just exit
-		// this loop early on non-Windows systems.
-#ifndef _MSC_VER
-		break;
-#endif
-	} while (rc != SQL_NO_DATA);
-
-	convert(result, rvalue);
-	state = std::string(&sql_state[0], &sql_state[arrlen(sql_state) - 1]);
-	native = native_error;
-	std::string status = state;
-	status += ": ";
-	status += rvalue;
-
-	// some drivers insert \0 into error messages for unknown reasons
-	using std::replace;
-	replace(status.begin(), status.end(), '\0', ' ');
-
-	return status;
-}
+	, long& native
+	, std::string& state);
 
 } // dbc
 

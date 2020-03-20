@@ -11,7 +11,7 @@ public:
 	idl_node_enum()
 		: idl_node()
 	{
-		type_ = Enum;
+		type_ = Type::Enum;
 	}
 
 	~idl_node_enum()

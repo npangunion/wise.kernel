@@ -24,7 +24,7 @@ public:
 	idl_node_tx()
 		: idl_node()
 	{
-		type_ = Tx;
+		type_ = Type::Tx;
 	}
 
 	~idl_node_tx()

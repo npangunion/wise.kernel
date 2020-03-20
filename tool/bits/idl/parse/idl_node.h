@@ -8,7 +8,7 @@
 class idl_node
 {
 public: 
-	enum Type
+	enum class Type
 	{
 		None,
 		Enum,

@@ -10,7 +10,7 @@
 class idl_expression
 {
 public: 
-	enum Op
+	enum class Op
 	{
 		None, 
 		Plus, 
@@ -36,7 +36,7 @@ public:
 	{
 		WISE_EXPECT(next);
 
-		next->set_op_link(Plus);
+		next->set_op_link(Op::Plus);
 
 		exprs_.push_back(next);
 	}
@@ -45,7 +45,7 @@ public:
 	{
 		WISE_EXPECT(next);
 
-		next->set_op_link(Minus);
+		next->set_op_link(Op::Minus);
 
 		exprs_.push_back(next);
 	}
@@ -80,7 +80,7 @@ private:
 	}
 
 private: 
-	Op op_ = None;
+	Op op_ = Op::None;
 	idl_expression_value* value_ = nullptr;
 	std::vector<idl_expression*> exprs_;
 };

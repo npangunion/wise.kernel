@@ -6,7 +6,7 @@
 class idl_type abstract
 {
 public:
-	enum type
+	enum class type
 	{
 		simple, 
 		full, 

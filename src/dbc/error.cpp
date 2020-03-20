@@ -1,8 +1,94 @@
-#include "stdafx.h"
-#include "error.hpp"
+#include <pch.hpp>
+#include <wise.kernel/dbc/error.hpp>
+#include <wise.kernel/dbc/convert.hpp>
 
 namespace dbc
 {
+
+std::string recent_error(
+	SQLHANDLE handle
+	, SQLSMALLINT handle_type
+	, long& native
+	, std::string& state)
+{
+	std::wstring result;
+	std::string rvalue;
+	std::vector<DBC_SQLCHAR> sql_message(SQL_MAX_MESSAGE_LENGTH);
+	sql_message[0] = '\0';
+
+	SQLINTEGER i = 1;
+	SQLINTEGER native_error;
+	SQLSMALLINT total_bytes;
+	DBC_SQLCHAR sql_state[6];
+	RETCODE rc;
+
+	do
+	{
+		DBC_CALL_RC(
+			DBC_FUNC(SQLGetDiagRec)
+			, rc
+			, handle_type
+			, handle
+			, (SQLSMALLINT)i
+			, sql_state
+			, &native_error
+			, 0
+			, 0
+			, &total_bytes);
+
+		if (success(rc) && total_bytes > 0)
+			sql_message.resize(total_bytes + 1);
+
+		if (rc == SQL_NO_DATA)
+			break;
+
+		DBC_CALL_RC(
+			DBC_FUNC(SQLGetDiagRec)
+			, rc
+			, handle_type
+			, handle
+			, (SQLSMALLINT)i
+			, sql_state
+			, &native_error
+			, sql_message.data()
+			, (SQLSMALLINT)sql_message.size()
+			, &total_bytes);
+
+		if (!success(rc))
+		{
+			convert(result, rvalue);
+			return rvalue;
+		}
+
+		if (!result.empty())
+			result += ' ';
+
+		result += std::wstring(sql_message.begin(), sql_message.end());
+		i++;
+
+		// NOTE: unixODBC using PostgreSQL and SQLite drivers crash if you call SQLGetDiagRec()
+		// more than once. So as a (terrible but the best possible) workaround just exit
+		// this loop early on non-Windows systems.
+#ifndef _MSC_VER
+		break;
+#endif
+	} while (rc != SQL_NO_DATA);
+
+	convert(result, rvalue);
+	convert(sql_state, state);
+
+	native = native_error;
+	std::string status = state;
+	status += ": ";
+	status += rvalue;
+
+	// some drivers insert \0 into error messages for unknown reasons
+	using std::replace;
+	replace(status.begin(), status.end(), '\0', ' ');
+
+	return status;
+}
+
 type_incompatible_error::type_incompatible_error()
 	: std::runtime_error("type incompatible") { }
 

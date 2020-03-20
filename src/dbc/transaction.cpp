@@ -1,10 +1,9 @@
-#include "stdafx.h"
-#include "transaction.hpp"
-#include "connection.hpp"
-#include "error.hpp"
+#include <pch.hpp>
+#include <wise.kernel/dbc/transaction.hpp>
+#include <wise.kernel/dbc/connection.hpp>
+#include <wise.kernel/dbc/error.hpp>
 
-namespace dbc
-{
+namespace dbc {
 
 class transaction::transaction_impl
 {

@@ -16,7 +16,7 @@
 #include <idl/parse/idl_type_vec.h>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/macros.hpp>
-#include <wise.kernel/core/util.hpp>
+#include <wise.kernel/util/util.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -51,7 +51,7 @@ result csharp_generator::generate_nodes()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Include)
+			if (node->get_type() == idl_node::Type::Include)
 			{
 				auto rc = generate_include(node);
 				WISE_RETURN_IF(!rc, rc);
@@ -80,36 +80,36 @@ result csharp_generator::generate_nodes()
 
 		switch (node->get_type())
 		{
-			case idl_node::Enum:
+		case idl_node::Type::Enum:
 			{
 				auto rc = generate_enum(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Struct: 
+			case idl_node::Type::Struct: 
 			{
 				auto rc = generate_struct(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Message:
+			case idl_node::Type::Message:
 			{
 				auto rc = generate_message(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break;
-			case idl_node::Tx:
+			case idl_node::Type::Tx:
 			{
 				WISE_INFO("Tx is not supported for C#");
 				break;
 			}
 			break;
-			case idl_node::Include:
+			case idl_node::Type::Include:
 			{
 				// ignore
 			}
 			break;
-			case idl_node::Namespace:
+			case idl_node::Type::Namespace:
 			{
 				// ignore
 			}
@@ -188,7 +188,7 @@ result csharp_generator::generate_factory()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Message)
+			if (node->get_type() == idl_node::Type::Message)
 			{
 
 			}
@@ -387,7 +387,7 @@ result csharp_generator::generate_struct_unpack(const idl_node* node)
 						indent(os_) << "packer.Unpack(stream, ";
 					}
 
-					if (field->get_type()->get_type() != idl_type::vec)
+					if (field->get_type()->get_type() != idl_type::type::vec)
 					{
 						os_ << " out ";
 					}
@@ -532,7 +532,7 @@ result csharp_generator::generate_message_topic(const idl_node* node)
 	{
 		auto ttype = field->get_type();
 
-		if (ttype->get_type() == idl_type::topic)
+		if (ttype->get_type() == idl_type::type::topic)
 		{
 			const auto topic_type = static_cast<const idl_type_topic*>(ttype);
 			auto id = topic_type->get_identifier();
@@ -723,22 +723,22 @@ result csharp_generator::generate_field(const idl_field* field)
 
 	switch (ttype->get_type())
 	{
-	case idl_type::simple:
+	case idl_type::type::simple:
 		return generate_field_simple_type(field);
 
-	case idl_type::full: 
+	case idl_type::type::full: 
 		return generate_field_full_type(field);
 
-	case idl_type::vec:
+	case idl_type::type::vec:
 		return generate_field_vec(field);
 
-	case idl_type::macro:
+	case idl_type::type::macro:
 		return generate_field_macro(os_, field);
 
-	case idl_type::topic:
+	case idl_type::type::topic:
 		return result(true, "Topic is generated already.");
 
-	case idl_type::option:
+	case idl_type::type::option:
 		return result(true, "Skip option field");
 
 	default: 
@@ -768,8 +768,8 @@ result csharp_generator::generate_field_simple_type(const idl_field* field)
 		}
 		else
 		{
-			if (ttype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-				ttype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+			if (ttype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+				ttype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 			{
 				os_ << " = \"\"";
 			}
@@ -815,7 +815,7 @@ result csharp_generator::generate_field_vec(const idl_field* field)
 
 	inc_indent();
 	{
-		if ( vtype->get_type() == idl_type::simple)
+		if ( vtype->get_type() == idl_type::type::simple)
 		{ 
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 
@@ -828,7 +828,7 @@ result csharp_generator::generate_field_vec(const idl_field* field)
 
 		os_ << field->get_variable_name();
 
-		if ( vtype->get_type() == idl_type::simple)
+		if ( vtype->get_type() == idl_type::type::simple)
 		{ 
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 

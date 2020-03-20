@@ -65,14 +65,18 @@ project "wise.bits"
 	pchheader "pch.hpp"
 	pchsource "pch.cpp"
 
-	warnings "extra"
-	buildoptions { "/std:c++17" }
-
 	includeBOOST()
 	includeSPDLOG()
 
 	includedirs  "." 
 	useWISE_KERNEL()
 
+	warnings "extra"
+	buildoptions { "/std:c++17" }
 	
+	filter { 'files:idl/idl_parser.cpp' }
+		flags { 'NoPCH' }
+
+	filter { 'files:idl/idl_lexer.cpp' }
+		flags { 'NoPCH' }
     
