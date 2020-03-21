@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "idl_node_message.h"
 #include "idl_type_opt.h"
 

@@ -1,12 +1,12 @@
 #pragma once 
 
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <string>
 
 class idl_type abstract
 {
 public:
-	enum type
+	enum class type
 	{
 		simple, 
 		full, 

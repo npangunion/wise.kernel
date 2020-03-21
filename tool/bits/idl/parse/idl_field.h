@@ -3,7 +3,7 @@
 #include "idl_type.h"
 #include "idl_expression.h"
 #include "idl_field_value.h"
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <sstream>
 
 /**

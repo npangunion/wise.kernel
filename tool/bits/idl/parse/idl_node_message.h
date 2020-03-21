@@ -9,7 +9,7 @@ class idl_node_message : public idl_node_struct
 public:
 	idl_node_message()
 	{
-		type_ = Message;
+		type_ = Type::Message;
 	}
 
 	~idl_node_message()

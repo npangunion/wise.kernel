@@ -52,8 +52,6 @@ protocol::result bits_protocol::send(packet::ptr m)
 	return send_final(mp, *pbuf, pbuf->size());
 }
 
-
-
 protocol::result bits_protocol::send_final(
 	bits_packet::ptr mp,
 	resize_buffer& buf,
@@ -67,7 +65,6 @@ protocol::result bits_protocol::send_final(
 
 	return send_modified(mp, buf, len);
 }
-
 
 protocol::result bits_protocol::send_final(
 	bits_packet::ptr mp,
@@ -268,7 +265,6 @@ protocol::result bits_protocol::on_recv(
 	return result(true, reason::success);
 }
 
-
 protocol::result bits_protocol::recv_modified(
 	bits_packet::ptr mp,
 	resize_buffer& buf,
@@ -310,7 +306,6 @@ protocol::result bits_protocol::recv_modified(
 
 	return result(true, reason::success);
 }
-
 
 void bits_protocol::on_send(std::size_t len)
 {

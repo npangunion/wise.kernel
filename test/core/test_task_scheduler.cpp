@@ -37,8 +37,8 @@ TEST_CASE("task scheduler")
 		task_scheduler ts; 
 
 		auto rc = ts.start(config);
-		CHECK(rc);
-		CHECK(ts.get_runner_count() == config.runner_count);
+		REQUIRE(rc);
+		REQUIRE(ts.get_runner_count() == config.runner_count);
 
 		auto tsk = wise_shared<my_task>("my_task for usage");
 
@@ -46,8 +46,8 @@ TEST_CASE("task scheduler")
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		CHECK(tsk->get_last_runner_id() > 0);
-		CHECK(tsk->get_last_execution_time() > 0);
+		REQUIRE(tsk->get_last_runner_id() > 0);
+		REQUIRE(tsk->get_last_execution_time() > 0);
 
 		ts.finish();
 	}
@@ -60,8 +60,8 @@ TEST_CASE("task scheduler")
 		config.runner_count = 8;
 
 		auto rc = ts.start(config);
-		CHECK(rc);
-		CHECK(ts.get_runner_count() == config.runner_count);
+		REQUIRE(rc);
+		REQUIRE(ts.get_runner_count() == config.runner_count);
 
 		const int test_count = 1;
 

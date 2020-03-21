@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "generator.hpp"
 #include <idl/idl_symbol_table.hpp>
 #include <idl/parse/idl_program.h>
@@ -14,9 +14,9 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise/base/logger.hpp>
-#include <wise/base/macros.hpp>
-#include <wise/base/util.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
+#include <wise.kernel/core/util.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -89,7 +89,7 @@ std::string generator::get_namespace() const
 	}
 	else
 	{
-		oss << "wise::";
+		oss << "wise::kernel::";
 	}
 
 	return oss.str();

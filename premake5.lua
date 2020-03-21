@@ -52,7 +52,12 @@ project "wise.kernel"
 	pchsource "src/pch.cpp"
 	
 	files { "include/**", "src/**" }
+
 	excludes { "src/core/botan/arch/**" }
+	excludes { "include/wise.kernel/service/db/**" }
+	excludes { "include/wise.kernel/service/bot/**" }
+	excludes { "src/service/db/**" }
+	excludes { "src/service/bot/**" }
 
 	defines "_ENABLE_EXTENDED_ALIGNED_STORAGE"
 	warnings "extra"
@@ -95,7 +100,9 @@ end
 -- The windowed app
 project "wise.kernel.test"
 	kind "ConsoleApp"
+
 	files "test/**"
+	excludes { "test/net/test_bits_protocol.cpp" }
 
 	pchheader "pch.hpp"
 	pchsource "test/pch.cpp"

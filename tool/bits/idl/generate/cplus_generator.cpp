@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "cplus_generator.hpp"
 #include <idl/idl_symbol_table.hpp>
 #include <idl/parse/idl_program.h>
@@ -15,9 +15,8 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise/base/logger.hpp>
-#include <wise/base/macros.hpp>
-#include <wise/base/util.hpp>
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -63,7 +62,7 @@ result cplus_generator::generate_nodes()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Include)
+			if (node->get_type() == idl_node::Type::Include)
 			{
 				auto rc = generate_include(node);
 				WISE_RETURN_IF(!rc, rc);
@@ -92,36 +91,36 @@ result cplus_generator::generate_nodes()
 
 		switch (node->get_type())
 		{
-			case idl_node::Enum:
+		case idl_node::Type::Enum:
 			{
 				auto rc = generate_enum(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Struct: 
+			case idl_node::Type::Struct: 
 			{
 				auto rc = generate_struct(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break; 
-			case idl_node::Message:
+			case idl_node::Type::Message:
 			{
 				auto rc = generate_message(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break;
-			case idl_node::Tx:
+			case idl_node::Type::Tx:
 			{
 				auto rc = generate_tx(node);
 				WISE_RETURN_IF(!rc, rc);
 			}
 			break;
-			case idl_node::Include:
+			case idl_node::Type::Include:
 			{
 				// ignore
 			}
 			break;
-			case idl_node::Namespace:
+			case idl_node::Type::Namespace:
 			{
 				// ignore
 			}
@@ -152,12 +151,13 @@ result cplus_generator::generate_nodes()
 	if ( program_->has_struct())
 	{
 		os_ << "// struct serialization section" << std::endl;
-		os_ << "namespace wise {" << std::endl;
+		os_ << "namespace wise { " << std::endl;
+		os_ << "namespace kernel { " << std::endl;
 
 		// TODO: generate struct serialize code in wise namespace
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Struct)
+			if (node->get_type() == idl_node::Type::Struct)
 			{
 				auto rc = generate_struct_serialize(node);
 				WISE_RETURN_IF(!rc, rc);
@@ -165,6 +165,7 @@ result cplus_generator::generate_nodes()
 		}
 
 		os_ << std::endl;
+		os_ << "} // kernel" << std::endl;
 		os_ << "} // wise" << std::endl;
 	}
 
@@ -194,11 +195,11 @@ result cplus_generator::generate_factory()
 
 	namespace fs = boost::filesystem;
 
-	std::string ext_removed = wise::remove_file_extension(program_->get_path());
+	std::string ext_removed = wise::kernel::remove_file_extension(program_->get_path());
 
 	fs::path er_file(ext_removed);
 
-	std::string filename = wise::get_filename(ext_removed);
+	std::string filename = wise::kernel::get_filename(ext_removed);
 
 	// header file
 	{
@@ -226,14 +227,14 @@ result cplus_generator::generate_factory()
 
 		// TODO: make it optional 
 
-		os << "#include \"stdafx.h\"" << std::endl;
-		os << "#include <wise/net/protocol/zen/zen_factory.hpp>" << std::endl;
-		os << "#include <wise/base/memory.hpp>" << std::endl;
+		os << "#include \"pch.hpp\"" << std::endl;
+		os << "#include <wise.kernel/net/protocol/bits/bits_factory.hpp>" << std::endl;
+		os << "#include <wise.kernel/core/mem_tracker.hpp>" << std::endl;
 		os << "#include \"" << inc.string() << "\"";
 		os << std::endl;
 		os << std::endl;
 
-		os << "#define WISE_ADD_ZEN(cls) wise::zen_factory::inst().add( "
+		os << "#define WISE_ADD_BITS(cls) wise::kernel::bits_factory::inst().add( "
 			"cls::get_topic(), []() { return wise_shared<cls>(); "
 			"} );";
 
@@ -249,15 +250,15 @@ result cplus_generator::generate_factory()
 
 		for (auto& node : nodes)
 		{
-			if (node->get_type() == idl_node::Message)
+			if (node->get_type() == idl_node::Type::Message)
 			{
-				indent(os) << "WISE_ADD_ZEN(" << get_namespace() 
+				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
 					<< std::endl;
 			}
-			else if (node->get_type() == idl_node::Tx)
+			else if (node->get_type() == idl_node::Type::Tx)
 			{
-				indent(os) << "WISE_ADD_ZEN(" << get_namespace() 
+				indent(os) << "WISE_ADD_BITS(" << get_namespace() 
 					<< node->get_name() << ");" 
 					<< std::endl;
 			}
@@ -388,7 +389,7 @@ result cplus_generator::generate_struct_pack(const idl_node* node)
 	auto sn = static_cast<const idl_node_message*>(node);
 	WISE_ASSERT(sn);
 
-	indent(os_) << "template<> inline bool pack(zen_packer& packer, "; 
+	indent(os_) << "template<> inline bool pack(bits_packer& packer, "; 
 	os_ << "const " << get_namespace() << node->get_name() << "& tv) " << std::endl;
 	indent(os_) << "{" << std::endl;
 
@@ -436,7 +437,7 @@ result cplus_generator::generate_struct_unpack(const idl_node* node)
 	auto sn = static_cast<const idl_node_message*>(node);
 	WISE_ASSERT(sn);
 
-	indent(os_) << "template<> inline bool unpack(zen_packer& packer, ";
+	indent(os_) << "template<> inline bool unpack(bits_packer& packer, ";
 	os_ << get_namespace() << node->get_name() << "& tv) " << std::endl;
 	indent(os_) << "{" << std::endl;
 
@@ -486,7 +487,7 @@ result cplus_generator::generate_message(const idl_node* node)
 
 	os_ << std::endl;
 
-	std::string super_class = "wise::zen_message";
+	std::string super_class = "wise::kernel::bits_packet";
 
 	auto sc = sn->get_super_class();
 	if (sc)
@@ -603,7 +604,7 @@ result cplus_generator::generate_message_topic(const idl_node* node)
 	{
 		auto ttype = field->get_type();
 
-		if (ttype->get_type() == idl_type::topic)
+		if (ttype->get_type() == idl_type::type::topic)
 		{
 			const auto topic_type = static_cast<const idl_type_topic*>(ttype);
 			auto id = topic_type->get_identifier();
@@ -622,7 +623,7 @@ result cplus_generator::generate_message_pack(const idl_node* node)
 
 	inc_indent();
 
-	indent(os_) << "bool pack(::wise::zen_packer& packer) override" << std::endl;
+	indent(os_) << "bool pack(::wise::kernel::bits_packer& packer) override" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 	// fields
@@ -679,7 +680,7 @@ result cplus_generator::generate_message_unpack(const idl_node* node)
 
 	inc_indent();
 
-	indent(os_) << "bool unpack(::wise::zen_packer& packer) override" << std::endl;
+	indent(os_) << "bool unpack(::wise::kernel::bits_packer& packer) override" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 	// fields
@@ -810,7 +811,7 @@ result cplus_generator::generate_tx_decl(const idl_node* node)
 
 	os_ << std::endl;
 
-	indent(os_) << "class " << sn->get_name() << " : public wise::tx" << std::endl;
+	indent(os_) << "class " << sn->get_name() << " : public wise::kernel::tx" << std::endl;
 	indent(os_) << "{" << std::endl;
 
 
@@ -840,7 +841,7 @@ result cplus_generator::generate_tx_decl(const idl_node* node)
 	{
 		// constructor
 		indent(os_) << node->get_name() << "()" << std::endl;
-		indent(os_) << ": wise::tx(get_topic())" << std::endl;
+		indent(os_) << ": wise::kernel::tx(get_topic())" << std::endl;
 		indent(os_) << "{" << std::endl;
 		indent(os_) << "\tquery_ = query;" << std::endl;
 		indent(os_) << "}" << std::endl;
@@ -945,8 +946,8 @@ result cplus_generator::generate_tx_bind_decl(const tx_bind* bind)
 
 		inc_indent();
 		{
-			indent(os_) << "bool pack(wise::zen_packer& packer); " << std::endl;
-			indent(os_) << "bool unpack(wise::zen_packer& packer); " << std::endl;
+			indent(os_) << "bool pack(wise::kernel::bits_packer& packer); " << std::endl;
+			indent(os_) << "bool unpack(wise::kernel::bits_packer& packer); " << std::endl;
 		}
 		dec_indent();
 
@@ -984,8 +985,8 @@ result cplus_generator::generate_tx_result_set_decl(std::size_t index, const tx_
 
 		inc_indent();
 		{
-			indent(os_) << "bool pack(wise::zen_packer& packer); " << std::endl;
-			indent(os_) << "bool unpack(wise::zen_packer& packer); " << std::endl;
+			indent(os_) << "bool pack(wise::kernel::bits_packer& packer); " << std::endl;
+			indent(os_) << "bool unpack(wise::kernel::bits_packer& packer); " << std::endl;
 		}
 		dec_indent();
 
@@ -1019,8 +1020,8 @@ result cplus_generator::generate_tx_serialize_decl(const idl_node* node)
 	// pack
 	inc_indent();
 	{
-		indent(os) << "bool pack(wise::zen_packer& packer) override;" << std::endl;
-		indent(os) << "bool unpack(wise::zen_packer& packer) override;" << std::endl;
+		indent(os) << "bool pack(wise::kernel::bits_packer& packer) override;" << std::endl;
+		indent(os) << "bool unpack(wise::kernel::bits_packer& packer) override;" << std::endl;
 	}
 	dec_indent();
 
@@ -1082,7 +1083,7 @@ result cplus_generator::generate_tx_execute(const idl_node* node)
 {
 	oscpp_ << std::endl;
 
-	indent(oscpp_) << "wise::tx::result " 
+	indent(oscpp_) << "wise::kernel::tx::result " 
 		<< node->get_name() << "::execute_query(dbc::statement::ptr stmt)" 
 		<< std::endl;
 
@@ -1148,39 +1149,39 @@ result cplus_generator::generate_tx_execute_bind(const idl_node* node)
 
 		switch (ft->get_type())
 		{
-		case idl_type::simple:
+		case idl_type::type::simple:
 		{
 			auto rc = generate_tx_execute_bind_simple(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::vec:
+		case idl_type::type::vec:
 		{
 			auto rc = generate_tx_execute_bind_vec(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::full:
+		case idl_type::type::full:
 		{
 			auto rc = generate_tx_execute_bind_full(ctx, fields[i]);
 			WISE_RETURN_IF(!rc, rc);
 		}
 		break;
-		case idl_type::macro:
+		case idl_type::type::macro:
 		{
 			(void)generate_field_macro(oscpp_, fields[i]);
 		}
 		break;
-		case idl_type::map:
-		case idl_type::topic:
+		case idl_type::type::map:
+		case idl_type::type::topic:
 		{
-			WISE_ERROR("Tx supported bind type. name: {}", ft->get_name());
+			WISE_ERROR("Tx unsupported bind type. name: {}", ft->get_name());
 			return result(false, "Tx unsupported bind type");
 		}
 		break;
 		default: 
 		{
-			WISE_ERROR("Tx supported bind type. name: {}", ft->get_name());
+			WISE_ERROR("Tx unsupported bind type. name: {}", ft->get_name());
 		}
 		}
 	}
@@ -1200,15 +1201,15 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 	switch (stype->get_simple_type())
 	{
-	case idl_type_simple::TYPE_BOOL:
+	case idl_type_simple::types::TYPE_BOOL:
 		postfix = "_bool";
 		prefix = "";
 		break;
-	case idl_type_simple::TYPE_I8:
+	case idl_type_simple::types::TYPE_I8:
 		postfix = "_int8";
 		prefix = "";
 		break;
-	case idl_type_simple::TYPE_U8:
+	case idl_type_simple::types::TYPE_U8:
 		postfix = "_uint8";
 		prefix = "";
 		break;
@@ -1218,8 +1219,8 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 	if (fv != nullptr && fv->is_output())
 	{
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			WISE_ERROR("Tx string does not support PARAM_OUT binding");
 			return result(false, "Tx string does not support PARAM_OUT binding");
@@ -1248,8 +1249,8 @@ result cplus_generator::generate_tx_execute_bind_simple(tx_gen_context& ctx, con
 
 		ossql_ << "@" << field->get_variable_name() << " " << stype->get_typename_in("sql") << std::endl;
 
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			indent(oscpp_) << "stmt->bind_strings( "
 				<< ctx.bind_seq << ", "
@@ -1297,7 +1298,7 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 
 	switch (vft->get_type())
 	{
-	case idl_type::simple:
+	case idl_type::type::simple:
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -1315,7 +1316,7 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 		}
 	}
 	break;
-	case idl_type::full:
+	case idl_type::type::full:
 	{
 		for (int i = 0; i < count; ++i)
 		{
@@ -1333,10 +1334,10 @@ result cplus_generator::generate_tx_execute_bind_vec(tx_gen_context& ctx, const 
 		}
 	}
 	break;
-	case idl_type::vec:
-	case idl_type::map:
-	case idl_type::topic:
-	case idl_type::macro:
+	case idl_type::type::vec:
+	case idl_type::type::map:
+	case idl_type::type::topic:
+	case idl_type::type::macro:
 	{
 		WISE_ERROR("Tx not supported bind type in vector. name: {}", vft->get_name());
 		return result(false, "Tx unsupported bind type in vector");
@@ -1394,7 +1395,7 @@ result cplus_generator::generate_tx_execute_bind_full(tx_gen_context& ctx, const
 	{
 		auto ft2 = fields[i]->get_type();
 
-		if (ft2->get_type() != idl_type::simple)
+		if (ft2->get_type() != idl_type::type::simple)
 		{
 			WISE_ERROR(
 				"Tx bind struct supports only simple types. name: {} var: {}",
@@ -1414,8 +1415,8 @@ result cplus_generator::generate_tx_execute_bind_full(tx_gen_context& ctx, const
 		ossql_ << "@" << field->get_variable_name() << "." << fields[i]->get_variable_name()  
 			<< " " << stype->get_typename_in("sql") << std::endl;
 
-		if (stype->get_simple_type() == idl_type_simple::TYPE_STRING ||
-			stype->get_simple_type() == idl_type_simple::TYPE_USTRING)
+		if (stype->get_simple_type() == idl_type_simple::types::TYPE_STRING ||
+			stype->get_simple_type() == idl_type_simple::types::TYPE_USTRING)
 		{
 			indent(oscpp_) << "stmt->bind_strings( "
 				<< ctx.bind_seq << ", "
@@ -1485,8 +1486,8 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 				for (auto& field : fields)
 				{
-					if (field->get_type()->get_type() != idl_type::simple && 
-						field->get_type()->get_type() != idl_type::macro )
+					if (field->get_type()->get_type() != idl_type::type::simple && 
+						field->get_type()->get_type() != idl_type::type::macro )
 					{
 						WISE_ERROR(
 							"Tx result set should have simple types or macro only. tx: {}, field: {}",
@@ -1506,7 +1507,7 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 					for (auto& field : fields)
 					{
-						if (field->get_type()->get_type() == idl_type::macro)
+						if (field->get_type()->get_type() == idl_type::type::macro)
 						{
 							(void)generate_field_macro(oscpp_, field);
 						}
@@ -1534,7 +1535,7 @@ result cplus_generator::generate_tx_execute_result(const idl_node* node)
 
 					for (auto& field : fields)
 					{
-						if (field->get_type()->get_type() == idl_type::macro)
+						if (field->get_type()->get_type() == idl_type::type::macro)
 						{
 							(void)generate_field_macro(oscpp_, field);
 						}
@@ -1579,12 +1580,12 @@ result cplus_generator::generate_tx_serialize_impl(const idl_node* node)
 
 	// pack
 	{
-		indent(os) << "bool " << node->get_name() << "::pack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << node->get_name() << "::pack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os) << "wise::tx::pack(packer);" << std::endl;
+			indent(os) << "wise::kernel::tx::pack(packer);" << std::endl;
 			indent(os) << "bind.pack(packer);" << std::endl;
 
 			// result
@@ -1633,12 +1634,12 @@ result cplus_generator::generate_tx_serialize_impl(const idl_node* node)
 
 	// unpack
 	{
-		indent(os) << "bool " << node->get_name() << "::unpack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << node->get_name() << "::unpack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os) << "wise::tx::unpack(packer);" << std::endl;
+			indent(os) << "wise::kernel::tx::unpack(packer);" << std::endl;
 			indent(os) << "bind.unpack(packer);" << std::endl;
 
 			// result
@@ -1694,7 +1695,7 @@ result cplus_generator::generate_tx_field_serialize(const std::string& cls, cons
 
 	// pack 
 	{
-		indent(os) << "bool " << cls << "::pack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << cls << "::pack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
@@ -1739,7 +1740,7 @@ result cplus_generator::generate_tx_field_serialize(const std::string& cls, cons
 
 	//unpack
 	{
-		indent(os) << "bool " << cls << "::unpack(wise::zen_packer& packer)" << std::endl;
+		indent(os) << "bool " << cls << "::unpack(wise::kernel::bits_packer& packer)" << std::endl;
 		indent(os) << "{" << std::endl;
 
 		inc_indent();
@@ -1788,7 +1789,7 @@ result cplus_generator::generate_topic(const idl_type_topic* ttype, const std::s
 {
 	WISE_UNUSED(ttype);
 
-	auto ids = wise::split(id, ".");
+	auto ids = wise::kernel::split(id, ".");
 
 	if (ids.size() != 3)
 	{
@@ -1801,24 +1802,24 @@ result cplus_generator::generate_topic(const idl_type_topic* ttype, const std::s
 
 	inc_indent();
 	{
-		indent(os_) << "static const wise::topic& get_topic() " << std::endl;
+		indent(os_) << "static const wise::kernel::topic& get_topic() " << std::endl;
 		indent(os_) << "{" << std::endl;
 
 		inc_indent();
 		{
-			indent(os_) << "static wise::topic topic_( " << std::endl;
+			indent(os_) << "static wise::kernel::topic topic_( " << std::endl;
 
 			inc_indent();
 			{
-				indent(os_) << "static_cast<wise::topic::category_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::category_t>(" 
 					<< cat << "::" << grp << "::category), " 
 					<< std::endl;
 
-				indent(os_) << "static_cast<wise::topic::group_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::group_t>(" 
 					<< cat << "::" << grp << "::group), " 
 					<< std::endl;
 
-				indent(os_) << "static_cast<wise::topic::type_t>(" 
+				indent(os_) << "static_cast<wise::kernel::topic::type_t>(" 
 					<< cat << "::" << grp << "::" << typ << ")" 
 					<< std::endl;
 			}
@@ -1856,25 +1857,25 @@ result cplus_generator::generate_field(const idl_field* field)
 
 	switch (ttype->get_type())
 	{
-	case idl_type::simple:
+	case idl_type::type::simple:
 		return generate_field_simple_type(field);
 
-	case idl_type::full: 
+	case idl_type::type::full: 
 		return generate_field_full_type(field);
 
-	case idl_type::vec:
+	case idl_type::type::vec:
 		return generate_field_vec(field);
 
-	case idl_type::map:
+	case idl_type::type::map:
 		return generate_field_map(field);
 
-	case idl_type::macro:
+	case idl_type::type::macro:
 		return generate_field_macro(os_, field);
 
-	case idl_type::topic:
+	case idl_type::type::topic:
 		return result(true, "Topic is generated already.");
 
-	case idl_type::option:
+	case idl_type::type::option:
 		return result(true, "skip");
 
 	default: 
@@ -1938,7 +1939,7 @@ result cplus_generator::generate_field_vec(const idl_field* field)
 
 	inc_indent();
 	{
-		if ( vtype->get_type() == idl_type::simple)
+		if ( vtype->get_type() == idl_type::type::simple)
 		{ 
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 
@@ -1973,7 +1974,7 @@ result cplus_generator::generate_field_map(const idl_field* field)
 	{
 		indent(os_) << "std::map<"; 
 
-		if (ktype->get_type() == idl_type::simple)
+		if (ktype->get_type() == idl_type::type::simple)
 		{
 			auto stype = static_cast<const idl_type_simple*>(ktype);
 
@@ -1986,7 +1987,7 @@ result cplus_generator::generate_field_map(const idl_field* field)
 		os_ << ", ";
 
 
-		if (vtype->get_type() == idl_type::simple)
+		if (vtype->get_type() == idl_type::type::simple)
 		{
 			auto stype = static_cast<const idl_type_simple*>(vtype);
 
@@ -2086,7 +2087,7 @@ result cplus_generator::generate_expression_value(const idl_field* field, const 
 		{
 			auto ttype = static_cast<const idl_type_simple*>(field->get_type());
 
-			if (ttype && ttype->get_simple_type() == idl_type_simple::TYPE_FLOAT)
+			if (ttype && ttype->get_simple_type() == idl_type_simple::types::TYPE_FLOAT)
 			{
 				os_ << ".f";
 			}
@@ -2117,8 +2118,8 @@ result cplus_generator::generate_expression_value(const idl_field* field, const 
 result cplus_generator::generate_prolog()
 {
 	os_ << "#pragma once" << std::endl;
-	os_ << "#include <wise/net/protocol/zen/zen_message.hpp>" << std::endl;
-	os_ << "#include <wise/net/protocol/zen/zen_packer.hpp>" << std::endl;
+	os_ << "#include <wise/net/protocol/bits/bits_packet.hpp>" << std::endl;
+	os_ << "#include <wise/net/protocol/bits/bits_packer.hpp>" << std::endl;
 	os_ << std::endl;
 
 	if (program_->has_tx())
@@ -2205,9 +2206,9 @@ result cplus_generator::generate_cpp_prolog()
 	fs::path h(program_->get_path());
 	h.replace_extension(".hpp");
 	
-	oscpp_ << "#include \"stdafx.h\"" << std::endl;
+	oscpp_ << "#include \"pch.hpp\"" << std::endl;
 	oscpp_ << "#include \"" <<  h.string() << "\"" << std::endl;
-	oscpp_ << "#include <wise/base/logger.hpp>" << std::endl;
+	oscpp_ << "#include <wise.kernel/core/logger.hpp>" << std::endl;
 
 	oscpp_ << std::endl;
 

@@ -1,7 +1,7 @@
 #include <pch.hpp>
 #include <idl/idl_context.h>
 #include <idl/idl_main.h>
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/logger.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 
@@ -13,7 +13,7 @@ int parse(const std::string& path);
 
 int main(int argc, char* argv[])
 {
-	po::options_description description("zenc idl compiler usage");
+	po::options_description description("bits idl compiler usage");
 
 	description.add_options()
 		("help,h", "Display this help message")

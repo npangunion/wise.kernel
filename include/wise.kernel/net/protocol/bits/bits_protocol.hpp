@@ -37,6 +37,8 @@ public:
 
 		bool enable_detail_log = false;
 
+		bool enable_loopback = false;
+
 		std::size_t max_packet_length = 512 * 1024;  // 512K
 	};
 
@@ -58,8 +60,10 @@ public:
 		std::size_t len
 	);
 
-private:
+	/// internal. made public to test
 	result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf);
+
+private:
 
 	/// cipher, checksum, then send to session
 	result send_final(

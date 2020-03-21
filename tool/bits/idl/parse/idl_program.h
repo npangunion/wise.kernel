@@ -49,7 +49,7 @@ public:
 	{
 		for (auto& n : nodes_)
 		{
-			if (n->get_type() == idl_node::Namespace)
+			if (n->get_type() == idl_node::Type::Namespace)
 			{
 				return n;
 			}

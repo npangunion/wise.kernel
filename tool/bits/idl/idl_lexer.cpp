@@ -646,7 +646,7 @@ char *yytext_ptr;
 #pragma warning(disable: 4005) // INT_*에 대한 중복 정의 
 #include "idl_main.h"
 #include "idl_parser.hpp"
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/logger.hpp>
 
 void integer_overflow(char* text) {
   yyerror("This integer is too big: \"%s\"\n", text);

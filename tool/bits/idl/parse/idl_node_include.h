@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "idl_node.h"
-#include <wise/base/macros.hpp>
+#include <wise.kernel/core/macros.hpp>
 #include <sstream>
 #include <vector>
 
@@ -11,7 +11,7 @@ public:
 	idl_node_include()
 		: idl_node()
 	{
-		type_ = Include;
+		type_ = Type::Include;
 	}
 
 	~idl_node_include()

@@ -2,7 +2,7 @@
 
 #include <wise.kernel/net/packet.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <wise.kernel/core/fmt.hpp>
 #include <bitset>
 
 namespace wise {

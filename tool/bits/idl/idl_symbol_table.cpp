@@ -1,6 +1,6 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "idl_symbol_table.hpp"
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/logger.hpp>
 
 
 idl_symbol_table::result 

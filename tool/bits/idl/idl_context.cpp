@@ -1,8 +1,8 @@
-#include "stdafx.h"
+#include <pch.hpp>
 #include "idl_context.h"
 #include "idl_main.h"
-#include <wise/base/macros.hpp>
-#include <wise/base/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
+#include <wise.kernel/core/logger.hpp>
 
 idl_context& idl_context::inst()
 {
@@ -148,12 +148,12 @@ void idl_context::setup_config_log()
 	{
 		if (config_.log_level == options[i])
 		{
-			wise::log()->set_level((spdlog::level::level_enum)i);
+			wise::kernel::log()->set_level((spdlog::level::level_enum)i);
 		}
 	}
 
-	if (wise::log()->level() == spdlog::level::debug ||
-		wise::log()->level() == spdlog::level::trace)
+	if (wise::kernel::log()->level() == spdlog::level::debug ||
+		wise::kernel::log()->level() == spdlog::level::trace)
 	{
 		WISE_INFO("Enabling parsing debugging output.");
 

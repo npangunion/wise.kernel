@@ -2,6 +2,7 @@
 #include <catch.hpp>
 #include <wise.kernel/net/protocol/bits/bits_protocol.hpp>
 #include <wise.kernel/net/protocol/bits/bits_factory.hpp>
+#include <wise.kernel/net/protocol/bits/bits_node.hpp>
 
 using namespace wise::kernel;
 
@@ -50,21 +51,19 @@ public:
 	{
 		// factory
 		bits_factory::inst().add(
-			topic(1, 1, 1),
+			topic(1, 1, 1), 
 			[]() 
-		{ 
-			return wise_shared<bits_test_message>(); 
-		}
-		);
+			{ 
+				return wise_shared<bits_test_message>();
+			});
 
 		// sub to messages
 		network::subscribe(
 			topic(sys::category::sys, sys::group::net, sys::type::session_ready),
-			[this](message::ptr m)
-		{
-			on_ready(m);
-		}
-		);
+			[this](message::ptr m) 
+			{
+				on_ready(m);
+			});
 
 		network::subscribe(
 			topic(1, 1, 1), 
@@ -76,8 +75,7 @@ public:
 			[this](message::ptr m)
 		{
 			on_closed(m);
-		}
-		);
+		});
 	}
 
 	int get_seq() const
@@ -157,10 +155,10 @@ TEST_CASE("bits protocol")
 
 			auto sid = network::subscribe(
 				topic(1, 1, 1),
-				[&mp](message::ptr m) { 
-					WISE_INFO("message recv. topic: 0x{:x}", 
-					m->get_topic().get_key()); 
-					mp = m; 
+				[&mp](message::ptr m) {
+					WISE_INFO("message recv. topic: 0x{:x}",
+						m->get_topic().get_key());
+					mp = m;
 				}
 			);
 
@@ -187,7 +185,7 @@ TEST_CASE("bits protocol")
 		SECTION("multicast")
 		{
 			// 미리 serialize 하고 동일 데이터로 여러 연결에 전송
-			
+
 			bits_factory::inst().add(
 				topic(1, 1, 1),
 				[]() { return wise_shared<bits_test_message>(); }
@@ -200,8 +198,8 @@ TEST_CASE("bits protocol")
 			auto sid = network::subscribe(
 				topic(1, 1, 1),
 				[&mp](message::ptr m) {
-					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key()); 
-					mp = m; 
+					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
+					mp = m;
 				}
 			);
 
@@ -234,10 +232,10 @@ TEST_CASE("bits protocol")
 
 			bits_factory::inst().add(
 				topic(1, 1, 1),
-				[]() { 
+				[]() {
 					auto mp = wise_shared<bits_test_message>();
 					mp->enable_checksum = true;
-					mp->enable_cipher = true; 
+					mp->enable_cipher = true;
 					mp->enable_sequence = true;
 
 					return mp;
@@ -255,7 +253,7 @@ TEST_CASE("bits protocol")
 			auto sid = network::subscribe(
 				topic(1, 1, 1),
 				[&mp](message::ptr m) {
-					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key()); 
+					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
 					mp = m;
 				}
 			);
@@ -314,7 +312,7 @@ TEST_CASE("bits protocol")
 
 			WISE_INFO("loopback performance. elapsed: {}", tick.elapsed());
 
-			
+
 			// 
 			// 1백 2십만. 1초 
 			// - 순서대로 처리 
@@ -343,9 +341,9 @@ TEST_CASE("bits protocol")
 				auto sid = network::subscribe(
 					topic(1, 1, 1),
 					[&mp](message::ptr m) {
-					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
-					mp = m;
-				}
+						WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
+						mp = m;
+					}
 				);
 
 				auto zp = wise_shared<bits_protocol>();
@@ -359,8 +357,8 @@ TEST_CASE("bits protocol")
 
 				bits_protocol::pack(pkt, buf);
 
-				zp->on_recv_to_test(buf.data(), buf.size()-8);
-				zp->on_recv_to_test(buf.data() + buf.size()-8, 8);
+				zp->on_recv_to_test(buf.data(), buf.size() - 8);
+				zp->on_recv_to_test(buf.data() + buf.size() - 8, 8);
 
 				auto pp = std::static_pointer_cast<bits_test_message>(mp);
 
@@ -386,7 +384,7 @@ TEST_CASE("bits protocol")
 
 	SECTION("echo performance")
 	{
-		bits_protocol::cfg.enable_loopback = false; 
+		bits_protocol::cfg.enable_loopback = false;
 
 		echo_tester tester;  // subscription
 
@@ -394,9 +392,9 @@ TEST_CASE("bits protocol")
 
 		network::inst().start();
 
-		network::inst().listen("0.0.0.0:7777", "bits");		
+		network::inst().listen("0.0.0.0:7777", "bits");
 
-		network::inst().connect("127.0.0.1:7777", "bits");	
+		network::inst().connect("127.0.0.1:7777", "bits");
 
 		fine_tick tick;
 

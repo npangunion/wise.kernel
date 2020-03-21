@@ -3,6 +3,7 @@ local SPDLOG_HOME = os.getenv("SPDLOG_HOME")
 local CATCH_HOME = os.getenv("CATCH_HOME")
 local CATCH_INCLUDE_DIR = CATCH_HOME .. "/single_include/catch2"
 local BITSERY_HOME = os.getenv("BITSERY_HOME")
+local WISE_KERNEL_HOME = "../../"
 
 workspace "wise.bits"
 	location "generated"
@@ -35,10 +36,15 @@ function includeBITSERY()
 	includedirs (BITSERY_HOME .. "/include")
 end	
 
-function use_wise_kernel()
-	includedirs "include"
+function useWISE_KERNEL()
+	includedirs (WISE_KERNEL_HOME .. "/include")
+	libdirs (WISE_KERNEL_HOME .. "/lib")
 	
-	links "wise.kernel"
+	filter { "configurations:Debug" }
+		links "wise.kerneld"
+
+	filter { "configurations:Release" }
+		links "wise.kernel"
 end    
 
 function includeCatch()
@@ -59,12 +65,18 @@ project "wise.bits"
 	pchheader "pch.hpp"
 	pchsource "pch.cpp"
 
-	warnings "extra"
-	buildoptions { "/std:c++17" }
-
-	includedirs  "." 
-
 	includeBOOST()
 	includeSPDLOG()
+
+	includedirs  "." 
+	useWISE_KERNEL()
+
+	warnings "extra"
+	buildoptions { "/std:c++17" }
 	
+	filter { 'files:idl/idl_parser.cpp' }
+		flags { 'NoPCH' }
+
+	filter { 'files:idl/idl_lexer.cpp' }
+		flags { 'NoPCH' }
     

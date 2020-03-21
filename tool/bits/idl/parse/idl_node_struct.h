@@ -10,7 +10,7 @@ class idl_node_struct : public idl_node
 public:
 	idl_node_struct()
 	{
-		type_ = Struct;
+		type_ = Type::Struct;
 	}
 
 	~idl_node_struct()

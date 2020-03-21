@@ -11,7 +11,7 @@ public:
 	idl_node_namespace()
 		: idl_node()
 	{
-		type_ = Namespace;
+		type_ = Type::Namespace;
 	}
 
 	~idl_node_namespace()
