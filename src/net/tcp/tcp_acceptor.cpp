@@ -6,19 +6,12 @@
 namespace wise {
 namespace kernel {
 
-tcp_acceptor::tcp_acceptor(
-	tcp_node* node,
-	uint16_t id, 
-	const std::string& proto,
-	const std::string& addr, 
-	channel::ptr ch)
+tcp_acceptor::tcp_acceptor( tcp_node* node, uint16_t id, const std::string& addr)
 	: node_(node)
 	, id_(id)
-	, proto_(proto)
 	, addr_(addr)
 	, socket_(node->ios())
 	, acceptor_(node->ios())
-	, channel_(ch)
 {
 }
 

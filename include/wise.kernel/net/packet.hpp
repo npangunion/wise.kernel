@@ -33,6 +33,11 @@ public:
 		protocol_ = proto;
 	}
 
+	protocol_ptr get_protocol() const
+	{
+		return protocol_;
+	}
+
 	const char* get_desc() const override
 	{
 		return "packet";

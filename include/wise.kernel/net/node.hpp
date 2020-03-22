@@ -1,7 +1,8 @@
 #pragma once 
 
-#include <wise.kernel/core/result.hpp>
+#include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/reason.hpp>
+#include <wise.kernel/core/result.hpp>
 #include <boost/asio.hpp>
 
 #include <mutex>
@@ -46,22 +47,35 @@ public:
 		return ios_; 
 	}
 
+	bool bind(channel::ptr chan);
+
+	void publish(packet::ptr m);
+
+	void unbind(channel::ptr chan);
+
+	void unbind(channel::key_t key);
+
+	bool has_channel(channel::key_t key) const;
+
 protected:
 	virtual result on_start() = 0;
 
 	virtual void on_finish() = 0;
 
 private:
+	using threads = std::vector<std::thread>;
+	using channel_map = std::map<channel::key_t, channel::ptr>;
+
+private:
 	void run();
 
 private:
-	using threads = std::vector<std::thread>;
-
-private:
-	config					config_;
-	boost::asio::io_service	ios_;
-	std::atomic<bool>		stop_ = true;
-	threads					threads_;
+	config						config_;
+	boost::asio::io_service		ios_;
+	std::atomic<bool>			stop_ = true;
+	threads						threads_;
+	mutable std::shared_mutex	mutex_;
+	channel_map					channels_;
 };
 
 } // kernel

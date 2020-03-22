@@ -37,341 +37,341 @@ std::vector<wise::kernel::tick_t> intervals{
 }
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		timer::timer()
-			: seq_(1, UINT32_MAX, 16)
+timer::timer()
+	: seq_(1, UINT32_MAX, 16)
+{
+}
+
+timer::~timer()
+{
+	slots_.clear();
+	reqs_.clear();
+
+	// 명시적으로 shared_ptr를 정리해 주면 
+	// 메모리 추적에 유용하다. 
+}
+
+int timer::set(tick_t interval, tick_t duration, bool repeat, tick_t after)
+{
+	is_set_during_posting_ = true;
+
+	if (interval < min_interval)
+	{
+		WISE_INFO("changing interval to min_interval {} from {}", min_interval, interval);
+
+		interval = min_interval;
+	}
+
+	auto target_interval = interval / 2; // 절반이 되어야 타이머 처리 분산이 됨
+
+	WISE_ASSERT(intervals.size() > 5);
+
+	tick_t fi = intervals[0];
+
+	for (int i = 0; i < intervals.size() - 1; ++i)
+	{
+		if (intervals[i] <= target_interval && target_interval < intervals[i + 1])
 		{
+			fi = intervals[i];
+			break;
 		}
+	}
 
-		timer::~timer()
+	auto& slt = create_slot(fi);
+
+	auto rp = std::make_shared<req>(*this, seq_.next(), interval, duration, after, repeat);
+
+	reqs_.emplace(rp->id_, rp);
+
+	slt.reqs_.push(slot::entry(reqs_[rp->id_]));
+
+	return rp->id_;
+}
+
+int timer::once(tick_t after, action act)
+{
+	auto id = set(after, 0, false);
+
+	(void)add(id, std::move(act));
+
+	return id;
+}
+
+int timer::repeat(tick_t interval, action act)
+{
+	auto id = set(interval);
+
+	if (add(id, std::move(act)))
+	{
+		return id;
+	}
+
+	return 0;
+}
+
+bool timer::has(id_t id) const
+{
+	return reqs_.find(id) != reqs_.end();
+}
+
+bool timer::add(id_t id, action&& act)
+{
+	auto iter = reqs_.find(id);
+
+	WISE_RETURN_IF(iter == reqs_.end(), false);
+
+	iter->second->add(std::move(act));
+
+	return true;
+}
+
+bool timer::cancel(id_t id)
+{
+	auto iter = reqs_.find(id);
+
+	WISE_RETURN_IF(iter == reqs_.end(), false);
+
+	iter->second->cancel_ = true;	// 취소된 요청들은 slot 실행할 때 제거
+
+	// safe to erase 
+	reqs_.erase(iter);
+
+	return true;
+}
+
+void timer::execute()
+{
+	auto tick = get_current_tick();
+
+	is_set_during_posting_ = false;
+
+	// 슬롯은 지우지 않기에 인덱스로 접근하면 안전
+
+	auto size = slots_.size();
+
+	for (std::size_t i = 0; i < size; ++i)
+	{
+		auto& sl = slots_[i];
+
+		update_slot(sl, tick);
+	}
+
+	// 빈 슬롯을 지우지 않는다.
+}
+
+void timer::update_slot(slot& sl, tick_t now)
+{
+	if ((sl.last_run_tick_ + sl.interval_) > now)
+	{
+		return;
+	}
+
+	sl.last_run_tick_ = now;
+
+	WISE_RETURN_IF(sl.reqs_.empty());
+
+	auto e = sl.reqs_.top();
+
+	while (e.ptr_->next_run_tick_ <= now)
+	{
+		sl.reqs_.pop();
+
+		if (!e.ptr_->cancel_)
 		{
-			slots_.clear();
-			reqs_.clear();
+			e.ptr_->last_run_tick_ = now;
 
-			// 명시적으로 shared_ptr를 정리해 주면 
-			// 메모리 추적에 유용하다. 
-		}
+			e.ptr_->run();
 
-		int timer::set(tick_t interval, tick_t duration, bool repeat, tick_t after)
-		{
-			is_set_during_posting_ = true;
-
-			if (interval < min_interval)
+			if (e.ptr_->repeat_ || now < e.ptr_->end_run_tick_)
 			{
-				WISE_INFO("changing interval to min_interval {} from {}", min_interval, interval);
+				e.ptr_->next_run_tick_ = now + e.ptr_->interval_;
 
-				interval = min_interval;
+				sl.reqs_.push(e);
 			}
-
-			auto target_interval = interval / 2; // 절반이 되어야 타이머 처리 분산이 됨
-
-			WISE_ASSERT(intervals.size() > 5);
-
-			tick_t fi = intervals[0];
-
-			for (int i = 0; i < intervals.size() - 1; ++i)
+			else
 			{
-				if (intervals[i] <= target_interval && target_interval < intervals[i + 1])
-				{
-					fi = intervals[i];
-					break;
-				}
-			}
-
-			auto& slt = create_slot(fi);
-
-			auto rp = std::make_shared<req>(*this, seq_.next(), interval, duration, after, repeat);
-
-			reqs_.emplace(rp->id_, rp);
-
-			slt.reqs_.push(slot::entry(reqs_[rp->id_]));
-
-			return rp->id_;
-		}
-
-		int timer::once(tick_t after, action act)
-		{
-			auto id = set(after, 0, false);
-
-			(void)add(id, std::move(act));
-
-			return id;
-		}
-
-		int timer::repeat(tick_t interval, action act)
-		{
-			auto id = set(interval);
-
-			if (add(id, std::move(act)))
-			{
-				return id;
-			}
-
-			return 0;
-		}
-
-		bool timer::has(id_t id) const
-		{
-			return reqs_.find(id) != reqs_.end();
-		}
-
-		bool timer::add(id_t id, action&& act)
-		{
-			auto iter = reqs_.find(id);
-
-			WISE_RETURN_IF(iter == reqs_.end(), false);
-
-			iter->second->add(std::move(act));
-
-			return true;
-		}
-
-		bool timer::cancel(id_t id)
-		{
-			auto iter = reqs_.find(id);
-
-			WISE_RETURN_IF(iter == reqs_.end(), false);
-
-			iter->second->cancel_ = true;	// 취소된 요청들은 slot 실행할 때 제거
-
-			// safe to erase 
-			reqs_.erase(iter);
-
-			return true;
-		}
-
-		void timer::execute()
-		{
-			auto tick = get_current_tick();
-
-			is_set_during_posting_ = false;
-
-			// 슬롯은 지우지 않기에 인덱스로 접근하면 안전
-
-			auto size = slots_.size();
-
-			for (std::size_t i = 0; i < size; ++i)
-			{
-				auto& sl = slots_[i];
-
-				update_slot(sl, tick);
-			}
-
-			// 빈 슬롯을 지우지 않는다.
-		}
-
-		void timer::update_slot(slot& sl, tick_t now)
-		{
-			if ((sl.last_run_tick_ + sl.interval_) > now)
-			{
-				return;
-			}
-
-			sl.last_run_tick_ = now;
-
-			WISE_RETURN_IF(sl.reqs_.empty());
-
-			auto e = sl.reqs_.top();
-
-			while (e.ptr_->next_run_tick_ <= now)
-			{
-				sl.reqs_.pop();
-
-				if (!e.ptr_->cancel_)
-				{
-					e.ptr_->last_run_tick_ = now;
-
-					e.ptr_->run();
-
-					if (e.ptr_->repeat_ || now < e.ptr_->end_run_tick_)
-					{
-						e.ptr_->next_run_tick_ = now + e.ptr_->interval_;
-
-						sl.reqs_.push(e);
-					}
-					else
-					{
-						remove_end_req(e.ptr_->id_);
-					}
-				}
-
-				if (sl.reqs_.empty())
-				{
-					break;
-				}
-
-				e = sl.reqs_.top();
+				remove_end_req(e.ptr_->id_);
 			}
 		}
 
-
-		tick_t timer::get_next_run_tick(id_t id) const
+		if (sl.reqs_.empty())
 		{
-			auto iter = reqs_.find(id);
-
-			WISE_RETURN_IF(iter == reqs_.end(), 0);
-
-			return iter->second->next_run_tick_;
+			break;
 		}
 
-		tick_t timer::get_last_run_tick(id_t id) const
+		e = sl.reqs_.top();
+	}
+}
+
+
+tick_t timer::get_next_run_tick(id_t id) const
+{
+	auto iter = reqs_.find(id);
+
+	WISE_RETURN_IF(iter == reqs_.end(), 0);
+
+	return iter->second->next_run_tick_;
+}
+
+tick_t timer::get_last_run_tick(id_t id) const
+{
+	auto iter = reqs_.find(id);
+
+	WISE_RETURN_IF(iter == reqs_.end(), 0);
+
+	return iter->second->last_run_tick_;
+}
+
+std::size_t timer::get_run_count(id_t id) const
+{
+	auto iter = reqs_.find(id);
+
+	WISE_RETURN_IF(iter == reqs_.end(), 0);
+
+	return iter->second->run_count_;
+}
+
+timer::slot& timer::create_slot(tick_t interval)
+{
+	// interval 보다 작은 간격의 슬롯들 중 최대 슬롯을 찾는다. 
+	// 슬롯은 정렬되어 있지 않다.
+
+	slot* found = nullptr;
+	tick_t found_interval = 0;
+
+	for (auto& slt : slots_)
+	{
+		if (slt.interval_ == interval)
 		{
-			auto iter = reqs_.find(id);
+			found = &slt;
+			found_interval = slt.interval_;
 
-			WISE_RETURN_IF(iter == reqs_.end(), 0);
-
-			return iter->second->last_run_tick_;
+			break;
 		}
+	}
 
-		std::size_t timer::get_run_count(id_t id) const
-		{
-			auto iter = reqs_.find(id);
+	// 없거나 해당 슬록의 간격이 interval의 절반 보다 크면 추가 생성한다. 
+	if (found == nullptr || found->interval_ > interval)
+	{
+		slot slt;
 
-			WISE_RETURN_IF(iter == reqs_.end(), 0);
+		slt.interval_ = interval;
+		slt.last_run_tick_ = 0;
 
-			return iter->second->run_count_;
-		}
+		slots_.push_back(slt);
 
-		timer::slot& timer::create_slot(tick_t interval)
-		{
-			// interval 보다 작은 간격의 슬롯들 중 최대 슬롯을 찾는다. 
-			// 슬롯은 정렬되어 있지 않다.
+		return *slots_.rbegin();
+	}
 
-			slot* found = nullptr;
-			tick_t found_interval = 0;
+	WISE_ASSERT(found);
 
-			for (auto& slt : slots_)
-			{
-				if (slt.interval_ == interval)
-				{
-					found = &slt;
-					found_interval = slt.interval_;
+	return *found;
+}
 
-					break;
-				}
-			}
+void timer::remove_end_req(id_t id)
+{
+	auto iter = reqs_.find(id);
 
-			// 없거나 해당 슬록의 간격이 interval의 절반 보다 크면 추가 생성한다. 
-			if (found == nullptr || found->interval_ > interval)
-			{
-				slot slt;
+	WISE_RETURN_IF(iter == reqs_.end());
 
-				slt.interval_ = interval;
-				slt.last_run_tick_ = 0;
+	reqs_.erase(iter);
+}
 
-				slots_.push_back(slt);
+timer::req::req(timer& t,
+	id_t id,
+	tick_t interval, tick_t duration, tick_t after, bool repeat)
+	: timer_(t)
+	, id_(id)
+	, interval_(interval)
+	, duration_(duration)
+	, after_(after)
+	, repeat_(repeat)
+{
+	WISE_ASSERT(id_ > 0);
+	WISE_ASSERT(interval_ > 0);
+	WISE_ASSERT(duration_ >= 0);
+	WISE_ASSERT(after_ >= 0);
 
-				return *slots_.rbegin();
-			}
+	interval_ = std::max(min_interval, interval_);			// clamp
 
-			WISE_ASSERT(found);
+	next_run_tick_ = t.get_current_tick() + after_ + interval_;
+	end_run_tick_ = t.get_current_tick() + after_ + duration_;
+}
 
-			return *found;
-		}
+void timer::req::run()
+{
+	WISE_ASSERT(id_ > 0);
 
-		void timer::remove_end_req(id_t id)
-		{
-			auto iter = reqs_.find(id);
+	for (auto& act : actions_)
+	{
+		act(id_);
+	}
 
-			WISE_RETURN_IF(iter == reqs_.end());
+	++run_count_;
+}
 
-			reqs_.erase(iter);
-		}
+void timer::req::release()
+{
+	if (id_ > 0)
+	{
+		timer_.seq_.release(id_);
+	}
 
-		timer::req::req(timer& t,
-			id_t id,
-			tick_t interval, tick_t duration, tick_t after, bool repeat)
-			: timer_(t)
-			, id_(id)
-			, interval_(interval)
-			, duration_(duration)
-			, after_(after)
-			, repeat_(repeat)
-		{
-			WISE_ASSERT(id_ > 0);
-			WISE_ASSERT(interval_ > 0);
-			WISE_ASSERT(duration_ >= 0);
-			WISE_ASSERT(after_ >= 0);
+	id_ = 0;
+}
 
-			interval_ = std::max(min_interval, interval_);			// clamp
+timer_holder::timer_holder(timer& _timer)
+	: timer_(_timer)
+{
+}
 
-			next_run_tick_ = t.get_current_tick() + after_ + interval_;
-			end_run_tick_ = t.get_current_tick() + after_ + duration_;
-		}
+timer_holder::~timer_holder()
+{
+	if (id_ > 0)
+	{
+		timer_.cancel(id_);
+	}
+}
 
-		void timer::req::run()
-		{
-			WISE_ASSERT(id_ > 0);
+timer::id_t timer_holder::once(tick_t after, timer::action act)
+{
+	WISE_THROW_IF(id_ > 0, "timer holder can have only one timer");
 
-			for (auto& act : actions_)
-			{
-				act(id_);
-			}
+	once_ = true;
+	id_ = timer_.once(after, WISE_TIMER_CB(on_once));
+	once_act_ = std::move(act);
 
-			++run_count_;
-		}
+	return id_;
+}
 
-		void timer::req::release()
-		{
-			if (id_ > 0)
-			{
-				timer_.seq_.release(id_);
-			}
+timer::id_t timer_holder::repeat(tick_t interval, timer::action act)
+{
+	id_ = timer_.repeat(interval, act);
+	return id_;
+}
 
-			id_ = 0;
-		}
+void timer_holder::cancel()
+{
+	if (id_ > 0)
+	{
+		timer_.cancel(id_);
+	}
 
-		timer_holder::timer_holder(timer& _timer)
-			: timer_(_timer)
-		{
-		}
+	id_ = 0;
+}
 
-		timer_holder::~timer_holder()
-		{
-			if (id_ > 0)
-			{
-				timer_.cancel(id_);
-			}
-		}
+void timer_holder::on_once(int timer)
+{
+	WISE_ASSERT(once_);
+	WISE_ASSERT(once_act_);
 
-		timer::id_t timer_holder::once(tick_t after, timer::action act)
-		{
-			WISE_THROW_IF(id_ > 0, "timer holder can have only one timer");
+	if (once_act_)
+	{
+		once_act_(timer);
+	}
+}
 
-			once_ = true;
-			id_ = timer_.once(after, WISE_TIMER_CB(on_once));
-			once_act_ = std::move(act);
-
-			return id_;
-		}
-
-		timer::id_t timer_holder::repeat(tick_t interval, timer::action act)
-		{
-			id_ = timer_.repeat(interval, act);
-			return id_;
-		}
-
-		void timer_holder::cancel()
-		{
-			if (id_ > 0)
-			{
-				timer_.cancel(id_);
-			}
-
-			id_ = 0;
-		}
-
-		void timer_holder::on_once(int timer)
-		{
-			WISE_ASSERT(once_);
-			WISE_ASSERT(once_act_);
-
-			if (once_act_)
-			{
-				once_act_(timer);
-			}
-		}
-
-	} // kernel
+} // kernel
 } // wise

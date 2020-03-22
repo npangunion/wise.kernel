@@ -102,7 +102,6 @@ project "wise.kernel.test"
 	kind "ConsoleApp"
 
 	files "test/**"
-	excludes { "test/net/test_bits_protocol.cpp" }
 
 	pchheader "pch.hpp"
 	pchsource "test/pch.cpp"

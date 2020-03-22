@@ -38,7 +38,7 @@ protocol::result bits_protocol::send(packet::ptr m)
 			topic::get_desc(m->get_topic())
 		);
 
-		return result(false, reason::fail_invalid_zen_message);
+		return result(false, reason::fail_inavlid_bits_message);
 	}
 
 	// TLS로 쓰레드별로 하나만 만듦.
@@ -142,7 +142,7 @@ protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
 	if (!rc)
 	{
 		WISE_ERROR("failed to pack. topic:  0x{:x}", mp->get_topic().get_key());
-		return result(false, reason::fail_zen_pack_error);
+		return result(false, reason::fail_bits_pack_error);
 	}
 
 	// size는 length와 topic 길이를 포함
@@ -185,7 +185,7 @@ protocol::result bits_protocol::on_recv(
 				"max packet size. len: {}", msg_len
 			);
 
-			return result(false, reason::fail_zen_max_packet_size);
+			return result(false, reason::fail_bits_max_packet_size);
 		}
 
 		if (remained_len < msg_len)
@@ -205,7 +205,7 @@ protocol::result bits_protocol::on_recv(
 				tp.get_category(), tp.get_group(), tp.get_type()
 			);
 
-			return result(false, reason::fail_zen_message_not_registered); // close
+			return result(false, reason::fail_bits_message_not_registered); // close
 		}
 
 		std::size_t final_len = 0;
@@ -241,7 +241,7 @@ protocol::result bits_protocol::on_recv(
 		if (!res)
 		{
 			WISE_ERROR("bits_packet unpack error. topic: ", topic::get_desc(tp));
-			return result(false, reason::fail_zen_unpack_error);
+			return result(false, reason::fail_bits_unpack_error);
 		}
 
 		mp->bind(shared_from_this());

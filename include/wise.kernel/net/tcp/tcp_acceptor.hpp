@@ -26,11 +26,9 @@ public:
 	using ptr = std::shared_ptr<tcp_acceptor>;
 
 	tcp_acceptor(
-		tcp_node* node, 
-		uint16_t id, 
-		const std::string& proto,
-		const std::string& addr, 
-		channel::ptr ch);
+		tcp_node* node,
+		uint16_t id,
+		const std::string& addr);
 
 	~tcp_acceptor();
 
@@ -42,16 +40,6 @@ public:
 		return addr_;
 	}
 
-	channel::ptr get_channel() const
-	{
-		return channel_;
-	}
-	
-	const std::string& get_protocol() const
-	{
-		return proto_;
-	}
-
 private:
 	void do_accept();
 
@@ -60,9 +48,7 @@ private:
 private:
 	tcp_node* node_ = nullptr;
 	uint16_t id_ = 0;
-	std::string proto_;
 	tcp_addr addr_;
-	channel::ptr channel_;
 	tcp::acceptor acceptor_;
 	tcp::socket socket_;
 };

@@ -19,12 +19,12 @@ tcp_node::~tcp_node()
 {
 }
 
-node::result tcp_node::listen(const std::string& proto, const std::string& addr, channel::ptr ch)
+node::result tcp_node::listen(const std::string& addr)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 
 	auto id = seq_.next();
-	auto ptr = wise_shared<tcp_acceptor>(this, id, proto, addr, ch);
+	auto ptr = wise_shared<tcp_acceptor>(this, id, addr);
 	auto rc = ptr->listen();
 
 	if (rc)
@@ -35,7 +35,7 @@ node::result tcp_node::listen(const std::string& proto, const std::string& addr,
 	return rc;
 }
 
-node::result tcp_node::connect(const std::string& proto, const std::string& addr, channel::ptr ch)
+node::result tcp_node::connect(const std::string& addr)
 {
 	tcp_connector::ptr ptr;
 
@@ -44,7 +44,7 @@ node::result tcp_node::connect(const std::string& proto, const std::string& addr
 		std::unique_lock<std::shared_mutex> lock(mutex_);
 
 		auto id = seq_.next();
-		ptr = wise_shared<tcp_connector>(this, id, proto, addr, ch);
+		ptr = wise_shared<tcp_connector>(this, id, addr);
 
 		// connect 호출하면 connector를 넣기 전에 응답이 오는 경우가 있어 
 		// 먼저 맵에 추가해야 한다. 
@@ -84,9 +84,6 @@ void tcp_node::on_finish()
 
 void tcp_node::on_accepted(key_t k, tcp::socket&& soc)
 {
-	std::string protocol;
-	channel::ptr chan;
-
 	// shared lock
 	{
 		std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -98,12 +95,9 @@ void tcp_node::on_accepted(key_t k, tcp::socket&& soc)
 			soc.close();
 			return;
 		}
-
-		protocol = iter->second->get_protocol();
-		chan = iter->second->get_channel();
 	}
 
-	on_new_socket(protocol, chan, std::move(soc), true);
+	on_new_socket(std::move(soc), true);
 }
 
 void tcp_node::on_accept_failed(key_t k, const error_code& ec)
@@ -126,18 +120,13 @@ void tcp_node::on_accept_failed(key_t k, const error_code& ec)
 	if (apt)
 	{
 		WISE_ERROR(
-			"failed to accept on protocol:{0}, addr:{1}",
-			apt->get_protocol(),
-			apt->get_addr().get_raw()
+			"failed to accept on protocol. addr:{0}", apt->get_addr().get_raw()
 		);
 	}
 }
 
 void tcp_node::on_connected(key_t k, tcp::socket&& soc)
 {
-	std::string protocol;
-	channel::ptr chan;
-
 	// shared lock
 	{
 		std::shared_lock<std::shared_mutex> lock(mutex_);
@@ -148,12 +137,9 @@ void tcp_node::on_connected(key_t k, tcp::socket&& soc)
 			soc.close();
 			return;
 		}
-
-		protocol = iter->second->get_protocol();
-		chan = iter->second->get_channel();
 	}
 
-	on_new_socket(protocol, chan, std::move(soc), false);
+	on_new_socket(std::move(soc), false);
 
 	// unique lock
 	{
@@ -188,13 +174,10 @@ void tcp_node::on_connect_failed(key_t k, const error_code& ec)
 }
 
 void tcp_node::on_new_socket(
-	const std::string& protocol, 
-	channel::ptr chan, 
 	tcp::socket&& soc, 
 	bool accepted)
 {
-	protocol::ptr proto = create_protocol(protocol, std::move(soc), accepted);
-	proto->bind(chan);
+	protocol::ptr proto = create_protocol(std::move(soc), accepted);
 	
 	// unique lock 
 	{

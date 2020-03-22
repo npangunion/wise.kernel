@@ -14,13 +14,8 @@ bits_node::~bits_node()
 {
 }
 
-protocol::ptr bits_node::create_protocol(
-		const std::string& proto,
-		tcp::socket&& sock,
-		bool accepted) 
+protocol::ptr bits_node::create_protocol( tcp::socket&& sock, bool accepted) 
 {
-	WISE_UNUSED(proto); // 동일 노드에서 여러 상위 프로토콜을 지원할 경우만 사용
-
 	auto sp = wise_shared<bits_protocol>(this, sock, accepted);
 	return sp;
 }

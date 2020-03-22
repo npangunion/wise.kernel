@@ -9,14 +9,10 @@ namespace kernel {
 tcp_connector::tcp_connector(
 	tcp_node* node,
 	uint16_t id,
-	const std::string& proto,
-	const std::string& addr,
-	channel::ptr ch)
+	const std::string& addr)
 	: node_(node)
-	, proto_(proto)
 	, id_(id)
 	, addr_(addr)
-	, channel_(ch)
 	, socket_(node->ios())
 {
 }

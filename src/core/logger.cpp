@@ -12,73 +12,74 @@ void create_folder_from(const char* path);
 }
 
 namespace wise {
-	namespace kernel {
+namespace kernel {
 
-		const char*		system_logger::name = "system";
-		bool			system_logger::enable_console = true;
-		unsigned int	system_logger::async_queue_size = 128 * 1024;
-		unsigned int	system_logger::flush_interval_seconds = 2;
-		const char*		system_logger::file_prefix = "logs/system.log";
-		const char*		system_logger::log_pattern = "%^[%Y-%m-%d %H:%M:%S.%e][%t][%L] %v%$";
-		bool			system_logger::retry_on_overflow = true;
+const char* system_logger::name = "system";
+bool			system_logger::enable_console = true;
+unsigned int	system_logger::async_queue_size = 128 * 1024;
+unsigned int	system_logger::flush_interval_seconds = 2;
+const char* system_logger::file_prefix = "logs/system.log";
+const char* system_logger::log_pattern = "%^[%Y-%m-%d %H:%M:%S.%e][%t][%L] %v%$";
+bool			system_logger::retry_on_overflow = true;
 
-		std::shared_ptr<spdlog::logger> system_logger::logger_;
-		std::recursive_mutex system_logger::mutex_;
-		std::atomic<bool> system_logger::initialized_ = false;
+std::shared_ptr<spdlog::logger> system_logger::logger_;
+std::recursive_mutex system_logger::mutex_;
+std::atomic<bool> system_logger::initialized_ = false;
 
-		void system_logger::init()
-		{
-			fmt::v6::internal::locale_ref loc;
-			fmt::v6::internal::decimal_point<char>(loc);
+void system_logger::init()
+{
+	fmt::v6::internal::locale_ref loc;
+	fmt::v6::internal::decimal_point<char>(loc);
 
-			// 초기화 중 여러 곳에서 호출할 경우 블럭 시킴
-			std::lock_guard<std::recursive_mutex> lock(mutex_);
+	// 초기화 중 여러 곳에서 호출할 경우 블럭 시킴
+	std::lock_guard<std::recursive_mutex> lock(mutex_);
 
-			WISE_RETURN_IF(initialized_);
+	WISE_RETURN_IF(initialized_);
 
-			initialized_ = true;
+	initialized_ = true;
 
-			spdlog::init_thread_pool(async_queue_size, 1);
+	spdlog::init_thread_pool(async_queue_size, 1);
 
-			spdlog::set_pattern(log_pattern);
-			spdlog::flush_every(std::chrono::seconds(flush_interval_seconds));
+	spdlog::set_pattern(log_pattern);
+	spdlog::flush_every(std::chrono::seconds(flush_interval_seconds));
 
-			create_folder_from(file_prefix);
+	create_folder_from(file_prefix);
 
-			std::vector<spdlog::sink_ptr> sinks;
+	std::vector<spdlog::sink_ptr> sinks;
 
-			if (enable_console)
-			{
-				auto s1 = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+	if (enable_console)
+	{
+		auto s1 = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
 
-				s1->set_color(spdlog::level::info, s1->GREEN | s1->BOLD);
-				s1->set_color(spdlog::level::debug, s1->WHITE);
-				s1->set_color(spdlog::level::trace, s1->CYAN);
-				s1->set_pattern(log_pattern);
+		s1->set_color(spdlog::level::info, s1->GREEN | s1->BOLD);
+		s1->set_color(spdlog::level::debug, s1->WHITE);
+		s1->set_color(spdlog::level::trace, s1->CYAN);
+		s1->set_pattern(log_pattern);
 
-				sinks.push_back(s1);
-			}
-
-			auto s2 = std::make_shared<spdlog::sinks::daily_file_sink<
-				std::mutex,
-				spdlog::sinks::daily_filename_calculator>
-			>(file_prefix, 0, 0);
-
-			s2->set_pattern(log_pattern);
-
-			sinks.push_back(s2);
-
-			auto logger = std::make_shared<spdlog::async_logger>(
-				name, sinks.begin(), sinks.end(),
-				spdlog::thread_pool()
-				);
-
-			spdlog::register_logger(logger);
-
-			get()->flush_on(spdlog::level::err);
-		}
+		sinks.push_back(s1);
 	}
-} // wise::kernel
+
+	auto s2 = std::make_shared<spdlog::sinks::daily_file_sink<
+		std::mutex,
+		spdlog::sinks::daily_filename_calculator>
+	>(file_prefix, 0, 0);
+
+	s2->set_pattern(log_pattern);
+
+	sinks.push_back(s2);
+
+	auto logger = std::make_shared<spdlog::async_logger>(
+		name, sinks.begin(), sinks.end(),
+		spdlog::thread_pool()
+		);
+
+	spdlog::register_logger(logger);
+
+	get()->flush_on(spdlog::level::err);
+}
+
+} // kernel
+} // wise
 
 #include <filesystem>
 

@@ -27,10 +27,8 @@ public:
 
 	tcp_connector(
 		tcp_node* node,
-		uint16_t id, 
-		const std::string& proto,
-		const std::string& addr, 
-		channel::ptr ch);
+		uint16_t id,
+		const std::string& addr);
 
 	~tcp_connector();
 
@@ -41,25 +39,13 @@ public:
 		return addr_;
 	}
 
-	channel::ptr get_channel() const
-	{
-		return channel_;
-	}
-
-	const std::string& get_protocol() const
-	{
-		return proto_;
-	}
-
 private:
 	void on_connected(const boost::system::error_code& ec);
 
 private:
 	tcp_node* node_ = nullptr;
 	uint16_t id_ = 0;
-	std::string proto_;
 	tcp_addr addr_;
-	channel::ptr channel_;
 	tcp::socket socket_;
 };
 

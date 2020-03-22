@@ -78,7 +78,7 @@ public:
 	struct config
 	{
 		static const std::size_t max_container_size = 8 * 1024;
-		static const std::size_t max_string_size = 8 * 1024;
+		static const std::size_t max_string_size = 2 * 1024;
 	};
 
 	bits_packer(resize_buffer& buf)
@@ -245,21 +245,22 @@ inline bool bits_packer::pack(const std::string& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
-	WISE_ASSERT(config::max_string_size >= s.length());
+	auto s_len = s.length();
 
-	if (config::max_container_size < s.length())
+	WISE_ASSERT(config::max_string_size >= s_len);
+
+	if (s_len > config::max_string_size)
 	{
 		WISE_ERROR(
-			"pack string - size: {} over than maxSize : {}",
-			s.length(), config::max_string_size
+			"pack string - size: {} over than max_string_size: {}",
+			s_len, config::max_string_size
 		);
 
-		is_valid_ = false;
-
+		is_valid_ = false; 
 		return is_valid_;
 	}
 
-	uint16_t len = static_cast<uint16_t>(s.length());
+	uint16_t len = static_cast<uint16_t>(s_len);
 
 	is_valid_ = pack(len);
 	WISE_RETURN_IF(!is_valid_, false);
@@ -287,15 +288,14 @@ inline bool bits_packer::unpack(std::string& s)
 
 	WISE_ASSERT(config::max_string_size >= len);
 
-	if (config::max_container_size < len)
+	if (len > config::max_string_size)
 	{
 		WISE_ERROR(
-			"unpack string - size: {} over than maxSize : {}",
+			"unpack string - size: {} over than max_string_size: {}",
 			len, config::max_string_size
 		);
 
-		is_valid_ = false;
-
+		is_valid_ = false; 
 		return is_valid_;
 	}
 
@@ -326,7 +326,7 @@ inline bool bits_packer::pack(const std::wstring& s)
 	if (s.length() > config::max_string_size)
 	{
 		WISE_ERROR(
-			"pack wstring> size: {} over than maxSize: {}",
+			"pack wstring> size: {} over than max_string_size: {}",
 			s.length(), config::max_string_size
 		);
 
@@ -349,6 +349,8 @@ inline bool bits_packer::unpack(std::wstring& s)
 
 	std::vector<unsigned char> u8s;
 
+	// TODO: unpack에서 wstring 길이 체크 필요
+
 	is_valid_ = unpack(u8s);
 	WISE_RETURN_IF(!is_valid_, false);
 
@@ -358,7 +360,7 @@ inline bool bits_packer::unpack(std::wstring& s)
 	if (s.length() > config::max_string_size)
 	{
 		WISE_ERROR(
-			"unpack wstring> size: {} over than maxSize: {}",
+			"unpack wstring> size: {} over than max_string_size: {}",
 			s.length(), config::max_string_size
 		);
 

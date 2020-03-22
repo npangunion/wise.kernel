@@ -14,7 +14,6 @@ public:
 
 private: 
 	protocol::ptr create_protocol(
-		const std::string& proto, 
 		tcp::socket&& sock, 
 		bool accepted) override;
 };

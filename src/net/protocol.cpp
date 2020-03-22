@@ -20,7 +20,7 @@ bool protocol::bind(channel::ptr chan)
 	return true;
 }
 
-void protocol::publish(packet_ptr m)
+void protocol::publish(packet::ptr m)
 {
 	std::shared_lock<std::shared_mutex> lock(mutex_);
 

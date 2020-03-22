@@ -37,10 +37,10 @@ public:
 	~tcp_node();
 
 	/// addr에서 listen. addr은 ip:port 형식. 
-	result listen(const std::string& proto, const std::string& addr, channel::ptr ch);
+	result listen(const std::string& addr);
 
 	/// connect to a addr. addr은 ip:port 형식
-	result connect(const std::string& proto, const std::string& addr, channel::ptr ch);
+	result connect(const std::string& addr);
 
 	tcp_protocol::ptr get(protocol::id_t id);
 
@@ -55,7 +55,6 @@ protected:
 	void on_finish() override;
 
 	virtual protocol::ptr create_protocol(
-		const std::string& proto, 
 		tcp::socket&& sock, 
 		bool accepted) = 0;
 
@@ -65,7 +64,9 @@ private:
 	using acceptors = std::map<key_t, tcp_acceptor::ptr>;
 	using connectors = std::map<key_t, tcp_connector::ptr>;
 	using protocols = slot_vector<protocol>;
+	using channel_map = std::map<channel::key_t, channel::ptr>;
 
+private:
 	void on_accepted(key_t k, tcp::socket&& soc);
 
 	/// called when accept failed
@@ -79,8 +80,6 @@ private:
 
 	// 새로운 연결에서 프로토콜 생성
 	void on_new_socket(
-		const std::string& proto, 
-		channel::ptr chan,
 		tcp::socket&& soc, 
 		bool accepted);
 

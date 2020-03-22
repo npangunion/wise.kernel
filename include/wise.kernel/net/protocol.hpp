@@ -1,8 +1,8 @@
 #pragma once 
 
+#include <wise.kernel/net/packet.hpp>
 #include <wise.kernel/net/reason.hpp>
 #include <wise.kernel/net/buffer/resize_buffer.hpp>
-
 #include <wise.kernel/core/channel/channel.hpp>
 #include <wise.kernel/core/result.hpp>
 
@@ -13,8 +13,6 @@
 namespace wise {
 namespace kernel {
 
-class packet;
-using packet_ptr = std::shared_ptr<packet>;
 
 /// abstract base class for protocols
 /**
@@ -40,11 +38,11 @@ public:
 	virtual ~protocol() {}
 
 	/// send to a session after processing message
-	virtual result send(packet_ptr m) = 0;
+	virtual result send(packet::ptr m) = 0;
 
 	bool bind(channel::ptr chan);
 
-	void publish(packet_ptr m);
+	void publish(packet::ptr m);
 
 	void unbind(channel::ptr chan);
 

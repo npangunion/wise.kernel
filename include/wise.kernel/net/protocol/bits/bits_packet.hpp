@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/net/packet.hpp>
+#include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
 #include <wise.kernel/core/fmt.hpp>
 #include <bitset>
@@ -37,9 +38,22 @@ struct bits_packet : public packet
 		++dealloc_;
 	}
 
+	/// pack(serialize) this packet
 	virtual bool pack(bits_packer& packer);
 
+	/// unpack(deserialize) this packet
 	virtual bool unpack(bits_packer& packer);
+
+	/// send a bits_packet to the bound protocol
+	protocol::result send(bits_packet::ptr packet)
+	{
+		if (!!get_protocol())
+		{
+			return get_protocol()->send(packet);
+		}
+
+		return protocol::result(false, reason::fail_protocol_not_bound);
+	}
 
 	const char* get_desc() const override
 	{
