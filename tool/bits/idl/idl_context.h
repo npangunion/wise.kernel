@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <idl/parse/idl_program.h>
+#include <spdlog/spdlog.h>
 #include <stack>
 #include <unordered_map>
 

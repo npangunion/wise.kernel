@@ -84,7 +84,7 @@ int parse_file(const std::string& path)
 
 		for (auto& n : nodes)
 		{
-			if (n->get_type() == idl_node::Include)
+			if (n->get_type() == idl_node::Type::Include)
 			{
 				auto inode = static_cast<const idl_node_include*>(n);
 				idl_context::inst().push_file(inode->get_path_string());

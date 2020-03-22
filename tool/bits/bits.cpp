@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	WISE_INFO("go logger");
+
 	idl_context::config cfg;
 
 	if (vm.count("log"))

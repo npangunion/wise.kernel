@@ -1,10 +1,13 @@
 #pragma once 
 
+#include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/core/macros.hpp>
+#include <wise.kernel/core/result.hpp>
+#include <wise.kernel/util/util.hpp>
+
 #include <idl/parse/idl_expression.h>
 #include <idl/parse/idl_field.h>
 #include <idl/parse/idl_node_struct.h>
-#include <wise.kernel/core/result.hpp>
-#include <wise.kernel/core/macros.hpp>
 #include <iostream>
 
 class idl_program;

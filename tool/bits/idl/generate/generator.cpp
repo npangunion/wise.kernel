@@ -16,7 +16,7 @@
 #include <idl/parse/idl_type_vec.h>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/macros.hpp>
-#include <wise.kernel/core/util.hpp>
+#include <wise.kernel/util/util.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -54,7 +54,7 @@ bool generator::is_macro(const idl_field* field) const
 {
 	auto ftype = field->get_type();
 
-	return ftype->get_type() == idl_type::macro;
+	return ftype->get_type() == idl_type::type::macro;
 }
 
 bool generator::is_serializable_field(const idl_field* field) const
@@ -64,9 +64,9 @@ bool generator::is_serializable_field(const idl_field* field) const
 	auto ttype = field->get_type();
 	WISE_ASSERT(ttype);
 
-	return	ttype->get_type() != idl_type::macro &&
-			ttype->get_type() != idl_type::topic && 
-			ttype->get_type() != idl_type::option;
+	return	ttype->get_type() != idl_type::type::macro &&
+			ttype->get_type() != idl_type::type::topic && 
+			ttype->get_type() != idl_type::type::option;
 }
 
 std::string generator::get_namespace() const
@@ -104,17 +104,17 @@ std::string generator::get_type_name(const idl_node* node) const
 {
 	switch (node->get_type())
 	{
-	case idl_node::Enum:
+	case idl_node::Type::Enum:
 		return "enum";
-	case idl_node::Message:
+	case idl_node::Type::Message:
 		return "message";
-	case idl_node::Include:
+	case idl_node::Type::Include:
 		return "include";
-	case idl_node::Namespace:
+	case idl_node::Type::Namespace:
 		return "namespace";
-	case idl_node::Struct:
+	case idl_node::Type::Struct:
 		return "struct";
-	case idl_node::Tx:
+	case idl_node::Type::Tx:
 		return "tx";
 	default: 
 		return "Unknown";
@@ -126,11 +126,11 @@ bool generator::is_short_type_field(const idl_field* field) const
 	auto ftype = field->get_type();
 	bool is_short_type = false;
 
-	if (ftype->get_type() == idl_type::simple)
+	if (ftype->get_type() == idl_type::type::simple)
 	{
 		auto stype = static_cast<const idl_type_simple*>(ftype);
 		auto stt = stype->get_simple_type();
-		is_short_type = (stt == idl_type_simple::TYPE_I16 || stt == idl_type_simple::TYPE_U16);
+		is_short_type = (stt == idl_type_simple::types::TYPE_I16 || stt == idl_type_simple::types::TYPE_U16);
 	}
 
 	return is_short_type;

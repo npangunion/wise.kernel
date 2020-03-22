@@ -45,6 +45,8 @@ function useWISE_KERNEL()
 
 	filter { "configurations:Release" }
 		links "wise.kernel"
+
+	filter {}
 end    
 
 function includeCatch()
@@ -70,6 +72,8 @@ project "wise.bits"
 
 	includedirs  "." 
 	useWISE_KERNEL()
+
+	staticruntime "On"
 
 	warnings "extra"
 	buildoptions { "/std:c++17" }

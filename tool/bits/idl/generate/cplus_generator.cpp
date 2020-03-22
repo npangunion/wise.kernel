@@ -15,8 +15,6 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise.kernel/core/logger.hpp>
-#include <wise.kernel/core/macros.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 

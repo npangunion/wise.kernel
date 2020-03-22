@@ -14,9 +14,6 @@
 #include <idl/parse/idl_type_simple.h>
 #include <idl/parse/idl_type_topic.h>
 #include <idl/parse/idl_type_vec.h>
-#include <wise.kernel/core/logger.hpp>
-#include <wise.kernel/core/macros.hpp>
-#include <wise.kernel/util/util.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
@@ -641,7 +638,7 @@ result csharp_generator::generate_message_unpack(const idl_node* node)
 						indent(os_) << "packer.Unpack(stream, ";
 					}
 
-					if (field->get_type()->get_type() != idl_type::vec)
+					if (field->get_type()->get_type() != idl_type::type::vec)
 					{
 						os_ << "out ";
 					}

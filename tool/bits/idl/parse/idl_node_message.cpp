@@ -25,7 +25,7 @@ bool idl_node_message::is_set(idl_type_opt::opt option) const
 	{
 		auto ft = f->get_type();
 
-		if (ft->get_type() == idl_type::option)
+		if (ft->get_type() == idl_type::type::option)
 		{
 			auto opt = static_cast<const idl_type_opt*>(ft);
 
