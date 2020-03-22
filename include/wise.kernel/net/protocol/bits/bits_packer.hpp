@@ -276,7 +276,6 @@ inline bool bits_packer::pack(const std::string& s)
 	return is_valid_;
 }
 
-
 template<>
 inline bool bits_packer::unpack(std::string& s)
 {

@@ -60,6 +60,11 @@ protocol::result bits_protocol::send_final(
 {
 	if (!needs_to_modify(mp))
 	{
+		if (cfg.enable_loopback)
+		{
+			return on_recv(buf.data(), len);
+		}
+
 		return tcp_protocol::send(buf.data(), len);
 	}
 
@@ -74,6 +79,11 @@ protocol::result bits_protocol::send_final(
 {
 	if (!needs_to_modify(mp))
 	{
+		if (cfg.enable_loopback)
+		{
+			return on_recv(data, len);
+		}
+
 		return  tcp_protocol::send(data, len);
 	}
 
@@ -116,6 +126,11 @@ protocol::result bits_protocol::send_modified(
 	}
 
 	WISE_ASSERT(buf.size() >= len);
+
+	if (cfg.enable_loopback)
+	{
+		return on_recv(buf.data(), buf.size());
+	}
 
 	if (buf.size() > len)
 	{
