@@ -41,7 +41,14 @@ function useBOTAN()
 	filter "architecture:x86_64"
 		includedirs (BOTAN_HOME .. "/x64/include")
 		libdirs (BOTAN_HOME .. "/x64/lib")
-		links "botan.lib"
+	
+	filter "configurations:Debug"
+		links "botan_d"
+
+	filter "configurations:Release"
+		links "botan"
+
+	filter {}
 end
 
 project "wise.kernel"
@@ -62,11 +69,13 @@ project "wise.kernel"
 	defines "_ENABLE_EXTENDED_ALIGNED_STORAGE"
 	warnings "extra"
 	buildoptions { "/std:c++17" }
+	flags { "MultiProcessorCompile" }
+
+	staticruntime "On"
 	
 	useBOOST()
 	includeSPDLOG()
 
-	staticruntime "On"
 
 	configuration "Debug"
 		targetdir "lib"
@@ -108,15 +117,16 @@ project "wise.kernel.test"
 
 	warnings "extra"
 	buildoptions { "/std:c++17" }
+	flags { "MultiProcessorCompile" }
+
+	staticruntime "On"
 
 	includedirs "test"
 	includeCatch()
 
-	staticruntime "On"
-
 	use_wise_kernel()
 
 	useBOOST()
+	useBOTAN()
 	includeSPDLOG()
 	
-	useBOTAN()

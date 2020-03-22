@@ -8,11 +8,10 @@
 namespace wise {
 namespace kernel {
 
-/// send buffer 
+/// send segment buffer 
 /**
- * not thread safe
- * - needs to use a lock if used from multiple threads
- * - if 1-send per socket is used, then it's not required to use a lock
+ * 전송을 분할하여 같은 길이 세그먼트로 나누고 
+ * 벡터 전송 함수를 호출하여 전송하기위해 사용
  */
 template <std::size_t Length>
 class segment_buffer
@@ -106,20 +105,6 @@ public:
 		return segs_[seg_index]->data()[offset];
 	}
 
-	/// 현재 쓰려고 하는 세그먼트 
-	std::size_t get_write_seg() const
-	{
-		return pos_ / Length;
-	}
-
-	/// 데이터가 있는 마지막 세그먼트
-	std::size_t get_data_seg() const
-	{
-		auto pos = pos_ > 0 ? pos_ - 1 : 0;
-
-		return pos / Length;
-	}
-
 	/// 세그먼트 앞으로 돌린다.
 	void rewind()
 	{
@@ -128,7 +113,7 @@ public:
 		pos_ = 0;
 	}
 
-	/// 데이터를 갖고 있는 것들만 넣음
+	/// 데이터를 갖고 있는 것들만 넣음. NOTE: release를 잊으면 안 됨
 	std::vector<seg*> transfer()
 	{
 		// no available data
@@ -167,6 +152,20 @@ public:
 	}
 
 private:
+	/// 현재 쓰려고 하는 세그먼트 
+	std::size_t get_write_seg() const
+	{
+		return pos_ / Length;
+	}
+
+	/// 데이터가 있는 마지막 세그먼트
+	std::size_t get_data_seg() const
+	{
+		auto pos = pos_ > 0 ? pos_ - 1 : 0;
+
+		return pos / Length;
+	}
+
 	void advance(std::size_t len)
 	{
 		pos_ += len;

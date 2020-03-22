@@ -5,11 +5,10 @@
 namespace wise {
 namespace kernel {
 
-checksum::checksum(protocol* _protocol, std::size_t header_length)
-	: modifier(_protocol)
+checksum::checksum(std::size_t header_length)
+	: modifier()
 	, header_length_(header_length)
 {
-
 }
 
 modifier::result checksum::begin()
@@ -19,7 +18,7 @@ modifier::result checksum::begin()
 
 modifier::result checksum::on_recv(
 	resize_buffer& buf,
-	std::size_t msg_pos,
+	std::size_t msg_offset,
 	std::size_t msg_len,
 	std::size_t& new_len
 )
@@ -42,7 +41,7 @@ modifier::result checksum::on_recv(
 	hash->clear();
 
 	hash->update(
-		buf.data() + msg_pos + header_length_,
+		buf.data() + msg_offset + header_length_,
 		msg_len - checksum_size - header_length_
 	);
 
@@ -50,7 +49,7 @@ modifier::result checksum::on_recv(
 	hash->final(crc);
 
 	auto rc = std::memcmp(
-		buf.data() + msg_pos + msg_len - checksum_size,
+		buf.data() + msg_offset + msg_len - checksum_size,
 		crc,
 		checksum_size
 	);
@@ -67,7 +66,7 @@ modifier::result checksum::on_recv(
 
 modifier::result checksum::on_send(
 	resize_buffer& buf,
-	std::size_t msg_pos,
+	std::size_t msg_offset,
 	std::size_t msg_len
 )
 {
@@ -86,7 +85,7 @@ modifier::result checksum::on_send(
 	hash->clear();
 
 	hash->update(
-		buf.data() + msg_pos + header_length_,
+		buf.data() + msg_offset + header_length_,
 		msg_len - header_length_
 	);
 
@@ -95,9 +94,9 @@ modifier::result checksum::on_send(
 
 	buf.append("abcd", checksum_size); // 공간 확보
 
-	std::memcpy(buf.data() + msg_pos + msg_len, crc, checksum_size);
+	std::memcpy(buf.data() + msg_offset + msg_len, crc, checksum_size);
 
-	update_length_field(buf, msg_pos, msg_len + checksum_size);
+	update_length_field(buf, msg_offset, msg_len + checksum_size);
 
 	return result(true, reason::success);
 }

@@ -67,8 +67,8 @@ struct cipher_impl
 	void complete();
 };
 
-cipher::cipher(protocol* _protocol, std::size_t header_length)
-	: modifier(_protocol)
+cipher::cipher(std::size_t header_length)
+	: modifier()
 	, header_length_(header_length)
 {
 }
@@ -98,7 +98,7 @@ modifier::result cipher::begin()
 
 modifier::result cipher::on_recv(
 	resize_buffer& buf,
-	std::size_t msg_pos,
+	std::size_t msg_offset,
 	std::size_t msg_len,
 	std::size_t& new_len
 )
@@ -115,7 +115,7 @@ modifier::result cipher::on_recv(
 	WISE_ASSERT(payload_size % BLOCK_SIZE == 0);
 
 	auto cipher_len = msg_len - header_length_;
-	auto cipher_pos = msg_pos + header_length_;
+	auto cipher_pos = msg_offset + header_length_;
 	auto final_pos = cipher_pos + cipher_len - BLOCK_SIZE;	// 마지막 블럭은 패딩 때문에 별도로 처리 (final 함수)
 	uint8_t* cipher_ptr = buf.data() + cipher_pos;
 
@@ -159,7 +159,7 @@ modifier::result cipher::on_recv(
 	{
 		receiver_->update_hash(
 			buf,
-			msg_pos + header_length_,
+			msg_offset + header_length_,
 			msg_len - header_length_ - pad_size
 		);
 
@@ -173,7 +173,7 @@ modifier::result cipher::on_recv(
 
 modifier::result cipher::on_send(
 	resize_buffer& buf,
-	std::size_t msg_pos,
+	std::size_t msg_offset,
 	std::size_t msg_len
 )
 {
@@ -189,7 +189,7 @@ modifier::result cipher::on_send(
 	buf.append(pad.data(), pad_size);
 
 	auto cipher_len = payload_size + pad_size;					// 암호화 길이
-	auto cipher_pos = msg_pos + header_length_;	// 암호화 시작 위치
+	auto cipher_pos = msg_offset + header_length_;	// 암호화 시작 위치
 	auto final_pos = cipher_pos + cipher_len - BLOCK_SIZE;		// 최종 블럭 위치	
 	uint8_t* cipher_ptr = buf.data() + cipher_pos;					// 암호화 시작 포인터
 
@@ -200,7 +200,7 @@ modifier::result cipher::on_send(
 
 	sender_->update_hash(
 		buf,
-		msg_pos + header_length_,
+		msg_offset + header_length_,
 		msg_len - header_length_
 	);
 
@@ -235,7 +235,7 @@ modifier::result cipher::on_send(
 
 	sender_->complete();
 
-	update_length_field(buf, msg_pos, msg_len + pad_size);
+	update_length_field(buf, msg_offset, msg_len + pad_size);
 
 	return result(true, reason::success);
 }

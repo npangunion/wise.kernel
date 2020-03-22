@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/core/macros.hpp>
+#include <wise.kernel/util/util.hpp>
 #include <array>
 
 namespace wise {
@@ -102,7 +103,7 @@ public:
 		// 안전운전
 		count = std::min(count, size());
 
-		::memmove_s(
+		memmove_s(
 			(void*)buf_.data(), buf_.size(),
 			(void*)(buf_.data() + count), pos_ - count
 		);

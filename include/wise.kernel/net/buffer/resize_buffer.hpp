@@ -4,6 +4,7 @@
 #include <wise.kernel/net/buffer/resize_buffer_iterator.hpp>
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/exception.hpp>
+#include <wise.kernel/util/util.hpp>
 
 #include <algorithm>
 #include <vector>
@@ -64,7 +65,7 @@ public:
 		WISE_ASSERT(buf_);
 		WISE_ASSERT(buf_->capacity() >= pos_ + len);
 
-		::memcpy_s(buf_->data() + pos_, buf_->capacity() - pos_, p, len);
+		memcpy(buf_->data() + pos_, buf_->capacity() - pos_, (void*)p, len);
 
 		pos_ += len;
 
@@ -106,6 +107,7 @@ public:
 		return pos_;
 	}
 
+	/// 현재 버퍼 크기 돌려줌
 	std::size_t capacity() const
 	{
 		WISE_RETURN_IF(!buf_, 0);
@@ -145,8 +147,8 @@ public:
 		return buf_->data();
 	}
 
-
-	const uint8_t& at(std::size_t pos) const
+	/// get a value at pos
+	const uint8_t at(std::size_t pos) const
 	{
 		WISE_ASSERT(buf_);
 		WISE_RETURN_IF(!buf_, 0);
@@ -245,6 +247,7 @@ private:
 	void reserve(std::size_t len)
 	{
 		WISE_EXPECT(len > 0);
+
 		if (!buf_)
 		{
 			WISE_ASSERT(pos_ == 0);

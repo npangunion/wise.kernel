@@ -36,6 +36,22 @@ errno_t memcpy(void* dest, std::size_t dest_len, void* src, std::size_t src_len)
 #endif
 }
 
+inline
+errno_t memmove_s(
+	void* dest,
+	std::size_t dst_len,
+	void* src,
+	std::size_t src_len
+	)
+{
+#ifdef _MSC_VER
+	return ::memmove_s(dest, dst_len, src, src_len);
+#else
+	std::memmove(dest, src, src_len)); // returns void*
+	return 0;
+#endif
+}
+
 std::vector<std::string> split(
 	const std::string& str,
 	const std::string& delims = "\t\n ",

@@ -1,6 +1,6 @@
 #pragma once 
 
-#include <wise.kernel/net/modifier/modifier.hpp>
+#include <wise.kernel/net/modifier.hpp>
 #include <mutex>
 
 namespace wise {
@@ -27,7 +27,7 @@ public:
 
 	static config cfg;
 
-	cipher(protocol* _protocol, std::size_t header_length);
+	cipher(std::size_t header_length);
 
 	/// destructor. required to genereate cipher_impl destructor
 	~cipher();
@@ -37,7 +37,7 @@ public:
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(
 		resize_buffer& buf,
-		std::size_t msg_pos,
+		std::size_t msg_offset,
 		std::size_t msg_len,
 		std::size_t& new_len
 	) override;
@@ -45,7 +45,7 @@ public:
 	/// before send. buf has only this message
 	virtual result on_send(
 		resize_buffer& buf,
-		std::size_t msg_pos,
+		std::size_t msg_offset,
 		std::size_t msg_len
 	) override;
 

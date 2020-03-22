@@ -14,9 +14,9 @@ bits_protocol::config bits_protocol::cfg;
 
 bits_protocol::bits_protocol(tcp_node* node, tcp::socket& sock, bool accepted)
 	: tcp_protocol(node, std::move(sock), accepted)
-	, checksum_(this, bits_packet::header_length)
-	, cipher_(this, bits_packet::header_length)
-	, sequencer_(this)
+	, checksum_(bits_packet::header_length)
+	, cipher_(bits_packet::header_length)
+	, sequencer_()
 {
 }
 

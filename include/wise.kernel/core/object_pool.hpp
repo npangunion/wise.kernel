@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "concurrent_queue.hpp"
+#include "exception.hpp"
 #include "macros.hpp"
 
 namespace wise {
@@ -146,11 +147,10 @@ private:
 
 		if (pool_alloc_count_ > 0)
 		{
-			WISE_ERROR(
+			WISE_THROW_FMT(
 				"object_pool: {}. {} objects not freed.",
 				name_.c_str(),
-				pool_alloc_count_
-			);
+				pool_alloc_count_);
 		}
 
 		while (q_.pop(obj))

@@ -4,8 +4,8 @@
 namespace wise {
 namespace kernel {
 
-sequencer::sequencer(protocol* _protocol)
-	: modifier(_protocol)
+sequencer::sequencer()
+	: modifier()
 {
 }
 

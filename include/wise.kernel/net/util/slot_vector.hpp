@@ -201,6 +201,12 @@ slot_vector<T>::slot_id::slot_id(uint16_t seq, uint16_t index)
 }
 
 template <typename T>
+bool slot_vector<T>::slot_id::is_valid() const
+{
+	return full_.seq_ > 0 && full_.index_ >= 0;
+}
+
+template <typename T>
 const uint32_t slot_vector<T>::slot_id::get_value() const
 {
 	return value_;

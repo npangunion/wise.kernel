@@ -13,10 +13,7 @@ namespace kernel {
 
 /// multiple size buffer pool
 /**
- * features:
- *  - thread safe
- *  - blocks (c-style)
- *  -
+ * 여러 고정 길이 버퍼를 갖고, 다양한 길이의 버퍼를 제공한다. 
  */
 class multiple_size_buffer_pool
 {
@@ -27,14 +24,6 @@ public:
 	{
 		std::size_t start_power_of_2 = 6;	// 64 bytes 
 		std::size_t	steps = 16;				// 2^24 = 1MB   
-	};
-
-	struct stat
-	{
-		std::atomic<uint32_t>	os_alloc_count = 0;
-		std::atomic<uint32_t>	os_alloc_bytes = 0;
-		std::atomic<uint32_t>	total_os_alloc_bytes = 0;
-		std::atomic<uint32_t>	total_os_release_bytes = 0;
 	};
 
 public:
@@ -50,12 +39,11 @@ public:
 
 	~multiple_size_buffer_pool()
 	{
+		clear();
 	}
 
 	buffer::ptr alloc(std::size_t required_size)
 	{
-		// TODO: 최적화로 loop 대신 map을 사용하는 것 고려 
-
 		for (std::size_t i = 0; i < pools_.size(); ++i)
 		{
 			if (pools_[i]->get_length() >= required_size)
@@ -64,32 +52,12 @@ public:
 			}
 		}
 
-		// allocate from OS
-		++stat_.os_alloc_count;
-		stat_.os_alloc_bytes += static_cast<uint32_t>(required_size);
-		stat_.total_os_alloc_bytes += stat_.os_alloc_bytes;
-
 		return wise_shared<buffer>(new uint8_t[required_size], required_size);
 	}
 
 	void release(buffer::ptr& block)
 	{
-		if (block->is_allocated_from_os())
-		{
-			WISE_ASSERT(stat_.os_alloc_count > 0);
-			WISE_ASSERT(stat_.os_alloc_bytes > 0);
-			WISE_ASSERT(block->get_pool() == nullptr);
-
-			--stat_.os_alloc_count;
-			stat_.os_alloc_bytes -= static_cast<uint32_t>(block->capacity());
-			stat_.total_os_release_bytes += static_cast<uint32_t>(block->capacity());
-
-			block.reset();
-		}
-		else
-		{
-			block->get_pool()->release(block);
-		}
+		block->get_pool()->release(block);
 	}
 
 	void clear()
@@ -108,11 +76,6 @@ public:
 		}
 
 		return nullptr;
-	}
-
-	const stat& get_stat() const
-	{
-		return stat_;
 	}
 
 	void dump_stat() const;
@@ -135,7 +98,6 @@ private:
 
 	config	config_;
 	pools	pools_;
-	stat	stat_;
 };
 
 } // kernel

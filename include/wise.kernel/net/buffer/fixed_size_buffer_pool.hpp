@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <wise.kernel/core/concurrent_queue.hpp>
+#include <wise.kernel/core/exception.hpp>
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/mem_tracker.hpp>
 
@@ -23,7 +24,6 @@ public:
 		buffer(uint8_t* data, std::size_t len)
 			: data_(data)
 			, capacity_(len)
-			, is_alloc_from_os_(true)
 		{
 			WISE_EXPECT(data_);
 			WISE_EXPECT(capacity_ > 0);
@@ -34,7 +34,6 @@ public:
 			: pool_(pool)
 			, data_(data)
 			, capacity_(len)
-			, is_alloc_from_os_(false)
 		{
 			WISE_EXPECT(pool_);
 			WISE_EXPECT(data_);
@@ -61,9 +60,26 @@ public:
 			return capacity_;
 		}
 
-		bool is_allocated_from_os() const
+		void mark_allocated()
 		{
-			return is_alloc_from_os_;
+			WISE_ENSURE(state_ == 0x00 || state_ == 0x02);
+			state_ = 0x01;
+		}
+
+		void mark_released()
+		{
+			WISE_ENSURE(state_ == 0x01);
+			state_ = 0x02;
+		}
+
+		bool is_released() const
+		{
+			return state_ == 0x02;
+		}
+
+		bool is_allocated() const
+		{
+			return state_ == 0x01;
 		}
 
 		fixed_size_buffer_pool* get_pool() const
@@ -72,15 +88,16 @@ public:
 		}
 
 	private:
-		fixed_size_buffer_pool* pool_ = nullptr;
-		bool			is_alloc_from_os_ = false;
-		uint8_t* data_ = nullptr;
-		std::size_t		capacity_ = 0;
+		fixed_size_buffer_pool*		pool_ = nullptr;
+		uint8_t*					data_ = nullptr;
+		std::size_t					capacity_ = 0;
+		uint8_t						state_ = 0; // 0 : create, 1 : allocated, 2 : released
 	};
 
 	struct stat
 	{
 		std::atomic<uint32_t> alloc_count = 0;
+		std::atomic<uint32_t> os_alloc_count = 0;
 		std::atomic<uint32_t> total_alloc_count = 0;
 		std::atomic<uint32_t> total_release_count = 0;
 	};
@@ -114,10 +131,15 @@ public:
 
 		if (blocks_.pop(block))
 		{
+			block->mark_allocated();
 			return block;
 		}
 
-		return wise_shared<buffer>(this, new uint8_t[get_length()], get_length());
+		++stat_.os_alloc_count;
+
+		auto bp = wise_shared<buffer>(this, new uint8_t[get_length()], get_length());
+		bp->mark_allocated();
+		return bp;
 	}
 
 	void release(buffer::ptr& block)
@@ -125,18 +147,18 @@ public:
 		WISE_RETURN_IF(!block->data());
 		WISE_RETURN_IF(block->capacity() != length_);
 
+		if ( !block->is_allocated() )
+		{ 
+			WISE_THROW("block is not allocated.");
+		}
+
 		--stat_.alloc_count;
 		++stat_.total_release_count;
 
-		// return to os 
-		// block.reset();
-
+		block->mark_released();
 		blocks_.push(block);
 
 		WISE_ENSURE(stat_.total_alloc_count >= stat_.total_release_count);
-		// unsafe_size() sometimes returns 0 even if there is an entry. 
-		// CHECK IT!!!
-		// WISE_ENSURE(blocks_.unsafe_size() > 0);
 	}
 
 	const stat& get_stat() const

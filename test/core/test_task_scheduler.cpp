@@ -3,6 +3,8 @@
 #include <wise.kernel/core/task/task_scheduler.hpp>
 #include <spdlog/fmt/fmt.h>
 
+#pragma warning(disable : 6319) // intellisense CHECK/REQUIRE 오류로 판단
+
 using namespace wise::kernel;
 
 namespace
@@ -30,7 +32,6 @@ private:
 
 TEST_CASE("task scheduler")
 {
-
 	SECTION("usage")
 	{
 		task_scheduler::config config;
@@ -47,7 +48,8 @@ TEST_CASE("task scheduler")
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		REQUIRE(tsk->get_last_runner_id() > 0);
-		REQUIRE(tsk->get_last_execution_time() > 0);
+		REQUIRE(tsk->get_execution_count() > 0);
+		REQUIRE(tsk->get_last_execution_time() >= 0);
 
 		ts.finish();
 	}

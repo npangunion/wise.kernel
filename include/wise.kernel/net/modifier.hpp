@@ -15,12 +15,8 @@ class protocol;
  * - sequence check
  * - checksum check
  * - cipher check
- * - and more...
- *
- * TODO: interface가 복잡해져서 context 개념을 추가한다.
- * - context에 대해서만 락을 건다
- * - context에 정보를 변경한다.
- * - 아직은 불확실하다.
+ * 
+ * NOTE: 4바이트 길이를 갖는 프로토콜만 동작.
  */
 class modifier
 {
@@ -28,9 +24,7 @@ public:
 	using result = result<bool, reason>;
 
 public:
-	modifier(protocol* _protocol)
-		: protocol_(_protocol)
-	{}
+	modifier() {}
 
 	virtual ~modifier() = default;
 
@@ -46,7 +40,7 @@ public:
 	 */
 	virtual result on_recv(
 		resize_buffer& buf,
-		std::size_t msg_pos,
+		std::size_t msg_offset, // 0으로 대부분 시작
 		std::size_t msg_len,
 		std::size_t& new_len
 	) = 0;
@@ -62,28 +56,20 @@ public:
 	 */
 	virtual result on_send(
 		resize_buffer& buf,
-		std::size_t msg_pos,
+		std::size_t msg_offset,
 		std::size_t msg_len
 	) = 0;
 
 protected:
-	protocol* get_protocol()
-	{
-		return protocol_;
-	}
-
 	/// update length field to reflect change
 	void update_length_field(
 		resize_buffer& buf,
-		std::size_t msg_pos,
+		std::size_t msg_offset,
 		std::size_t new_len
 	);
 
 protected:
 	std::atomic<bool> bound_ = false;
-
-private:
-	protocol* protocol_ = nullptr;
 };
 
 } // kernel
