@@ -7,14 +7,8 @@ namespace kernel {
 sequencer::sequencer()
 	: modifier()
 {
-}
-
-modifier::result sequencer::begin()
-{
 	send_seq_ = 1; // sender sends with 1
 	recv_seq_ = 1; // receiver expect 1 for next recv
-
-	return result(true, reason::success);
 }
 
 modifier::result sequencer::on_recv(

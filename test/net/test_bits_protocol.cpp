@@ -19,6 +19,8 @@ struct bits_test_message : public bits_packet
 {
 	bits_test_message()
 		: bits_packet(topic(1, 1, 1))
+		, name()
+		, id(0)
 	{
 	}
 	
@@ -170,7 +172,6 @@ TEST_CASE("bits protocol")
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
 			auto pkt = wise_shared<bits_test_message>();
 
-			bp->begin();
 			bp->bind(ch1); // 동일 채널 사용
 
 			pkt->name = "BBitsHello";
@@ -191,7 +192,6 @@ TEST_CASE("bits protocol")
 		SECTION("encryption")
 		{
 			// 미리 serialize 하고 동일 데이터로 여러 연결에 전송
-
 			// factory 수준에서 미리 맞춘다. 
 
 			bits_factory::inst().add(
@@ -207,7 +207,6 @@ TEST_CASE("bits protocol")
 			);
 
 			bits_protocol::cfg.enable_loopback = true;
-
 			bits_protocol::cfg.enable_cipher = true;
 			bits_protocol::cfg.enable_sequence = true;
 			bits_protocol::cfg.enable_checksum = true;
@@ -232,7 +231,6 @@ TEST_CASE("bits protocol")
 
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
 
-			bp->begin();
 			bp->bind(ch1); // 동일 채널 사용
 
 
@@ -279,7 +277,6 @@ TEST_CASE("bits protocol")
 			tcp_node* tn = static_cast<tcp_node*>(&bn);
 
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
-			bp->begin();
 
 			const int test_count = 1; // 1200000;
 
@@ -296,7 +293,6 @@ TEST_CASE("bits protocol")
 			}
 
 			WISE_INFO("loopback performance. elapsed: {}", tick.elapsed());
-
 
 			// 
 			// 1백 2십만. 1초 
@@ -339,7 +335,6 @@ TEST_CASE("bits protocol")
 				tcp_node* tn = static_cast<tcp_node*>(&bn);
 
 				auto bp = wise_shared<bits_protocol>(tn, sock, true);
-				// bp->begin();
 				bp->bind(ch1); // 동일 채널 사용
 
 				auto pkt = wise_shared<bits_test_message>();

@@ -22,7 +22,6 @@ TEST_CASE("sequencer", "net")
 
 		auto send_size = rb.size();
 
-		seq.begin();
 		seq.on_send(rb, 0, rb.size());
 
 		CHECK(rb.size() == send_size + 1);
@@ -50,7 +49,6 @@ TEST_CASE("checksum", "net")
 
 		auto send_size = rb.size();
 
-		cs.begin();
 		cs.on_send(rb, 0, rb.size());
 
 		CHECK(rb.size() == send_size + 4);
@@ -69,8 +67,6 @@ TEST_CASE("cipher", "net")
 	{
 		cipher cs(4);
 		resize_buffer rb;
-
-		cs.begin();
 
 		for (int i = 0; i < 2048; ++i)
 		{

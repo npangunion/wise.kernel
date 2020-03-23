@@ -12,8 +12,6 @@ public:
 
 	checksum(std::size_t header_length);
 
-	virtual result begin() override;
-
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(
 		resize_buffer& buf,

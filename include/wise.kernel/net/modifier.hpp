@@ -28,8 +28,6 @@ public:
 
 	virtual ~modifier() = default;
 
-	virtual result begin() = 0;
-
 	/// after recv. buf has other messages in buffer. 
 	/**
 	 * usually it is not necessary to modify buffer.

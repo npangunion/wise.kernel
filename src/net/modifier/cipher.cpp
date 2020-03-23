@@ -71,16 +71,6 @@ cipher::cipher(std::size_t header_length)
 	: modifier()
 	, header_length_(header_length)
 {
-}
-
-cipher::~cipher()
-{
-}
-
-modifier::result cipher::begin()
-{
-	WISE_ASSERT(!bound_);
-
 	receiver_ = wise_unique<cipher_impl>(Botan::Cipher_Dir::DECRYPTION);
 	sender_ = wise_unique<cipher_impl>(Botan::Cipher_Dir::ENCRYPTION);
 
@@ -92,8 +82,10 @@ modifier::result cipher::begin()
 
 	receiver_->start();
 	sender_->start();
+}
 
-	return result(true, reason::success);
+cipher::~cipher()
+{
 }
 
 modifier::result cipher::on_recv(

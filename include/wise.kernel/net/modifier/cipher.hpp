@@ -32,8 +32,6 @@ public:
 	/// destructor. required to genereate cipher_impl destructor
 	~cipher();
 
-	virtual result begin() override;
-
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(
 		resize_buffer& buf,

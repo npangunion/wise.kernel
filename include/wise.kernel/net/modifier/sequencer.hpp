@@ -14,8 +14,6 @@ public:
 
 	sequencer();
 
-	virtual result begin() override;
-
 	/// after recv. buf has other messages in buffer. 
 	virtual result on_recv(
 		resize_buffer& buf,

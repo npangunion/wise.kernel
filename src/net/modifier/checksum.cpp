@@ -11,11 +11,6 @@ checksum::checksum(std::size_t header_length)
 {
 }
 
-modifier::result checksum::begin()
-{
-	return result(true, reason::success);
-}
-
 modifier::result checksum::on_recv(
 	resize_buffer& buf,
 	std::size_t msg_offset,
