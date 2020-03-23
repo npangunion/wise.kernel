@@ -1,4 +1,4 @@
-#include <pch.hpp>
+ï»¿#include <pch.hpp>
 #include <wise.kernel/net/protocol/bits/bits_protocol.hpp>
 #include <wise.kernel/net/protocol/bits/bits_factory.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
@@ -41,10 +41,10 @@ protocol::result bits_protocol::send(packet::ptr m)
 		return result(false, reason::fail_inavlid_bits_message);
 	}
 
-	// TLS·Î ¾²·¹µåº°·Î ¸¸µê. resize_buffer´Â thread-safeÇÏÁö ¾ÊÀ½
+	// TLSë¡œ ì“°ë ˆë“œë³„ë¡œ ë§Œë“¦. resize_bufferëŠ” thread-safeí•˜ì§€ ì•ŠìŒ
 	static thread_local std::unique_ptr<resize_buffer> pbuf(new resize_buffer());
 
-	// packÀ¸·Î ¹öÆÛ º¹»ç
+	// packìœ¼ë¡œ ë²„í¼ ë³µì‚¬
 	pbuf->rewind();
 
 	auto rc = pack(mp, *pbuf);
@@ -69,10 +69,10 @@ protocol::result bits_protocol::send_final(
 		return  tcp_protocol::send(data, len);
 	}
 
-	// TLS·Î ¾²·¹µåº°·Î ¸¸µê. resize_buffer´Â thread-safeÇÏÁö ¾ÊÀ½
+	// TLSë¡œ ì“°ë ˆë“œë³„ë¡œ ë§Œë“¦. resize_bufferëŠ” thread-safeí•˜ì§€ ì•ŠìŒ
 	static thread_local std::unique_ptr<resize_buffer> pbuf(new resize_buffer());
 
-	// ¾ÏÈ£È­¸¦ À§ÇÑ ¹öÆÛ º¹»ç
+	// ì•”í˜¸í™”ë¥¼ ìœ„í•œ ë²„í¼ ë³µì‚¬
 	pbuf->rewind();
 	pbuf->append(data, len);
 
@@ -85,7 +85,7 @@ protocol::result bits_protocol::send_modified(
 	const std::size_t len
 )
 {
-	// ¿©±â¿¡ ¿À¸é buf´Â °øÀ¯µÇÁö ¾ÊÀº ±ú²ıÇÑ mpÀÇ ¹öÆÛÀÌ´Ù. 
+	// ì—¬ê¸°ì— ì˜¤ë©´ bufëŠ” ê³µìœ ë˜ì§€ ì•Šì€ ê¹¨ë—í•œ mpì˜ ë²„í¼ì´ë‹¤. 
 	WISE_EXPECT(buf.size() == len);
 
 	if (cfg.enable_sequence && mp->enable_sequence)
@@ -116,7 +116,7 @@ protocol::result bits_protocol::send_modified(
 		return on_recv(buf.data(), buf.size());
 	}
 
-	// TODO: ¾Æ·¡ ÄÚµå°¡ ºÒÇÊ¿äÇØ º¸ÀÌ´Âµ¥ °ËÁõ.
+	// TODO: ì•„ë˜ ì½”ë“œê°€ ë¶ˆí•„ìš”í•´ ë³´ì´ëŠ”ë° ê²€ì¦.
 	if (buf.size() > len)
 	{
 		auto iter = buf.begin();
@@ -137,7 +137,7 @@ protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
 
 	bits_packer packer(buf);
 
-	bool rc = mp->pack(packer); // messageÀÇ packÇÒ ¶§ ÅäÇÈÀ» Æ÷ÇÔ
+	bool rc = mp->pack(packer); // messageì˜ packí•  ë•Œ í† í”½ì„ í¬í•¨
 
 	if (!rc)
 	{
@@ -145,7 +145,7 @@ protocol::result bits_protocol::pack(bits_packet::ptr mp, resize_buffer& buf)
 		return result(false, reason::fail_bits_pack_error);
 	}
 
-	// size´Â length¿Í topic ±æÀÌ¸¦ Æ÷ÇÔ
+	// sizeëŠ” lengthì™€ topic ê¸¸ì´ë¥¼ í¬í•¨
 	packet::len_t size = static_cast<packet::len_t>(buf.size());
 	WISE_ASSERT(size >= bits_packet::header_length);
 
@@ -175,7 +175,7 @@ protocol::result bits_protocol::on_recv(
 
 	while (remained_len >= bits_packet::header_length)
 	{
-		auto msg_len = get_length(iter);	// ¸Ş¼¼Áö ±æÀÌ´Â ¾ÏÈ£È­ °ü·Ã º¯°æÀ» Æ÷ÇÔ
+		auto msg_len = get_length(iter);	// ë©”ì„¸ì§€ ê¸¸ì´ëŠ” ì•”í˜¸í™” ê´€ë ¨ ë³€ê²½ì„ í¬í•¨
 
 		WISE_ASSERT(msg_len >= bits_packet::header_length);
 
@@ -210,7 +210,7 @@ protocol::result bits_protocol::on_recv(
 
 		std::size_t final_len = 0;
 
-		// ¾ÏÈ£È­ °ü·Ã Ã³¸®
+		// ì•”í˜¸í™” ê´€ë ¨ ì²˜ë¦¬
 		auto rc = recv_modified(mp, recv_buf_, processed_len, msg_len, final_len);
 
 		if (!rc)
@@ -223,7 +223,7 @@ protocol::result bits_protocol::on_recv(
 			return rc; // close
 		}
 
-		// ¸Ş¼¼Áö ³»¿ë °¡Á®¿À±â
+		// ë©”ì„¸ì§€ ë‚´ìš© ê°€ì ¸ì˜¤ê¸°
 		uint32_t pad = 0;
 
 		// forward read position
@@ -234,8 +234,8 @@ protocol::result bits_protocol::on_recv(
 
 		auto res = mp->unpack(packer);
 
-		// TODO: ¸Ş¼¼Áö ±æÀÌº¸´Ù unpack¿¡¼­ ´õ »ç¿ëÇÏ¸é ¿¡·¯ Ã³¸®°¡ ÇÊ¿äÇÏ´Ù. 
-		// final_lenÀ» °í·ÁÇØ¾ß ÇÑ´Ù. 
+		// TODO: ë©”ì„¸ì§€ ê¸¸ì´ë³´ë‹¤ unpackì—ì„œ ë” ì‚¬ìš©í•˜ë©´ ì—ëŸ¬ ì²˜ë¦¬ê°€ í•„ìš”í•˜ë‹¤. 
+		// final_lenì„ ê³ ë ¤í•´ì•¼ í•œë‹¤. 
 		// 
 
 		if (!res)
@@ -246,10 +246,10 @@ protocol::result bits_protocol::on_recv(
 
 		mp->bind(shared_from_this());
 
-		// Ã¤³Î·Î Àü´Ş
+		// ì±„ë„ë¡œ ì „ë‹¬
 		publish(mp);
 
-		// ´ÙÀ½ Ã³¸®¸¦ À§ÇÑ Á¤¸® 
+		// ë‹¤ìŒ ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë¦¬ 
 		auto payload_len = msg_len - bits_packet::header_length;
 
 		processed_len += msg_len;
@@ -311,14 +311,14 @@ void bits_protocol::on_send(std::size_t len)
 {
 	WISE_UNUSED(len);
 
-	// Æ¯º°È÷ ÇÒ ÀÏÀº ¾ø´Ù
+	// íŠ¹ë³„íˆ í•  ì¼ì€ ì—†ë‹¤
 }
 
 void bits_protocol::on_error(const boost::system::error_code& ec)
 {
 	WISE_UNUSED(ec);
 
-	// TODO: ÅëÁö. 
+	// TODO: í†µì§€. 
 }
 
 protocol::result bits_protocol::on_recv_to_test(
