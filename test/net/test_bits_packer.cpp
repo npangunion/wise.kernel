@@ -57,14 +57,6 @@ template <> bool unpack(bits_packer& packer, vec& v)
 
 TEST_CASE("bits packer")
 {
-	SECTION("resize buffer read interface")
-	{
-		// append는 있는데 read가 iterator / at 밖에 없어서 위치 보관하는 read가 필요 
-
-		// pack / unpack 구현하면서 추가하고 
-		// 여기서 단위 테스트. 
-	}
-
 	SECTION("message pack / unpack")
 	{
 		resize_buffer buf;
@@ -230,11 +222,6 @@ TEST_CASE("bits packer")
 
 		SECTION("enum")
 		{
-			// enum 값은 다른 방안이 필요하다. 
-			// c#과 c++ 간에 메모리로 할 수 없고, 값으로 해야 한다. 
-			// 아마도 int32로 전달해야 하지 않을까? 
-			// 
-
 			enum test_enum
 			{
 				v1,
@@ -250,9 +237,6 @@ TEST_CASE("bits packer")
 			packer.unpack_enum(v);
 
 			CHECK(v == test_enum::v1);
-
-			// 위험이 있지만 int8_t 타잎의 enum 도 동작한다. 
-			// 생성한 enum 들은 문제가 없을 듯
 		}
 
 		SECTION("wstring")
