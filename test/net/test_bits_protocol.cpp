@@ -101,7 +101,7 @@ private:
 
 		for (int i = 0; i < 512; ++i)
 		{
-			em->name.append("AZenHello");
+			em->name.append("ABitsHello");
 		}
 
 		em->id = seq_++;
@@ -114,7 +114,7 @@ private:
 		auto rm = std::static_pointer_cast<bits_test_message>(m);
 
 		auto em = wise_shared<bits_test_message>();
-		em->name = "AZenHelloResp";
+		em->name = "ABitsHelloResp";
 		em->id = seq_++;
 
 		rm->send(em);
@@ -170,16 +170,19 @@ TEST_CASE("bits protocol")
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
 			auto pkt = wise_shared<bits_test_message>();
 
+			bp->begin();
 			bp->bind(ch1); // 동일 채널 사용
 
-			pkt->name = "BZenHello";
+			pkt->name = "BBitsHello";
 			pkt->id = 33;
 			bp->send(pkt);
+
+			ch1->execute();
 
 			auto pp = std::static_pointer_cast<bits_test_message>(mp);
 
 			CHECK(pp);
-			CHECK(pp->name == "BZenHello");
+			CHECK(pp->name == "BBitsHello");
 			CHECK(pp->id == 33);
 
 			ch1->unsubscribe(sid);
@@ -226,7 +229,12 @@ TEST_CASE("bits protocol")
 			bits_node bn(cfg);
 			tcp::socket sock(bn.ios());
 			tcp_node* tn = static_cast<tcp_node*>(&bn);
+
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
+
+			bp->begin();
+			bp->bind(ch1); // 동일 채널 사용
+
 
 			auto sp = bits_factory::inst().create(topic(1, 1, 1));
 			auto pkt = std::static_pointer_cast<bits_test_message>(sp);
@@ -237,6 +245,8 @@ TEST_CASE("bits protocol")
 			// pack and send bytes
 
 			bp->send(pkt);
+
+			ch1->execute();
 
 			auto pp = std::static_pointer_cast<bits_test_message>(mp);
 
@@ -267,7 +277,9 @@ TEST_CASE("bits protocol")
 			bits_node bn(cfg);
 			tcp::socket sock(bn.ios());
 			tcp_node* tn = static_cast<tcp_node*>(&bn);
+
 			auto bp = wise_shared<bits_protocol>(tn, sock, true);
+			bp->begin();
 
 			const int test_count = 1; // 1200000;
 
@@ -325,10 +337,13 @@ TEST_CASE("bits protocol")
 				bits_node bn(cfg);
 				tcp::socket sock(bn.ios());
 				tcp_node* tn = static_cast<tcp_node*>(&bn);
-				auto bp = wise_shared<bits_protocol>(tn, sock, true);
-				auto pkt = wise_shared<bits_test_message>();
 
-				pkt->name = "DZenHello";
+				auto bp = wise_shared<bits_protocol>(tn, sock, true);
+				// bp->begin();
+				bp->bind(ch1); // 동일 채널 사용
+
+				auto pkt = wise_shared<bits_test_message>();
+				pkt->name = "DBitsHello";
 				pkt->id = 33;
 
 				resize_buffer buf;
@@ -338,10 +353,12 @@ TEST_CASE("bits protocol")
 				bp->on_recv_to_test(buf.data(), buf.size() - 8);
 				bp->on_recv_to_test(buf.data() + buf.size() - 8, 8);
 
+				ch1->execute();
+
 				auto pp = std::static_pointer_cast<bits_test_message>(mp);
 
 				CHECK(pp);
-				CHECK(pp->name == "DZenHello");
+				CHECK(pp->name == "DBitsHello");
 				CHECK(pp->id == 33);
 
 				ch1->unsubscribe(sid);

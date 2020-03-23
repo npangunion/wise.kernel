@@ -326,7 +326,7 @@ protocol::result bits_protocol::on_recv_to_test(
 	std::size_t len
 )
 {
-	// wise purpose only
+	// test purpose only
 
 	return on_recv(bytes, len);
 }
