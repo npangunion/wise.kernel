@@ -1,4 +1,4 @@
-#pragma once 
+ï»¿#pragma once 
 
 #include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/reason.hpp>
@@ -18,8 +18,8 @@ public:
 	struct config
 	{
 		bool use_hardware_concurreny = true;
-		int concurreny_level = 1;				/// core°³¼ö »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì
-		bool enable_detail_log = false;			/// ÀÚ¼¼ÇÑ ·Î±× ³²±æÁö ¿©ºÎ
+		int concurreny_level = 1;				/// coreê°œìˆ˜ ì‚¬ìš©í•˜ì§€ ì•Šì„ ê²½ìš°
+		bool enable_detail_log = false;			/// ìì„¸í•œ ë¡œê·¸ ë‚¨ê¸¸ì§€ ì—¬ë¶€
 	};
 
 	using error_code = boost::system::error_code;

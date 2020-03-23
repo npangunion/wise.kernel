@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <wise.kernel/net/tcp/tcp_acceptor.hpp>
 #include <wise.kernel/net/tcp/tcp_connector.hpp>
@@ -14,8 +14,8 @@ namespace kernel
 
 /// abstract base class of tcp nodes
 /**
- * ±âº» Åë½Å ±â´ÉÀ» Á¦°øÇÏ¿© ¹ÙÀÌÆ®¸¦ ¼Û¼ö½ÅÇÒ ¼ö ÀÖ´Ù.
- * tcp »ó¿¡ ¸Ş¼¼Áö Èå¸§À» »ı¼ºÇÏ´Â ÇÁ·ÎÅäÄİÀ» ¸¸µç´Ù.
+ * ê¸°ë³¸ í†µì‹  ê¸°ëŠ¥ì„ ì œê³µí•˜ì—¬ ë°”ì´íŠ¸ë¥¼ ì†¡ìˆ˜ì‹ í•  ìˆ˜ ìˆë‹¤.
+ * tcp ìƒì— ë©”ì„¸ì§€ íë¦„ì„ ìƒì„±í•˜ëŠ” í”„ë¡œí† ì½œì„ ë§Œë“ ë‹¤.
  * @see msgpack_node
  */
 class tcp_node : public node
@@ -27,8 +27,8 @@ public:
 	struct config : public node::config 
 	{
 		bool set_tcp_no_delay = true;			/// nagle disable
-		bool set_tcp_linger = true;				/// SO_LINGER ÄÑ±â
-		bool set_tcp_reuse_addr = true;			/// ½ÇÁ¦ ¼­ºñ½º¿¡¼­´Â ²ô´Â °ÍÀÌ ÁÁÀ½
+		bool set_tcp_linger = true;				/// SO_LINGER ì¼œê¸°
+		bool set_tcp_reuse_addr = true;			/// ì‹¤ì œ ì„œë¹„ìŠ¤ì—ì„œëŠ” ë„ëŠ” ê²ƒì´ ì¢‹ìŒ
 	};
 
 public:
@@ -36,10 +36,10 @@ public:
 
 	~tcp_node();
 
-	/// addr¿¡¼­ listen. addrÀº ip:port Çü½Ä. 
+	/// addrì—ì„œ listen. addrì€ ip:port í˜•ì‹. 
 	result listen(const std::string& addr);
 
-	/// connect to a addr. addrÀº ip:port Çü½Ä
+	/// connect to a addr. addrì€ ip:port í˜•ì‹
 	result connect(const std::string& addr);
 
 	tcp_protocol::ptr get(protocol::id_t id);
@@ -78,7 +78,7 @@ private:
 	/// called when connect failed
 	void on_connect_failed(key_t k, const error_code& ec);
 
-	// »õ·Î¿î ¿¬°á¿¡¼­ ÇÁ·ÎÅäÄİ »ı¼º
+	// ìƒˆë¡œìš´ ì—°ê²°ì—ì„œ í”„ë¡œí† ì½œ ìƒì„±
 	void on_new_socket(
 		tcp::socket&& soc, 
 		bool accepted);
