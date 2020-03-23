@@ -1,4 +1,4 @@
-#pragma once 
+ï»¿#pragma once 
 
 #include <wise.kernel/net/protocol.hpp>
 #include <wise.kernel/net/reason.hpp>
@@ -19,9 +19,9 @@ namespace kernel {
 
 /// tcp socket wrapper to use with asio
 /**
- * ¹ÙÀÌÆ® ¼Û¼ö½Å Ã³¸® ¼¼¼Ç.
- * - °¢ ÇÁ·ÎÅäÄİ Ã³¸®´Â protocol Å¬·¡½º¿¡¼­ Ã³¸®
- * - protocol Å¬·¡½º¿¡¼­ Ã³¸®ÇÏ°í send() È£Ãâ
+ * ë°”ì´íŠ¸ ì†¡ìˆ˜ì‹  ì²˜ë¦¬ ì„¸ì…˜.
+ * - ê° í”„ë¡œí† ì½œ ì²˜ë¦¬ëŠ” protocol í´ë˜ìŠ¤ì—ì„œ ì²˜ë¦¬
+ * - protocol í´ë˜ìŠ¤ì—ì„œ ì²˜ë¦¬í•˜ê³  send() í˜¸ì¶œ
  */
 class tcp_session final
 {
@@ -73,7 +73,7 @@ public:
 		return desc_;
 	}
 
-	/// accept ¿©ºÎ
+	/// accept ì—¬ë¶€
 	bool is_accepted() const;
 
 	bool is_busy() const;
@@ -96,10 +96,10 @@ private:
 	/// close socket (shutdown and close).
 	void close(const error_code& ec);
 
-	/// ¿¡·¯ Ã³¸® ÇÔ¼ö
+	/// ì—ëŸ¬ ì²˜ë¦¬ í•¨ìˆ˜
 	void error(const error_code& ec);
 
-	/// ÀÚÃ¼ ¿¡·¯ 
+	/// ìì²´ ì—ëŸ¬ 
 	void error(const result& rc);
 
 	/// recv request
@@ -127,9 +127,9 @@ private:
 	std::string						desc_;
 
 	mutable lock_type				session_mutex_;
-	bool							recving_ = false; /// sending°ú recvingÀº Ç×»ó session_mutex_ °É°í Ã³¸®
+	bool							recving_ = false; /// sendingê³¼ recvingì€ í•­ìƒ session_mutex_ ê±¸ê³  ì²˜ë¦¬
 	bool							sending_ = false;
-	std::array<uint8_t, 32 * 1024>	recv_buf_;			// 32K¸¦ ³ÑÀ¸¸é ´À·ÁÁö´Â Çö»óÀÌ x64, i7 Àåºñ¿¡¼­ ¹ß»ı. È®ÀÎ ÇÊ¿ä
+	std::array<uint8_t, 32 * 1024>	recv_buf_;			// 32Kë¥¼ ë„˜ìœ¼ë©´ ëŠë ¤ì§€ëŠ” í˜„ìƒì´ x64, i7 ì¥ë¹„ì—ì„œ ë°œìƒ. í™•ì¸ í•„ìš”
 
 	lock_type						send_mutex_;
 	segment_buffer					send_buffer_;
