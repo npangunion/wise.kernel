@@ -72,12 +72,6 @@ private:
 		std::size_t len
 	);
 
-	result send_final(
-		bits_packet::ptr mp,
-		resize_buffer& buf,
-		std::size_t len
-	);
-
 	result send_modified(
 		bits_packet::ptr mp,
 		resize_buffer& buf,

@@ -25,14 +25,10 @@ node::result tcp_node::listen(const std::string& addr)
 
 	auto id = seq_.next();
 	auto ptr = wise_shared<tcp_acceptor>(this, id, addr);
-	auto rc = ptr->listen();
 
-	if (rc)
-	{
-		acceptors_[id] = ptr;
-	}
+	acceptors_[id] = ptr; // 실패한 acceptor도 보관
 
-	return rc;
+	return ptr->listen();
 }
 
 node::result tcp_node::connect(const std::string& addr)
@@ -51,9 +47,7 @@ node::result tcp_node::connect(const std::string& addr)
 		connectors_[id] = ptr;
 	}
 
-	(void)ptr->connect();
-
-	return result(true, reason::success);
+	return ptr->connect();
 }
 
 tcp_protocol::ptr tcp_node::get(protocol::id_t id)
@@ -119,9 +113,7 @@ void tcp_node::on_accept_failed(key_t k, const error_code& ec)
 
 	if (apt)
 	{
-		WISE_ERROR(
-			"failed to accept on protocol. addr:{0}", apt->get_addr().get_raw()
-		);
+		WISE_ERROR("failed to accept on protocol. addr:{0}", apt->get_addr().get_raw());
 	}
 }
 

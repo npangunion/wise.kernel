@@ -25,15 +25,19 @@ modifier::result checksum::on_recv(
 {
 	new_len = msg_len;
 
+	// WISE_EXPECT(msg_offset >= 0 ); // by type
+	// WISE_EXPECT(msg_len >= 0); // by type
+
+	WISE_EXPECT(buf.size() >= msg_len);
 	WISE_EXPECT(msg_len >= header_length_);
 
-	// payload 없으면 성공으로 처리
+	// no payload 
 	WISE_RETURN_IF(
 		msg_len == header_length_,
 		result(true, reason::success)
 	);
 
-	// for thread-safey, create hash function 
+	// for thread-safey, create TLS hash function 
 	// - windows, android, ios, osx, linux supports it
 	static thread_local auto hash = Botan::HashFunction::create("CRC32");
 	WISE_RETURN_IF(!hash, result(false, reason::fail_null_hash_function));
@@ -59,6 +63,8 @@ modifier::result checksum::on_recv(
 		return result(false, reason::fail_incorrect_checksum);
 	}
 
+	// WISE_ENSURE(sender checksum == receiver checksum);
+
 	new_len = msg_len - checksum_size;
 
 	return result(true, reason::success);
@@ -72,13 +78,15 @@ modifier::result checksum::on_send(
 {
 	WISE_EXPECT(msg_len >= header_length_);
 
-	// payload 없으면 성공으로 처리
+	// no payload 
 	WISE_RETURN_IF(
 		msg_len == header_length_,
 		result(true, reason::success)
 	);
 
-	// for thread-safey, create hash function 
+	WISE_EXPECT(msg_len > header_length_);
+
+	// for thread-safey, create TLS hash function 
 	static thread_local auto hash = Botan::HashFunction::create("CRC32");
 	WISE_RETURN_IF(!hash, result(false, reason::fail_null_hash_function));
 
@@ -92,7 +100,7 @@ modifier::result checksum::on_send(
 	uint8_t crc[checksum_size];
 	hash->final(crc);
 
-	buf.append("abcd", checksum_size); // 공간 확보
+	buf.append("abcd", checksum_size); 
 
 	std::memcpy(buf.data() + msg_offset + msg_len, crc, checksum_size);
 

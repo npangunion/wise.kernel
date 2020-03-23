@@ -41,34 +41,16 @@ protocol::result bits_protocol::send(packet::ptr m)
 		return result(false, reason::fail_inavlid_bits_message);
 	}
 
-	// TLS로 쓰레드별로 하나만 만듦.
+	// TLS로 쓰레드별로 만듦. resize_buffer는 thread-safe하지 않음
 	static thread_local std::unique_ptr<resize_buffer> pbuf(new resize_buffer());
 
+	// pack으로 버퍼 복사
 	pbuf->rewind();
 
 	auto rc = pack(mp, *pbuf);
 	WISE_RETURN_IF(!rc, rc);
 
-	return send_final(mp, *pbuf, pbuf->size());
-}
-
-protocol::result bits_protocol::send_final(
-	bits_packet::ptr mp,
-	resize_buffer& buf,
-	std::size_t len
-)
-{
-	if (!needs_to_modify(mp))
-	{
-		if (cfg.enable_loopback)
-		{
-			return on_recv(buf.data(), len);
-		}
-
-		return tcp_protocol::send(buf.data(), len);
-	}
-
-	return send_modified(mp, buf, len);
+	return send_final(mp, pbuf->data(), pbuf->size());
 }
 
 protocol::result bits_protocol::send_final(
@@ -87,12 +69,14 @@ protocol::result bits_protocol::send_final(
 		return  tcp_protocol::send(data, len);
 	}
 
-	// TODO: TLS buffer
-	resize_buffer buf;
+	// TLS로 쓰레드별로 만듦. resize_buffer는 thread-safe하지 않음
+	static thread_local std::unique_ptr<resize_buffer> pbuf(new resize_buffer());
 
-	buf.append(data, len);
+	// 암호화를 위한 버퍼 복사
+	pbuf->rewind();
+	pbuf->append(data, len);
 
-	return send_modified(mp, buf, len);
+	return send_modified(mp, *pbuf, len);
 }
 
 protocol::result bits_protocol::send_modified(
@@ -132,6 +116,7 @@ protocol::result bits_protocol::send_modified(
 		return on_recv(buf.data(), buf.size());
 	}
 
+	// TODO: 아래 코드가 불필요해 보이는데 검증.
 	if (buf.size() > len)
 	{
 		auto iter = buf.begin();

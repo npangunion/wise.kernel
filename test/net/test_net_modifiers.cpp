@@ -40,8 +40,57 @@ TEST_CASE("checksum", "net")
 {
 	SECTION("usage")
 	{
-		
+		checksum cs(4); 
+		resize_buffer rb;
 
+		std::size_t len = 0;
 
+		rb.append(&len, 4);
+		rb.append("hello", 5);
+
+		auto send_size = rb.size();
+
+		cs.begin();
+		cs.on_send(rb, 0, rb.size());
+
+		CHECK(rb.size() == send_size + 4);
+
+		std::size_t nl = 0;
+		auto rc = cs.on_recv(rb, 0, rb.size(), nl);
+
+		CHECK(rc);
+		CHECK(nl == send_size);
+	}
+}
+
+TEST_CASE("cipher", "net")
+{
+	SECTION("usage")
+	{
+		cipher cs(4);
+		resize_buffer rb;
+
+		cs.begin();
+
+		for (int i = 0; i < 2048; ++i)
+		{
+			std::size_t len = 0;
+
+			rb.append(&len, 4);
+			rb.append("hello", 5);
+
+			auto send_size = rb.size();
+
+			cs.on_send(rb, 0, rb.size());
+
+			std::size_t nl = 0;
+			auto rc = cs.on_recv(rb, 0, rb.size(), nl);
+
+			CHECK(rc);
+			CHECK(nl == send_size);
+
+			std::string rs((const char*)rb.data() + 4, 5);
+			CHECK(rs == "hello");
+		}
 	}
 }

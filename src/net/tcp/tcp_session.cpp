@@ -18,6 +18,7 @@ tcp_session::segment_buffer tcp_session::seg_buffer_accessor_;
 tcp_session::tcp_session(tcp_protocol* proto, tcp::socket&& soc)
 	: protocol_(proto)
 	, socket_(std::move(soc))
+	, last_error_(errc::make_error_code(errc::success))
 {
 }
 
@@ -77,6 +78,10 @@ void tcp_session::begin()
 tcp_session::~tcp_session()
 {
 	WISE_DEBUG("bye! {0}", get_desc());
+
+	// requires close before destruction. tcp_node의 role.
+	WISE_ASSERT(!is_busy());
+	WISE_ASSERT(!socket_.is_open());
 }
 
 tcp_session::result tcp_session::send(const uint8_t* data, std::size_t len)
@@ -86,13 +91,11 @@ tcp_session::result tcp_session::send(const uint8_t* data, std::size_t len)
 	// append 
 	{
 		std::lock_guard<lock_type> lock(send_mutex_);
+		// TODO: check send_buffer_ size. it needs to be configured. 
 		send_buffer_.append(data, len);
 	}
 
-	request_send();
-
-	// 여기는 항상 성공한다. 
-	return result(true, reason::success);
+	return request_send();
 }
 
 void tcp_session::disconnect()
@@ -167,8 +170,6 @@ bool tcp_session::is_busy() const
 	return sending_ || recving_;
 }
 
-
-
 void tcp_session::error(const error_code& ec)
 {
 	last_error_ = ec;
@@ -181,9 +182,7 @@ void tcp_session::error(const error_code& ec)
 
 	log()->flush();
 
-	close(ec);		// will call destroy
-
-	protocol_->on_error(ec);
+	close(ec);		// will call destroy and protocol_->on_error()
 }
 
 void tcp_session::error(const result& rc)
@@ -233,7 +232,7 @@ tcp_session::result tcp_session::request_send()
 	// check send
 	{
 		std::lock_guard<lock_type> session_lock(session_mutex_);
-		WISE_ASSERT(sending_ == true);
+		WISE_ASSERT(!sending_);
 
 
 		// lock 안에서 체크해야 함
@@ -266,7 +265,11 @@ tcp_session::result tcp_session::request_send()
 
 		// 락 벗어나면 바로 차는 경우 발생 
 		WISE_ASSERT(send_buffer_.size() == 0);
+
+		sending_ = true;
 	}
+
+	// TODO: exception safe?
 
 	WISE_ASSERT(!sending_segs_.empty());
 
@@ -365,6 +368,7 @@ void tcp_session::on_send_completed(error_code& ec, std::size_t len)
 		sending_segs_.clear();
 		sending_bufs_.clear();
 		send_request_size_ = 0;
+		sending_ = false;
 	}
 
 	request_send();
