@@ -55,3 +55,4 @@ public: \
 #define WISE_THROW_EX(cls, m) 	throw cls(m, __FILE__, __LINE__)
 #define WISE_THROW_FMT(...)		throw wise::kernel::exception(fmt::format(__VA_ARGS__).c_str(), __FILE__, __LINE__)
 #define WISE_THROW_IF(cond, m)	if ((cond)) { throw wise::kernel::exception(m, __FILE__, __LINE__); }
+#define WISE_THROW_IF_FMT(cond, ...)	if ((cond)) { throw wise::kernel::exception(fmt::format(__VA_ARGS__).c_str(), __FILE__, __LINE__); }

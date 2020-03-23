@@ -82,6 +82,16 @@ public:
 			return state_ == 0x01;
 		}
 
+		std::size_t inc_hit_count()
+		{
+			return ++cache_hit_count_;
+		}
+
+		std::size_t get_hit_count() const
+		{
+			return cache_hit_count_;
+		}
+
 		fixed_size_buffer_pool* get_pool() const
 		{
 			return pool_;
@@ -92,6 +102,7 @@ public:
 		uint8_t*					data_ = nullptr;
 		std::size_t					capacity_ = 0;
 		uint8_t						state_ = 0; // 0 : create, 1 : allocated, 2 : released
+		std::size_t					cache_hit_count_ = 0;
 	};
 
 	struct stat
@@ -132,6 +143,7 @@ public:
 		if (blocks_.pop(block))
 		{
 			block->mark_allocated();
+			block->inc_hit_count();
 			return block;
 		}
 
@@ -144,12 +156,18 @@ public:
 
 	void release(buffer::ptr& block)
 	{
+		WISE_RETURN_IF(!block);
 		WISE_RETURN_IF(!block->data());
-		WISE_RETURN_IF(block->capacity() != length_);
+		WISE_THROW_IF_FMT(
+			block->capacity() != length_, 
+			"fixed_size_buffer_pool. different length block. size:{}", 
+			block->capacity());
 
 		if ( !block->is_allocated() )
 		{ 
-			WISE_THROW("block is not allocated.");
+			WISE_THROW_FMT(
+				"fixed_size_buffer_pool. block is not allocated. size: {}", 
+				length_);
 		}
 
 		--stat_.alloc_count;

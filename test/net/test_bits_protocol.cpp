@@ -388,7 +388,7 @@ TEST_CASE("bits protocol")
 
 		fine_tick tick;
 
-		while (true)
+		// while (true)
 		{
 			wise::kernel::sleep(10);
 
@@ -396,7 +396,7 @@ TEST_CASE("bits protocol")
 
 			if (seq >= test_count)
 			{
-				break;
+				// break;
 			}
 		}
 

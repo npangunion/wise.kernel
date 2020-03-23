@@ -15,7 +15,7 @@ TEST_CASE("fixed_size_buffer_pool", "net")
 	{
 		fixed_size_buffer_pool fsb(128);
 
-		(fsb.get_length() == 128);
+		CHECK(fsb.get_length() == 128);
 
 		auto bp = fsb.alloc();
 		CHECK(bp->get_pool() == &fsb);
@@ -28,6 +28,33 @@ TEST_CASE("fixed_size_buffer_pool", "net")
 		CHECK(fsb.get_stat().alloc_count == 0);
 		CHECK(fsb.get_stat().total_release_count == 1);
 		CHECK(fsb.get_stat().total_alloc_count == 1);
+	}
+
+	SECTION("coverage")
+	{
+		SECTION("alloc from pool")
+		{
+			fixed_size_buffer_pool fsb(64);
+
+			auto bp1 = fsb.alloc();
+			fsb.release(bp1);
+
+			// alloc from pool
+			for (int i = 0; i < 100; ++i)
+			{
+				auto bp2 = fsb.alloc();
+				REQUIRE(bp2->get_hit_count() == i+1);
+				fsb.release(bp2);
+			}
+		}
+
+		SECTION("release nullptr")
+		{
+			fixed_size_buffer_pool fsb(64);
+
+			auto bp = fixed_size_buffer_pool::buffer::ptr();
+			fsb.release(bp);
+		}
 	}
 }
 
