@@ -1,6 +1,8 @@
 #include <pch.hpp>
 #include <catch.hpp>
-#include <wise.kernel/core/channel/sub_map.hpp>
+#include <wise.kernel/core/channel/channel.hpp>
+
+#pragma warning(disable: 6319)
 
 using namespace wise::kernel;
 
@@ -51,6 +53,27 @@ TEST_CASE("subscriptions", "channel")
 
 	SECTION("sub_map")
 	{
+		channel ch("hello");
 
+		sub_map sm(ch);
+
+		auto fn = [](message::ptr m) {};
+
+		auto pic = topic(2, 2, 2);
+		auto pic2 = topic(2, 2, 3);
+
+		auto key = sm.subscribe(pic, fn, sub::mode::delayed);
+		CHECK(key > 0);
+
+		auto cnt = sm.post(wise_shared<message>(pic), sub::mode::delayed);
+		CHECK(cnt == 1);
+
+		cnt = sm.post(pic2, wise_shared<message>(pic), sub::mode::delayed);
+		CHECK(cnt == 0);
+
+		sm.unsubscribe(key);
+		auto cnt2 = sm.post(wise_shared<message>(pic), sub::mode::delayed);
+		
+		CHECK(cnt2 == 0);
 	}
 }

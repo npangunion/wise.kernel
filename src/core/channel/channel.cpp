@@ -28,19 +28,18 @@ bool channel::destroy(const key_t& key)
 channel::channel(const key_t& key, const config& cfg)
 	: key_(key)
 	, config_(cfg)
-	, map_(*this, key)
+	, map_(*this)
 {
 }
 
 channel::~channel()
 {
-	// we lose messages 
-	// what can be done? 
+	clear();
 }
 
 std::size_t channel::publish(message::ptr m)
 {
-	enqueue_checked(m->get_topic(), m);
+	q_.push(m);
 
 	auto count = map_.post(m, sub::mode::immediate);
 
@@ -51,11 +50,55 @@ std::size_t channel::publish(message::ptr m)
 
 std::size_t channel::publish(const topic& topic, message::ptr m)
 {
-	enqueue_checked(topic, m);
+	q_.push(m);
 
 	auto count = map_.post(topic, m, sub::mode::immediate);
 
 	stat_.total_immediate_post_count += count;
+
+	return count;
+}
+
+std::size_t channel::execute()
+{
+	message::ptr m;
+
+	std::size_t count = 0;
+
+	simple_tick loop_tick;
+
+	while (q_.pop(m))
+	{
+		simple_tick tick;
+
+		count += map_.post(m, sub::mode::delayed);
+
+		if (tick.elapsed() > config_.time_to_log_when_post_time_over)
+		{
+			WISE_INFO(
+				"channel:{}, post: 0x{:x}, time: {} ms", 
+				key_, 
+				m->get_topic().get_key(), 
+				tick.elapsed());
+		}
+
+		if (count > config_.loop_post_limit)
+		{
+			break;
+		}
+	}
+
+	stat_.last_post_count = count;
+	stat_.total_post_count += stat_.last_post_count;
+
+	if (loop_tick.elapsed() > config_.time_to_log_when_post_loop_time_over)
+	{
+		WISE_INFO(
+			"channel: {}, post loop: {} ms, count: {}", 
+			key_, 
+			loop_tick.elapsed(), 
+			count);
+	}
 
 	return count;
 }
@@ -75,51 +118,21 @@ bool channel::unsubscribe(sub::key_t key)
 	return map_.unsubscribe(key);
 }
 
-std::size_t channel::execute()
+void channel::clear()
 {
 	message::ptr m;
 
-	std::size_t count = 0;
-
 	while (q_.pop(m))
 	{
-		count += map_.post(m, sub::mode::delayed);
+		WISE_INFO("channel:{}. clear message:0x{:x}", key_, m->get_topic().get_key());
 	}
 
-	stat_.last_post_count = count;
-	stat_.total_post_count += stat_.last_post_count;
-
-	return count;
-}
-
-void channel::clear()
-{
 	map_.clear();
 }
 
 std::size_t channel::get_queue_size() const
 {
 	return q_.unsafe_size();
-}
-
-void channel::enqueue_checked(const topic& topic, message::ptr m)
-{
-	if (config_.check_delayed_sub_before_enqueue)
-	{
-		if (map_.has_delayed_sub(topic) || map_.has_delayed_sub(topic.get_group_topic()))
-		{
-			q_.push(m);
-		}
-		// else - no delayed posting for the topic
-	}
-	else
-	{
-		// simple optimization
-		// if (map_.has_delayed_sub())
-		{
-			q_.push(m);
-		}
-	}
 }
 
 } //kernel

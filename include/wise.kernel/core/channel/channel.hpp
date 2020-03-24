@@ -60,13 +60,13 @@ public:
 	struct config
 	{
 		/// limit post count in a post loop
-		std::size_t loop_post_limit = 2048;
+		std::size_t loop_post_limit = UINT32_MAX;
 
 		/// 단일 메세지 전파 실행 시간이 이 시간을 넘을 경우 로그 남김
 		tick_t time_to_log_when_post_time_over = 20;
 
 		/// post() 루프의 전체 전파 실행 시간이 이 시간을 넘을 경우 로그 남김
-		tick_t time_to_log_when_post_loop_timeover = 200;
+		tick_t time_to_log_when_post_loop_time_over = 200;
 
 		/// 토픽에 등록된 콜백이 없을 경우 로그 남김
 		bool log_no_sub_when_post = false;
@@ -75,23 +75,18 @@ public:
 		// 안전하지 못 하여 옵션을 제거
 		// bool post_all_when_destroyed = true;
 
-		/// 큐에 넣을 필요가 있는 지 먼저 체크. 체크가 더 느릴 가능성이 높음.
-		bool check_delayed_sub_before_enqueue = false;
-
 		config() = default;
 
 		config(
 			std::size_t lpl,
 			tick_t ttl_post_over,
 			tick_t ttl_loop_over,
-			bool log_no_sub,
-			bool check_delayed_sub
+			bool log_no_sub
 		)
 			: loop_post_limit(lpl)
 			, time_to_log_when_post_time_over(ttl_post_over)
-			, time_to_log_when_post_loop_timeover(ttl_loop_over)
+			, time_to_log_when_post_loop_time_over(ttl_loop_over)
 			, log_no_sub_when_post(log_no_sub)
-			, check_delayed_sub_before_enqueue(check_delayed_sub)
 		{
 		}
 	};
@@ -167,6 +162,12 @@ public:
 	 */
 	std::size_t publish(const topic& topic, message::ptr m);
 
+	/// post all messages in queue
+	/**
+	 * sub::mode::delayed subscriptions are handled for messages
+	 */
+	std::size_t execute();
+
 	/// subscribe to a topic with a condition 
 	/**
 	 * @param topic - a topic to subscribe
@@ -204,22 +205,6 @@ public:
 	 */
 	bool unsubscribe(sub::key_t key);
 
-	/// post all messages in queue
-	/**
-	 * sub::mode::delayed subscriptions are handled for messages
-	 */
-	std::size_t execute();
-
-	/// post with a message not from a queue. (for net)
-	std::size_t publish_immediate(message::ptr m)
-	{
-		auto count = map_.post(m, sub::mode::immediate);
-
-		stat_.total_immediate_post_count += count;
-
-		return count;
-	}
-
 	/// clear all subscriptions
 	void clear();
 
@@ -247,19 +232,6 @@ public:
 	{
 		return stat_;
 	}
-
-	std::size_t get_subscription_count(const topic& topic) const
-	{
-		return map_.get_subscription_count(topic);
-	}
-
-	std::size_t get_subscription_count(const topic& topic, sub::mode mode) const
-	{
-		return map_.get_subscription_count(topic, mode);
-	}
-
-private:
-	void enqueue_checked(const topic& topic, message::ptr m);
 
 private:
 	key_t   key_;

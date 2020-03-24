@@ -50,6 +50,8 @@ void node::finish()
 	WISE_RETURN_IF(stop_);
 	stop_ = true;
 
+	on_finish();
+
 	// post to all threads
 	for (auto& t : threads_)
 	{

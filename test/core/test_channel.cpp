@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#pragma warning(disable: 6319)
+
 using namespace wise::kernel;
 
 struct CbHolder 

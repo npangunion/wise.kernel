@@ -106,6 +106,7 @@ public:
 
 	void clear()
 	{
+		ch_->clear();
 	}
 
 private: 

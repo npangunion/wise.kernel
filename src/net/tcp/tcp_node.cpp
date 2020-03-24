@@ -73,6 +73,9 @@ void tcp_node::on_finish()
 		}
 	);
 
+	// TODO: wait till tcp_session is cleared. 
+	// Is it a right way? 
+
 	protocols_.clear();
 }
 

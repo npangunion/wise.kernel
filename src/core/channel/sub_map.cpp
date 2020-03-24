@@ -6,43 +6,39 @@
 namespace wise {
 namespace kernel {
 
-sub_map::sub_map(channel& _channel, const std::string& desc)
+sub_map::sub_map(channel& _channel)
 	: seq_(1, UINT32_MAX, 1000)
 	, channel_(_channel)
-	, desc_(desc)
 {
 }
 
 sub_map::~sub_map()
 {
-
+	clear();
 }
 
-sub::key_t sub_map::subscribe(const topic& topic, sub::cond_t& cond, sub::cb_t& cb, sub::mode mode)
+sub::key_t sub_map::subscribe(const topic& topic, sub::cond_t cond, sub::cb_t cb, sub::mode mode)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 
+	auto key = seq_.next();
+
+	sub s(key, topic, cond, cb, mode);
+	all_subs_.insert(subs::value_type(key, s));
+
 	if (mode == sub::mode::immediate)
 	{
-		return subscribe(
-			entries_immediate_,
-			topic,
-			cond,
-			cb,
-			mode);
+		subscribe_mode(entries_immediate_, s);
 	}
 	else
 	{
-		return subscribe(
-			entries_delayed_,
-			topic,
-			cond,
-			cb,
-			mode);
+		subscribe_mode(entries_delayed_, s);
 	}
+
+	return key;
 }
 
-sub::key_t sub_map::subscribe(const topic& topic, sub::cb_t& cb, sub::mode mode)
+sub::key_t sub_map::subscribe(const topic& topic, sub::cb_t cb, sub::mode mode)
 {
 	sub::cond_t cond = [](message::ptr m) { return true; };
 
@@ -58,21 +54,34 @@ bool sub_map::unsubscribe(sub::key_t key)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 
-	auto iter = keys_.find(key);
+	auto iter = all_subs_.find(key);
+	WISE_RETURN_IF(iter == all_subs_.end(), false);
 
-	// this can happen after network finish
-	// WISE_ASSERT(iter != keys_.end());
+	iter->second.unsubscribe();
+	purge_keys_.push_back(key);
 
-	WISE_RETURN_IF(iter == keys_.end(), false);
-
-	if (iter->second.mode == sub::mode::immediate)
+	if (iter->second.get_mode() == sub::mode::immediate)
 	{
-		return unsubscribe(entries_immediate_, key);
+		return unsubscribe_mode(entries_immediate_, iter->second);
 	}
 	else
 	{
-		return unsubscribe(entries_delayed_, key);
+		return unsubscribe_mode(entries_delayed_, iter->second);
 	}
+}
+
+sub& sub_map::get_sub(sub::key_t key)
+{
+	std::shared_lock<std::shared_mutex> lock(mutex_);
+
+	auto iter = all_subs_.find(key);
+
+	if (iter != all_subs_.end())
+	{
+		return iter->second;
+	}
+
+	WISE_THROW("subscription key is invalid");
 }
 
 void sub_map::clear()
@@ -81,118 +90,36 @@ void sub_map::clear()
 
 	entries_delayed_.clear();
 	entries_immediate_.clear();
-	keys_.clear();
+	all_subs_.clear();
 }
 
-bool sub_map::has_delayed_sub(const topic& topic) const
+void sub_map::subscribe_mode(entry_map& em, sub& s)
 {
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-
-	auto iter = entries_delayed_.find(topic);
-
-	return iter != entries_delayed_.end();
-}
-
-bool sub_map::has_delayed_sub() const
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-	return entries_delayed_.empty();
-}
-
-std::size_t sub_map::get_subscription_count() const
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-
-	return entries_delayed_.size() + entries_immediate_.size();
-}
-
-std::size_t sub_map::get_subscription_count(const topic& topic) const
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-
-	std::size_t count = 0;
-
-	count += get_subscription_count(topic, sub::mode::immediate);
-	count += get_subscription_count(topic, sub::mode::delayed);
-
-	return count;
-}
-
-std::size_t sub_map::get_subscription_count(const topic& topic, sub::mode mode) const
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-
-	const entry_map* target = &entries_immediate_;
-
-	if (mode == sub::mode::delayed)
-	{
-		target = &entries_delayed_;
-	}
-
-	auto iter = target->find(topic);
-	WISE_RETURN_IF(iter == target->end(), 0);
-
-	return iter->second.subs_.size();
-}
-
-sub::key_t sub_map::subscribe(
-	entry_map& em,
-	const topic& topic,
-	sub::cond_t& cond,
-	sub::cb_t& cb,
-	sub::mode mode)
-{
-	auto iter = em.find(topic);
+	auto iter = em.find(s.get_topic());
 
 	if (iter == em.end())
 	{
-		entry e;
+		topic_entry e;
 
-		e.topic_ = topic;
+		e.topic_ = s.get_topic();
 
-		auto key = subscribe(e, topic, cond, cb, mode);
-
-		em.insert(entry_map::value_type(topic, e));
-
-		return key;
+		subscribe_topic(e, s);
+		em.insert(entry_map::value_type(s.get_topic(), e));
 	}
-	// else
-
-	return subscribe(iter->second, topic, cond, cb, mode);
+	else
+	{
+		subscribe_topic(iter->second, s);
+	}
 }
 
-sub::key_t sub_map::subscribe(
-	entry& e,
-	const topic& topic,
-	sub::cond_t& cond,
-	sub::cb_t& cb,
-	sub::mode mode
-)
+void sub_map::subscribe_topic(topic_entry& e, sub& s)
 {
-	auto key = seq_.next();
-
-	e.subs_.push_back(
-		sub(key, topic, cond, cb, mode)
-	);
-
-	auto ki = keys_.find(key);
-	WISE_ASSERT(ki == keys_.end());
-
-	keys_[key] = entry_link{ topic, mode };
-
-	return key;
+	e.subs_.insert(subs::value_type(s.get_key(), s));
 }
 
-bool sub_map::unsubscribe(entry_map& em, sub::key_t key)
+bool sub_map::unsubscribe_mode(entry_map& em, sub& s)
 {
-	auto iter = keys_.find(key);
-	WISE_ASSERT(iter != keys_.end());
-	WISE_RETURN_IF(iter == keys_.end(), false);
-
-	auto topic = iter->second.topic;
-
-	keys_.erase(iter);
-	seq_.release(key);
+	auto topic = s.get_topic();
 
 	auto ei = em.find(topic);
 	WISE_ASSERT(ei != em.end());
@@ -200,17 +127,10 @@ bool sub_map::unsubscribe(entry_map& em, sub::key_t key)
 
 	auto& subs = ei->second.subs_;
 
-	auto si = std::find_if(
-		subs.begin(), subs.end(),
-		[key](const sub& s) {return s.get_key() == key; }
-	);
+	auto iter = subs.find(s.get_key());
+	WISE_RETURN_IF(iter == subs.end(), false);
 
-	if (si == subs.end())
-	{
-		return false;
-	}
-	
-	si->unsubscribe();
+	iter->second.unsubscribe();
 
 	return true;
 }
@@ -225,15 +145,15 @@ std::size_t sub_map::post(const topic& topic, message::ptr m, sub::mode mode)
 
 		if (mode == sub::mode::immediate)
 		{
-			count = post(entries_immediate_, topic, m);
+			count = post_mode(entries_immediate_, topic, m);
 		}
 		else
 		{
-			count = post(entries_delayed_, topic, m);
+			count = post_mode(entries_delayed_, topic, m);
 		}
 	}
 
-	purge_unsubscribed_entries();
+	purge_wait();
 
 	return count;
 }
@@ -248,42 +168,40 @@ std::size_t sub_map::post(message::ptr m, sub::mode mode)
 
 		if (mode == sub::mode::immediate)
 		{
-			count = post(entries_immediate_, m);
+			count = post_mode(entries_immediate_, m);
 		}
 		else
 		{
-			count = post(entries_delayed_, m);
+			count = post_mode(entries_delayed_, m);
 		}
 	}
 
-	purge_unsubscribed_entries();
+	purge_wait();
 
 	return count;
 }
 
-std::size_t sub_map::post(entry_map& em, const topic& topic, message::ptr m)
+std::size_t sub_map::post_mode(entry_map& em, const topic& topic, message::ptr m)
 {
 	std::size_t count = 0;
 
-	count += post_on_topic(em, topic, m);
-	count += post_on_topic(em, topic.get_group_topic(), m);
-	count += post_on_topic(em, m->get_topic(), m);
-	count += post_on_topic(em, m->get_topic().get_group_topic(), m);
+	count += post_topic(em, topic, m);
+	count += post_topic(em, topic.get_group_topic(), m);
 
 	return count;
 }
 
-std::size_t sub_map::post(entry_map& em, message::ptr m)
+std::size_t sub_map::post_mode(entry_map& em, message::ptr m)
 {
 	std::size_t count = 0;
 
-	count += post_on_topic(em, m->get_topic(), m);
-	count += post_on_topic(em, m->get_topic().get_group_topic(), m);
+	count += post_topic(em, m->get_topic(), m);
+	count += post_topic(em, m->get_topic().get_group_topic(), m);
 
 	return count;
 }
 
-std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::ptr m)
+std::size_t sub_map::post_topic(entry_map& em, const topic& topic, message::ptr m)
 {
 	WISE_RETURN_IF(!topic.is_valid(), 0);
 
@@ -293,7 +211,7 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 	{
 		if (channel_.get_config().log_no_sub_when_post)
 		{
-			WISE_WARN("{} has no subscription for {}", desc_, m->get_desc());
+			WISE_WARN("{} has no subscription. channel:{}", channel_.get_key());
 		}
 		return 0;
 	}
@@ -305,23 +223,22 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 
 	WISE_ASSERT(total > 0);
 
-	posting_thread_ = get_current_thread_hash();
-
 	try
 	{
-		for (auto& sub : subs)
+		for (auto& kv : subs)
 		{
-			if (!sub.is_unsubscribed() && sub.post(m))
+			auto& s = kv.second;
+
+			if (!s.is_unsubscribed() && s.post(m))
 			{
 				++count;
 
 				WISE_NONE(
 					"posted from channel: {}, msg: {}, posting index: {} of: {}",
-					desc_, m->get_desc(), count, total
+					channel_.get_key(), m->get_desc(), count, total
 				);
 			}
 		}
-
 	}
 	catch (std::exception & ex)
 	{
@@ -334,7 +251,7 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 	return count;
 }
 
-void sub_map::purge_unsubscribed_entries()
+void sub_map::purge_wait()
 {
 	if (purge_tick_.elapsed() < purge_sub_interval)
 	{
@@ -343,29 +260,43 @@ void sub_map::purge_unsubscribed_entries()
 
 	purge_tick_.reset();
 
-	std::unique_lock<std::shared_mutex> lock(mutex_);
-
-	purge_unsubscribed(entries_immediate_);
-	purge_unsubscribed(entries_delayed_);
+	purge();
 }
 
-void sub_map::purge_unsubscribed(entry_map& m)
+void sub_map::purge()
 {
-	for (auto& kv : m)
-	{
-		auto& subs = kv.second.subs_;
+	std::unique_lock<std::shared_mutex> lock(mutex_);
 
-		subs.erase(std::remove_if(
-			subs.begin(), 
-			subs.end(), 
-			[](sub& s) { return s.is_unsubscribed(); }), 
-			subs.end());
+	while (!purge_keys_.empty())
+	{
+		auto key = purge_keys_.front();
+
+		auto iter = all_subs_.find(key);
+
+		if (iter != all_subs_.end())
+		{
+			auto& s = iter->second;
+
+			purge_mode(entries_immediate_, s);
+			purge_mode(entries_delayed_, s);
+
+			seq_.release(key);
+
+			all_subs_.erase(iter);
+		}
+
+		purge_keys_.pop_front();
 	}
 }
 
-uint64_t sub_map::get_current_thread_hash() const
+void sub_map::purge_mode(entry_map& em, sub& s)
 {
-	return std::hash<std::thread::id>()(std::this_thread::get_id());
+	auto iter = em.find(s.get_topic());
+
+	if (iter != em.end())
+	{
+		iter->second.subs_.erase(s.get_key());
+	}
 }
 
 } // kernel
