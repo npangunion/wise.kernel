@@ -13,6 +13,7 @@
 namespace wise {
 namespace kernel {
 
+// thread safe fixed size pool
 class fixed_size_buffer_pool
 {
 public:

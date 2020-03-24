@@ -86,6 +86,11 @@ public:
 			});
 	}
 
+	void execute()
+	{
+		ch_->execute();
+	}
+
 	int get_seq() const
 	{
 		return seq_;
@@ -358,17 +363,6 @@ TEST_CASE("bits protocol")
 
 				ch1->unsubscribe(sid);
 			}
-
-			SECTION("very long string")
-			{
-				// 별도로 테스트 완료
-			}
-
-			SECTION("very small resize buffer")
-			{
-				// resize_buffer의 초기 크기를 16으로 하고 전체 테스트 진행 
-				// 성능 차이가 거의 없다. 풀이라 그런가? 
-			}
 		}
 	}
 
@@ -383,14 +377,16 @@ TEST_CASE("bits protocol")
 
 		const int test_count = 10;
 
+		bn.start();
+
 		bn.listen("0.0.0.0:7777");
 		bn.connect("127.0.0.1:7777");
 
 		fine_tick tick;
 
-		// while (true)
+		while (true)
 		{
-			wise::kernel::sleep(10);
+			wise::kernel::sleep(1);
 
 			auto seq = tester.get_seq();
 
@@ -398,6 +394,8 @@ TEST_CASE("bits protocol")
 			{
 				// break;
 			}
+
+			tester.execute();
 		}
 
 		WISE_INFO("echo test. elapsed: {}, count: {}", tick.elapsed(), test_count);

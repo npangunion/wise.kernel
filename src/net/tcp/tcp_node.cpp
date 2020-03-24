@@ -144,8 +144,6 @@ void tcp_node::on_connected(key_t k, tcp::socket&& soc)
 
 void tcp_node::on_connect_failed(key_t k, const error_code& ec)
 {
-	WISE_UNUSED(ec);
-
 	tcp_connector::ptr cnt;
 
 	// unique lock
@@ -156,13 +154,30 @@ void tcp_node::on_connect_failed(key_t k, const error_code& ec)
 		if (iter != connectors_.end())
 		{
 			cnt = iter->second;
+			notify_connect_failed(cnt->get_addr().get_raw(), ec);
 		}
 
 		seq_.release(k);
 		connectors_.erase(k);
 	}
 
-	// TODO: notify
+	if (cnt)
+	{
+		WISE_ERROR("failed to connect on protocol. addr:{0}", cnt->get_addr().get_raw());
+	}
+}
+
+void tcp_node::on_error(protocol::ptr p, const error_code& ec)
+{
+	WISE_DEBUG("{} remove on error. sid: 0x{:x}", __FUNCTION__, p->get_id());
+
+	// unique lock
+	{
+		std::unique_lock<std::shared_mutex> lock(mutex_);
+		protocols_.del(p->get_id());
+	}
+
+	notify_disconnect(std::static_pointer_cast<tcp_protocol>(p), ec);
 }
 
 void tcp_node::on_new_socket(
@@ -174,7 +189,6 @@ void tcp_node::on_new_socket(
 	// unique lock 
 	{
 		std::unique_lock<std::shared_mutex> lock(mutex_);
-
 		auto id = protocols_.add(proto);
 		proto->set_id(id);
 	}
@@ -188,7 +202,21 @@ void tcp_node::on_new_socket(
 	auto tp = std::static_pointer_cast<tcp_protocol>(proto);
 	tp->begin();
 
-	// TODO: notify
+	WISE_INFO(
+		"new protocol. id:{:x} local:{} remote:{}", 
+		tp->get_id(), 
+		tp->get_local_addr(), 
+		tp->get_remote_addr());
+
+	// tp->begin() setup address, which are used at following.
+	if (accepted)
+	{
+		notify_accepted(tp);
+	}
+	else
+	{
+		notify_connected(tp);
+	}
 }
 
 } // kernel

@@ -93,6 +93,11 @@ public:
 		return max_size_;
 	}
 
+	const config& get_config() const
+	{
+		return config_;
+	}
+
 	void dump_stat() const;
 
 private:

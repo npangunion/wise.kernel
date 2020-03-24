@@ -8,25 +8,14 @@
 namespace wise {
 namespace kernel {
 
-template <typename T>
+template <typename T, std::size_t MAX_SLOT = UINT16_MAX>
 class slot_vector
 {
 public:
 	using ptr = std::shared_ptr<T>;
+	using value_type = T;
 
-private:
-	struct slot
-	{
-		ptr			sp_;
-		uint16_t	seq_ = 0;
-
-		slot(ptr sp, uint16_t seq)
-			: sp_(sp)
-			, seq_(seq)
-		{
-		}
-	};
-
+public:
 	union slot_id
 	{
 		using full_t = uint32_t;
@@ -42,7 +31,7 @@ private:
 		} full_;
 
 		explicit slot_id(full_t value = 0);
-		slot_id(seq_t seq, index_t index);
+		explicit slot_id(seq_t seq, index_t index);
 
 		/// seq_ > 0 
 		bool is_valid() const;
@@ -54,6 +43,19 @@ private:
 		bool operator==(const slot_id& rhs) const;
 		bool operator!=(const slot_id& rhs) const;
 		bool operator < (const slot_id& rhs) const;
+	};
+
+private:
+	struct slot
+	{
+		ptr					sp_;
+		uint16_t			seq_ = 0;
+
+		slot(ptr sp, uint16_t seq)
+			: sp_(sp)
+			, seq_(seq)
+		{
+		}
 	};
 
 public:
@@ -72,6 +74,16 @@ public:
 
 	void clear();
 
+	std::size_t get_used_count() const
+	{
+		return used_count_;
+	}
+
+	std::size_t get_capacity() const
+	{
+		return slots_.size();
+	}
+
 	std::size_t each(std::function<void (ptr)> fn);
 
 private:
@@ -80,73 +92,83 @@ private:
 private:
 	std::vector<slot>		slots_;
 	std::deque<uint16_t>    free_slots_;
-	std::size_t				slot_count_;
+	std::size_t				used_count_;
 };
 
-template <typename T>
-slot_vector<T>::slot_vector()
+template <typename T, std::size_t MAX_SLOT>
+slot_vector<T, MAX_SLOT>::slot_vector()
 	: slots_()
 	, free_slots_()
-	, slot_count_(0)
+	, used_count_(0)
 {
 }
 
-template <typename T>
-slot_vector<T>::~slot_vector()
+template <typename T, std::size_t MAX_SLOT>
+slot_vector<T, MAX_SLOT>::~slot_vector()
 {
 }
 
-template <typename T>
-typename slot_vector<T>::id_t slot_vector<T>::add(ptr sp)
+template <typename T, std::size_t MAX_SLOT>
+typename slot_vector<T, MAX_SLOT>::id_t 
+slot_vector<T, MAX_SLOT>::add(ptr sp)
 {
 	uint16_t slot_idx = get_free_slot_index();
 	uint16_t seq = 0;
 
-	seq = slots_[slot_idx].seq_++;
-	seq = (seq == 0 ? slots_[slot_idx].seq_++ : seq);
-
-	WISE_ASSERT(seq > 0);
+	seq = ++slots_[slot_idx].seq_;
 
 	slots_[slot_idx].sp_ = sp;
-	slot_count_++;
+	++used_count_;
 
 	WISE_ENSURE(slots_[slot_idx].sp_);
-	WISE_ENSURE(slot_count_ > 0);
+	WISE_ENSURE(used_count_ > 0);
 
 	return slot_id(seq, slot_idx).get_value();
 }
 
-template <typename T>
-typename slot_vector<T>::ptr slot_vector<T>::get(id_t id) const
+template <typename T, std::size_t MAX_SLOT>
+typename slot_vector<T, MAX_SLOT>::ptr 
+slot_vector<T, MAX_SLOT>::get(id_t id) const
 {
 	slot_id sid(id);
 
-	return slots_[sid.get_index()].sp_;
+	WISE_EXPECT(sid.get_index() < slots_.size());
+	WISE_RETURN_IF(sid.get_index() >= slots_.size(), ptr());
+
+	auto& slt = slots_[sid.get_index()];
+	WISE_RETURN_IF(slt.seq_ != sid.get_seq(), ptr());
+
+	return slt.sp_;
 }
 
-template <typename T>
-bool slot_vector<T>::del(id_t id)
+template <typename T, std::size_t MAX_SLOT>
+bool slot_vector<T, MAX_SLOT>::del(id_t id)
 {
-	WISE_ASSERT(slot_count_ > 0);
+	WISE_ASSERT(used_count_ > 0);
 
 	slot_id sid(id);
 
+	WISE_EXPECT(sid.get_index() < slots_.size());
+	WISE_RETURN_IF(sid.get_index() >= slots_.size(), false);
+
 	slots_[sid.get_index()].sp_.reset();
-	slot_count_--;
+	--used_count_;
 
 	free_slots_.push_back(sid.get_index());
 
-	WISE_ASSERT(slot_count_ >= 0);
+	WISE_ASSERT(used_count_ >= 0);
+
+	return true;
 }
 
-template <typename T>
-void slot_vector<T>::clear()
+template <typename T, std::size_t MAX_SLOT>
+void slot_vector<T, MAX_SLOT>::clear()
 {
 	slots_.clear();
 }
 
-template <typename T>
-std::size_t slot_vector<T>::each(std::function<void(ptr)> fn)
+template <typename T, std::size_t MAX_SLOT>
+std::size_t slot_vector<T, MAX_SLOT>::each(std::function<void(ptr)> fn)
 {
 	std::size_t cnt = 0;
 
@@ -162,12 +184,12 @@ std::size_t slot_vector<T>::each(std::function<void(ptr)> fn)
 	return cnt;
 }
 
-template <typename T>
-uint16_t slot_vector<T>::get_free_slot_index()
+template <typename T, std::size_t MAX_SLOT>
+uint16_t slot_vector<T, MAX_SLOT>::get_free_slot_index()
 {
-	if (slots_.size() >= UINT16_MAX)
+	if (slots_.size() >= MAX_SLOT)
 	{
-		WISE_THROW("network_impl slot limit reached");
+		WISE_THROW("slot_vector. slot limit reached");
 	}
 
 	if (free_slots_.empty())
@@ -186,58 +208,58 @@ uint16_t slot_vector<T>::get_free_slot_index()
 	return index;
 }
 
-template <typename T>
-slot_vector<T>::slot_id::slot_id(uint32_t value)
+template <typename T, std::size_t MAX_SLOT>
+slot_vector<T, MAX_SLOT>::slot_id::slot_id(uint32_t value)
 	: value_(value)
 {
 }
 
-template <typename T>
-slot_vector<T>::slot_id::slot_id(uint16_t seq, uint16_t index)
+template <typename T, std::size_t MAX_SLOT>
+slot_vector<T, MAX_SLOT>::slot_id::slot_id(uint16_t seq, uint16_t index)
 {
 	full_.seq_ = seq;
 	full_.index_ = index;
 	WISE_ASSERT(is_valid());
 }
 
-template <typename T>
-bool slot_vector<T>::slot_id::is_valid() const
+template <typename T, std::size_t MAX_SLOT>
+bool slot_vector<T, MAX_SLOT>::slot_id::is_valid() const
 {
 	return full_.seq_ > 0 && full_.index_ >= 0;
 }
 
-template <typename T>
-const uint32_t slot_vector<T>::slot_id::get_value() const
+template <typename T, std::size_t MAX_SLOT>
+const uint32_t slot_vector<T, MAX_SLOT>::slot_id::get_value() const
 {
 	return value_;
 }
 
-template <typename T>
-const uint16_t slot_vector<T>::slot_id::get_seq() const
+template <typename T, std::size_t MAX_SLOT>
+const uint16_t slot_vector<T, MAX_SLOT>::slot_id::get_seq() const
 {
 	return full_.seq_;
 }
 
-template <typename T>
-const uint16_t slot_vector<T>::slot_id::get_index() const
+template <typename T, std::size_t MAX_SLOT>
+const uint16_t slot_vector<T, MAX_SLOT>::slot_id::get_index() const
 {
 	return full_.index_;
 }
 
-template <typename T>
-bool slot_vector<T>::slot_id::operator==(const slot_id& rhs) const
+template <typename T, std::size_t MAX_SLOT>
+bool slot_vector<T, MAX_SLOT>::slot_id::operator==(const slot_id& rhs) const
 {
 	return value_ == rhs.value_;
 }
 
-template <typename T>
-bool slot_vector<T>::slot_id::operator!=(const slot_id& rhs) const
+template <typename T, std::size_t MAX_SLOT>
+bool slot_vector<T, MAX_SLOT>::slot_id::operator!=(const slot_id& rhs) const
 {
 	return value_ != rhs.value_;
 }
 
-template <typename T>
-bool slot_vector<T>::slot_id::operator < (const slot_id& rhs) const
+template <typename T, std::size_t MAX_SLOT>
+bool slot_vector<T, MAX_SLOT>::slot_id::operator < (const slot_id& rhs) const
 {
 	return value_ < rhs.value_;
 }

@@ -38,6 +38,15 @@ public:
 		return accepted_;
 	}
 
+	const std::string& get_local_addr() const;
+
+	const std::string& get_remote_addr() const;
+
+	tcp_node* get_node() 
+	{
+		return node_;
+	}
+
 	const tcp_node* get_node() const
 	{
 		return node_;
@@ -58,7 +67,7 @@ protected:
 
 private:
 	tcp_node* node_ = nullptr;
-	tcp_session* session_ = nullptr;
+	std::unique_ptr<tcp_session> session_;
 	bool accepted_;
 };
 

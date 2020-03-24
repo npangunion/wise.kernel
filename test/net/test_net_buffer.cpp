@@ -122,6 +122,9 @@ TEST_CASE("multiple_size_buffer_pool", "net")
 			auto bp = pool.alloc(pool.get_max_size() * 2);
 			CHECK(bp->get_pool() == nullptr);
 			pool.release(bp);
+			bp.reset();
+
+			mem_tracker::inst().report();
 		}
 
 		SECTION("release nullptr")
@@ -149,11 +152,25 @@ TEST_CASE("resize_buffer", "net")
 		CHECK(rb.size() == 3 * 1024 * d.length());
 		CHECK(rb.capacity() > rb.size());
 		CHECK(rb.at(15) == '7');
-	}
 
-	SECTION("coverage")
-	{
+		std::array<char, 8> da;
+		rb.read((uint8_t*)&da[0], 8);
+		CHECK(da[0] == '0');
 
+		CHECK(rb.data()[1] == '1');
+
+		rb.pop_front(3);
+		CHECK(rb.data()[0] == '3');
+
+		auto iter = rb.begin();
+		CHECK(*iter == '3');
+		++iter; 
+		CHECK(*iter == '4');
+
+		auto citer = rb.cbegin();
+		CHECK(*citer == '3');
+		++citer;
+		CHECK(*citer == '4');
 	}
 }
 

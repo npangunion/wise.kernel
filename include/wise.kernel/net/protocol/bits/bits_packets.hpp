@@ -47,9 +47,6 @@ struct bits_topic
 
 struct bits_syn_connected : public bits_packet
 {
-	std::string local_addr;
-	std::string remote_addr;
-
 	bits_syn_connected()
 		: bits_packet(bits_topic::connected())
 	{
@@ -58,10 +55,8 @@ struct bits_syn_connected : public bits_packet
 
 struct bits_syn_connect_failed : public bits_packet
 {
-	std::string local_addr;
 	std::string remote_addr;
 	boost::system::error_code ec;
-	std::string desc;
 
 	bits_syn_connect_failed()
 		: bits_packet(bits_topic::connect_failed())
@@ -71,9 +66,6 @@ struct bits_syn_connect_failed : public bits_packet
 
 struct bits_syn_accepted : public bits_packet
 {
-	std::string local_addr;
-	std::string remote_addr;
-
 	bits_syn_accepted()
 		: bits_packet(bits_topic::accepted())
 	{
@@ -83,10 +75,7 @@ struct bits_syn_accepted : public bits_packet
 
 struct bits_syn_disconnected: public bits_packet
 {
-	std::string local_addr;
-	std::string remote_addr;
 	boost::system::error_code ec;
-	std::string desc;
 
 	bits_syn_disconnected()
 		: bits_packet(bits_topic::disconnected())

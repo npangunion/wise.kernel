@@ -2,7 +2,7 @@
 
 #include <exception>
 #include <sstream>
-#include "logger.hpp" // NOTE: fmt 관련 링크 에러 제거
+#include "logger.hpp" 
 
 namespace wise {
 namespace kernel {
@@ -29,9 +29,9 @@ protected:
 	explicit exception(const char* cls, char const* const m, const char* file, int line) throw()
 		: std::exception(m)
 	{
-		std::ostringstream oss;
-		oss << cls << ": " << std::exception::what() << " on " << file << ":" << line;
-		desc_ = oss.str();
+		desc_ = fmt::format("{}: {} on {} {}", cls, std::exception::what(), file, line);
+
+		WISE_ERROR("{}", desc_);
 	}
 
 private:

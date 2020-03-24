@@ -2,6 +2,7 @@
 #include <wise.kernel/net/protocol/bits/bits_protocol.hpp>
 #include <wise.kernel/net/protocol/bits/bits_factory.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packer.hpp>
+#include <wise.kernel/net/protocol/bits/bits_node.hpp>
 #include <wise.kernel/core/exception.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/macros.hpp>
@@ -316,9 +317,7 @@ void bits_protocol::on_send(std::size_t len)
 
 void bits_protocol::on_error(const boost::system::error_code& ec)
 {
-	WISE_UNUSED(ec);
-
-	// TODO: 통지. 
+	get_node()->on_error(shared_from_this(), ec);
 }
 
 protocol::result bits_protocol::on_recv_to_test(

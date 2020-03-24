@@ -23,12 +23,14 @@ class tcp_node : public node
 public:
 	friend class tcp_acceptor;
 	friend class tcp_connector;
+	friend class tcp_protocol;
 
 	struct config : public node::config 
 	{
 		bool set_tcp_no_delay = true;			/// nagle disable
 		bool set_tcp_linger = true;				/// SO_LINGER 켜기
 		bool set_tcp_reuse_addr = true;			/// 실제 서비스에서는 끄는 것이 좋음
+		std::size_t max_session_count = 5000;	/// 최대 세션 개수 제한
 	};
 
 public:
@@ -49,6 +51,9 @@ public:
 		return config_;
 	}
 
+	/// internal. callled when protocol error
+	void on_error(protocol::ptr p, const error_code& ec);
+
 protected:
 	result on_start() override;
 
@@ -57,6 +62,11 @@ protected:
 	virtual protocol::ptr create_protocol(
 		tcp::socket&& sock, 
 		bool accepted) = 0;
+
+	virtual void notify_accepted(tcp_protocol::ptr p) = 0;
+	virtual void notify_connected(tcp_protocol::ptr p) = 0;
+	virtual void notify_connect_failed(const std::string& addr, const error_code& ec) = 0;
+	virtual void notify_disconnect(tcp_protocol::ptr p, const error_code& ec) = 0;
 
 private:
 	using key_t = uint16_t;
@@ -77,6 +87,7 @@ private:
 
 	/// called when connect failed
 	void on_connect_failed(key_t k, const error_code& ec);
+
 
 	// 새로운 연결에서 프로토콜 생성
 	void on_new_socket(
