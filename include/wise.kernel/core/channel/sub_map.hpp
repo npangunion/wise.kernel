@@ -1,4 +1,4 @@
-#pragma once 
+ï»¿#pragma once 
 
 #include <wise.kernel/core/channel/sub.hpp>
 #include <wise.kernel/core/sequence.hpp>
@@ -17,15 +17,15 @@ class channel;
 /**
  * used internally from channel class.
  *
- * thread-safe using shared_timed_mutex.
+ * thread-safe using shared_mutex.
  */
 class sub_map
 {
 public:
-	/// »ı¼ºÀÚ
+	/// ìƒì„±ì
 	sub_map(channel& _channel, const std::string& desc);
 
-	/// ¼Ò¸êÀÚ
+	/// ì†Œë©¸ì
 	~sub_map();
 
 	/// subscribe to topic. locked with unique_lock
@@ -51,19 +51,19 @@ public:
 	/// clear subscriptions
 	void clear();
 
-	/// topic¿¡ ´ëÇØ ³ªÁß Ã³¸®ÇÒ Ç×¸ñÀÌ ÀÖ´Â Áö È®ÀÎ
+	/// topicì— ëŒ€í•´ ë‚˜ì¤‘ ì²˜ë¦¬í•  í•­ëª©ì´ ìˆëŠ” ì§€ í™•ì¸
 	bool has_delayed_sub(const topic& topic) const;
 
-	/// ÇÏ³ª¶óµµ ÀÖ´Â Áö È®ÀÎ
+	/// í•˜ë‚˜ë¼ë„ ìˆëŠ” ì§€ í™•ì¸
 	bool has_delayed_sub() const;
 
-	/// ÀüÃ¼ subscription °³¼ö
+	/// ì „ì²´ subscription ê°œìˆ˜
 	std::size_t get_subscription_count() const;
 
-	/// µğ¹ö±ë ¿ë. topic¿¡ µî·ÏµÈ °³¼ö
+	/// ë””ë²„ê¹… ìš©. topicì— ë“±ë¡ëœ ê°œìˆ˜
 	std::size_t get_subscription_count(const topic& topic) const;
 
-	/// ¸ğµåº° µî·ÏµÈ °³¼ö
+	/// ëª¨ë“œë³„ ë“±ë¡ëœ ê°œìˆ˜
 	std::size_t get_subscription_count(const topic& topic, sub::mode mode) const;
 
 private:
@@ -112,7 +112,7 @@ private:
 private:
 	channel& channel_;
 	std::string							desc_;
-	mutable std::shared_timed_mutex		mutex_;
+	mutable std::shared_mutex			mutex_;
 	entry_map							entries_immediate_;
 	entry_map							entries_delayed_;
 	key_map								keys_;

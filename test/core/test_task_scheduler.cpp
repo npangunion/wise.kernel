@@ -1,9 +1,9 @@
-#include <pch.hpp>
+ï»¿#include <pch.hpp>
 #include <catch.hpp>
 #include <wise.kernel/core/task/task_scheduler.hpp>
 #include <spdlog/fmt/fmt.h>
 
-#pragma warning(disable : 6319) // intellisense CHECK/REQUIRE ¿À·ù·Î ÆÇ´Ü
+#pragma warning(disable : 6319) // intellisense CHECK/REQUIRE ì˜¤ë¥˜ë¡œ íŒë‹¨
 
 using namespace wise::kernel;
 
@@ -86,7 +86,7 @@ TEST_CASE("task scheduler")
 
 		ts.log_stat();
 
-		// overhead¸¦ Â÷ÁöÇÏ´Â ºÎºĞ
+		// overheadë¥¼ ì°¨ì§€í•˜ëŠ” ë¶€ë¶„
 		// - concurrent_queue::push 
 		// - get_target_runner_id
 		// - wise::log::get() 

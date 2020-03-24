@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include <catch.hpp>
 #include <wise.kernel/core/spinlock.hpp>
 #include <wise.kernel/core/logger.hpp>
@@ -41,7 +41,7 @@ TEST_CASE("spinlock")
 
 	SECTION("performance")
 	{
-		// constexpr int test_count = 1000000; // ¹é¸¸ 
+		// constexpr int test_count = 1000000; // ë°±ë§Œ 
 		constexpr int test_count = 100;
 
 		SECTION("spinlock")
@@ -115,13 +115,13 @@ TEST_CASE("spinlock")
 			WISE_INFO("mutex. elapsed: {}", tick.elapsed());
 		}
 
-		// 1¹é¸¸¹ø. thread 4 vec.push_back()
+		// 1ë°±ë§Œë²ˆ. thread 4 vec.push_back()
 		// spin: 95ms, recursive_mutex: 157ms
 		// 
-		// »óÈ²¿¡ µû¶ó ´Ù¾çÇÏ°Ô ´Ù¸£¹Ç·Î Ç×»ó ºü¸£´Ù°í ÇÒ ¼ö´Â ¾ø´Ù. 
-		// ¸Å¿ì Âª°Ô ½ÇÇàµÇ´Â °÷ÀÇ ¶ôÀº ½ºÇÉ¶ôÀÌ ³ªÀ» ¼ö ÀÖ´Ù. 
+		// ìƒí™©ì— ë”°ë¼ ë‹¤ì–‘í•˜ê²Œ ë‹¤ë¥´ë¯€ë¡œ í•­ìƒ ë¹ ë¥´ë‹¤ê³  í•  ìˆ˜ëŠ” ì—†ë‹¤. 
+		// ë§¤ìš° ì§§ê²Œ ì‹¤í–‰ë˜ëŠ” ê³³ì˜ ë½ì€ ìŠ¤í•€ë½ì´ ë‚˜ì„ ìˆ˜ ìˆë‹¤. 
 		// 
-		// »ï¼º·¦Å¾. ¸±¸®½º: 1¹é¸¸¹ø 
+		// ì‚¼ì„±ë©íƒ‘. ë¦´ë¦¬ìŠ¤: 1ë°±ë§Œë²ˆ 
 		// [2020-03-03 23:54:41.605][3940][I] spinlock. elapsed: 122 ms
 		// [2020-03-03 23:54:41.742][3940][I] mutex. elapsed: 135 ms
 	}

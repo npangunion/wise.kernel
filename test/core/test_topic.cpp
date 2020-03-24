@@ -1,4 +1,4 @@
-#include <pch.hpp>
+ï»¿#include <pch.hpp>
 #include <catch.hpp>
 #include <wise.kernel/core/channel/topic.hpp>
 
@@ -9,7 +9,7 @@ TEST_CASE("topic")
 	{
 		{
 			wise::kernel::topic pic(1, 1, 1);
-			// wise::topic pic2(-1, -2, -3); // ÄÄÆÄÀÏ·¯ °æ°í ³ª¿Í¾ß ÇÔ.
+			// wise::topic pic2(-1, -2, -3); // ì»´íŒŒì¼ëŸ¬ ê²½ê³  ë‚˜ì™€ì•¼ í•¨.
 		}
 
 		{

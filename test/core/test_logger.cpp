@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include <catch.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/tick.hpp>
@@ -35,18 +35,18 @@ TEST_CASE("logger")
 
 	SECTION("wchar support")
 	{
-		// UTF8·Î º¯È¯ÇÏ¹Ç·Î, ÆÄÀÏÀº Á¤È®ÇÏ°Ô º¸ÀÌ°í, ÄÜ¼ÖÀº ±úÁ® º¸ÀÎ´Ù. 
+		// UTF8ë¡œ ë³€í™˜í•˜ë¯€ë¡œ, íŒŒì¼ì€ ì •í™•í•˜ê²Œ ë³´ì´ê³ , ì½˜ì†”ì€ ê¹¨ì ¸ ë³´ì¸ë‹¤. 
 
-		// SPDLOG_WCHAR_TO_UTF8_SUPPORTÀÌ spdlog/teakme.h¿¡ ÄÑÁ® ÀÖ¾î¾ß ÇÑ´Ù. 
+		// SPDLOG_WCHAR_TO_UTF8_SUPPORTì´ spdlog/teakme.hì— ì¼œì ¸ ìžˆì–´ì•¼ í•œë‹¤. 
 
-		WISE_INFO(L"Hello {}", L"ÇÑ±Û");
+		WISE_INFO(L"Hello {}", L"í•œê¸€");
 
-		// ÆÄÀÏ¿¡¼­ È®ÀÎ : OK
+		// íŒŒì¼ì—ì„œ í™•ì¸ : OK
 	}
 
 	SECTION("performance")
 	{
-		// ¾à½Ä ¼º´É Å×½ºÆ®
+		// ì•½ì‹ ì„±ëŠ¥ í…ŒìŠ¤íŠ¸
 		const int test_count = 1;
 
 		wise::kernel::fine_tick tick;
@@ -58,10 +58,10 @@ TEST_CASE("logger")
 
 		WISE_INFO("Elapsed: {}", tick.elapsed());
 
-		// ÆÄÀÏ ·Î±×: 10¸¸°Ç, 123ms
-		// ÄÜ¼Ö ·Î±×: 10¸¸°Ç, 8ÃÊ 
+		// íŒŒì¼ ë¡œê·¸: 10ë§Œê±´, 123ms
+		// ì½˜ì†” ë¡œê·¸: 10ë§Œê±´, 8ì´ˆ 
 
-		// ¼­ºñ½º ÇÒ ¶§ ÄÜ¼Ö ·Î±× Á¦¿ÜÇØ¾ß ÇÔ
+		// ì„œë¹„ìŠ¤ í•  ë•Œ ì½˜ì†” ë¡œê·¸ ì œì™¸í•´ì•¼ í•¨
 	}
 
 	SECTION("manual verification")

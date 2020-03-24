@@ -20,7 +20,7 @@ sub_map::~sub_map()
 
 sub::key_t sub_map::subscribe(const topic& topic, sub::cond_t& cond, sub::cb_t& cb, sub::mode mode)
 {
-	std::unique_lock<std::shared_timed_mutex> lock(mutex_);
+	std::unique_lock<std::shared_mutex> lock(mutex_);
 
 	if (mode == sub::mode::immediate)
 	{
@@ -56,6 +56,12 @@ sub::key_t sub_map::subscribe(const topic& topic, sub::cb_t& cb, sub::mode mode)
 
 bool sub_map::unsubscribe(sub::key_t key)
 {
+	// TODO:  ì¤‘ìš”í•œ ê°œì„ 
+	// ì•„ë˜ì™€ ê°™ì´ ë³µì¡í•˜ê²Œ í•  í•„ìš” ì—†ì´ unsubscribe ìƒíƒœ í‘œì‹œë§Œ í•˜ê³ 
+	// channel::execute()ì—ì„œ í˜¸ì¶œí•˜ì—¬ ì£¼ê¸°ì ìœ¼ë¡œ ì§€ìš¸ ìˆ˜ ìˆëŠ” í•¨ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+	// mark and sweep ë°©ì‹ì´ ê°€ì¥ ê¹”ë”í•˜ë‹¤.  
+	//
+
 	if (is_posting_)
 	{
 		if (posting_thread_ == get_current_thread_hash())
@@ -64,9 +70,9 @@ bool sub_map::unsubscribe(sub::key_t key)
 		}
 	}
 
-	std::unique_lock<std::shared_timed_mutex> lock(mutex_);
+	std::unique_lock<std::shared_mutex> lock(mutex_);
 
-	// lock ÀÌÈÄ¿¡ ÀÖ¾î¾ß ÇÑ´Ù. 
+	// lock 
 	WISE_THROW_IF(is_posting_, "unsubscribe during post is not allowed");
 
 	auto iter = keys_.find(key);
@@ -88,7 +94,7 @@ bool sub_map::unsubscribe(sub::key_t key)
 
 void sub_map::clear()
 {
-	std::unique_lock<std::shared_timed_mutex> lock(mutex_);
+	std::unique_lock<std::shared_mutex> lock(mutex_);
 
 	entries_delayed_.clear();
 	entries_immediate_.clear();
@@ -97,7 +103,7 @@ void sub_map::clear()
 
 bool sub_map::has_delayed_sub(const topic& topic) const
 {
-	std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+	std::shared_lock<std::shared_mutex> lock(mutex_);
 
 	auto iter = entries_delayed_.find(topic);
 
@@ -106,20 +112,20 @@ bool sub_map::has_delayed_sub(const topic& topic) const
 
 bool sub_map::has_delayed_sub() const
 {
-	std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+	std::shared_lock<std::shared_mutex> lock(mutex_);
 	return entries_delayed_.empty();
 }
 
 std::size_t sub_map::get_subscription_count() const
 {
-	std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+	std::shared_lock<std::shared_mutex> lock(mutex_);
 
 	return entries_delayed_.size() + entries_immediate_.size();
 }
 
 std::size_t sub_map::get_subscription_count(const topic& topic) const
 {
-	std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+	std::shared_lock<std::shared_mutex> lock(mutex_);
 
 	std::size_t count = 0;
 
@@ -131,7 +137,7 @@ std::size_t sub_map::get_subscription_count(const topic& topic) const
 
 std::size_t sub_map::get_subscription_count(const topic& topic, sub::mode mode) const
 {
-	std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+	std::shared_lock<std::shared_mutex> lock(mutex_);
 
 	const entry_map* target = &entries_immediate_;
 
@@ -221,11 +227,8 @@ bool sub_map::unsubscribe(entry_map& em, sub::key_t key)
 		return false;
 	}
 
-	// µî·ÏÇÒ ¶§ µ¿ÀÏ Å°´Â Ãß°¡µÇÁö ¾Êµµ·Ï °ËÁõ
-
 	subs.erase(si);
 
-	// ºñ¸é Á¦°Å 
 	if (subs.empty())
 	{
 		em.erase(ei);
@@ -240,7 +243,7 @@ std::size_t sub_map::post(const topic& topic, message::ptr m, sub::mode mode)
 
 	// posting
 	{
-		std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+		std::shared_lock<std::shared_mutex> lock(mutex_);
 
 		if (mode == sub::mode::immediate)
 		{
@@ -263,7 +266,7 @@ std::size_t sub_map::post(message::ptr m, sub::mode mode)
 
 	// posting
 	{
-		std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+		std::shared_lock<std::shared_mutex> lock(mutex_);
 
 		if (mode == sub::mode::immediate)
 		{
@@ -304,7 +307,6 @@ std::size_t sub_map::post(entry_map& em, message::ptr m)
 
 std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::ptr m)
 {
-	// Å×½ºÆ® ¿ëµµ µîÀ¸·Î valid ÇÏÁö ¾ÊÀº °æ¿ì ¹ß»ı 
 	WISE_RETURN_IF(!topic.is_valid(), 0);
 
 	auto iter = em.find(topic);
@@ -359,7 +361,6 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 
 void sub_map::process_pending_unsubs()
 {
-	// Æ÷½ºÆÃ ÁßÀÌ¸é ´ÙÀ½ ¹ø¿¡ delayed Æ÷½ºÆÃ¿¡¼­ Áö¿ìµµ·Ï ÇÑ´Ù.
 	WISE_RETURN_IF(is_posting_);
 
 	sub::key_t key;
@@ -372,8 +373,6 @@ void sub_map::process_pending_unsubs()
 
 uint64_t sub_map::get_current_thread_hash() const
 {
-	// XXX: hash´Â ³í¸®ÀûÀ¸·Î Áßº¹µÉ ¼ö ÀÖÀ¸¹Ç·Î ¼öÁ¤ÇØ¾ß ÇÔ
-
 	return std::hash<std::thread::id>()(std::this_thread::get_id());
 }
 

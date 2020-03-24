@@ -1,4 +1,4 @@
-#include "pch.hpp"
+ï»¿#include "pch.hpp"
 #include <catch.hpp>
 #include <wise.kernel/core/tick.hpp>
 #include <chrono>
@@ -15,12 +15,12 @@ TEST_CASE("tick")
 
 		CHECK(tick.elapsed() < 1);
 
-		std::this_thread::sleep_for(110ms); // Å¸ÀÌ¹Ö¿¡ µû¶ó ¿ÀÂ÷°¡ Á» ÀÖ´Ù.
+		std::this_thread::sleep_for(110ms); // íƒ€ì´ë°ì— ë”°ë¼ ì˜¤ì°¨ê°€ ì¢€ ìžˆë‹¤.
 
 		CHECK(tick.elapsed() >= 100);
 
 		//
-		// QueryPerformanceFrequency / QueryPerformanceCounter ±â¹Ý
+		// QueryPerformanceFrequency / QueryPerformanceCounter ê¸°ë°˜
 	}
 
 	SECTION("simple tick")
@@ -29,7 +29,7 @@ TEST_CASE("tick")
 
 		CHECK(tick.elapsed() < 1);
 
-		std::this_thread::sleep_for(110ms); // Å¸ÀÌ¹Ö¿¡ µû¶ó ¿ÀÂ÷°¡ Á» ÀÖ´Ù.
+		std::this_thread::sleep_for(110ms); // íƒ€ì´ë°ì— ë”°ë¼ ì˜¤ì°¨ê°€ ì¢€ ìžˆë‹¤.
 
 		CHECK(tick.elapsed() >= 100);
 
@@ -37,13 +37,13 @@ TEST_CASE("tick")
 		CHECK(tick.check_timeout(100, true) == true);
 		CHECK(tick.check_timeout(100) == false);
 
-		// ¾Æ·¡ ÆÐÅÏÀ¸·Î »ç¿ëÇÑ´Ù. 
+		// ì•„ëž˜ íŒ¨í„´ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤. 
 		// if ( tick.check_timeout(100) )
 		// {
 		//		// do something
 		// }
 
-		// Æ½ Ä«¿îÆ® ±â¹Ý. 64ºñÆ®
+		// í‹± ì¹´ìš´íŠ¸ ê¸°ë°˜. 64ë¹„íŠ¸
 	}
 
 }

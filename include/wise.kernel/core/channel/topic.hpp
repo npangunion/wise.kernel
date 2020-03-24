@@ -1,4 +1,4 @@
-#pragma once 
+ï»¿#pragma once 
 
 #include <wise.kernel/core/macros.hpp>
 #include <wise.kernel/core/fmt.hpp>
@@ -7,9 +7,9 @@
 namespace wise {
 namespace kernel {
 
-/// ¸Ş¼¼Áö ÀüÆÄ¿¡ »ç¿ëÇÏ´Â ÅäÇÈ 
+/// ë©”ì„¸ì§€ ì „íŒŒì— ì‚¬ìš©í•˜ëŠ” í† í”½ 
 /**
- * category | group | type À¸·Î ³ª´©¾î¼­ Ã³¸®ÇÏ´Â °ÍÀ» ¸í½ÃÀûÀ¸·Î ¿ä±¸.
+ * category | group | type ìœ¼ë¡œ ë‚˜ëˆ„ì–´ì„œ ì²˜ë¦¬í•˜ëŠ” ê²ƒì„ ëª…ì‹œì ìœ¼ë¡œ ìš”êµ¬.
  */
 class topic
 {

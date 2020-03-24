@@ -1,4 +1,4 @@
-#include <pch.hpp>
+ï»¿#include <pch.hpp>
 #include <catch.hpp>
 #include <wise.kernel/core/channel/channel.hpp>
 #include <wise.kernel/core/logger.hpp>
@@ -178,15 +178,15 @@ TEST_CASE("channel")
 
 			channel::destroy("ch1");
 
-			// 1¹é¸¸. 896ms (ÀüÇô ºÎÇÏ°¡ ¾ø´Â ÄÝ¹é) 
-			// check_delayed_sub_before_enqueue¸¦ false·Î ÇÏ°í 741ms
+			// 1ë°±ë§Œ. 896ms (ì „í˜€ ë¶€í•˜ê°€ ì—†ëŠ” ì½œë°±) 
+			// check_delayed_sub_before_enqueueë¥¼ falseë¡œ í•˜ê³  741ms
 			// 
 
 			// 
-			// spdlog::get() ÇÔ¼ö°¡ ¿À¹öÇìµå°¡ Á» Å©´Ù. 
-			// ·Î±×¸¦ ÀÚÁÖ ³²±â´Â Å¬·¡½º´Â ¹Ì¸® °¡Á®¿Ã ÇÊ¿ä°¡ ÀÖ´Ù. 
-			// submap¿¡¼­ ·Î±× Á¦°ÅÇÏ°í 557ms
-			// ·Î±×´Â ´À¸®Áö ¾Ê´Âµ¥ °®°í ¿À´Â °Ô ´À¸®´Ù. 
+			// spdlog::get() í•¨ìˆ˜ê°€ ì˜¤ë²„í—¤ë“œê°€ ì¢€ í¬ë‹¤. 
+			// ë¡œê·¸ë¥¼ ìžì£¼ ë‚¨ê¸°ëŠ” í´ëž˜ìŠ¤ëŠ” ë¯¸ë¦¬ ê°€ì ¸ì˜¬ í•„ìš”ê°€ ìžˆë‹¤. 
+			// submapì—ì„œ ë¡œê·¸ ì œê±°í•˜ê³  557ms
+			// ë¡œê·¸ëŠ” ëŠë¦¬ì§€ ì•ŠëŠ”ë° ê°–ê³  ì˜¤ëŠ” ê²Œ ëŠë¦¬ë‹¤. 
 			//
 		}
 	}
@@ -239,12 +239,12 @@ TEST_CASE("channel")
 
 			channel::destroy("ch1");
 
-			// ¶÷´Ù°¡ this ÁÖ¼Ò¸¦ Àß °®°í ÀÖ´Ù. 
+			// ëžŒë‹¤ê°€ this ì£¼ì†Œë¥¼ ìž˜ ê°–ê³  ìžˆë‹¤. 
 
-			// ¸Þ¸ð¸® ±úÁö¸é ¹®Á¦°¡ »ý±â°í ¹ö±×ÀÇ ¼ÒÁöµµ ÀÖ¾î 
-			// ²À unsubscribe¸¦ ÇØÁà¾ß ÇÑ´Ù. ¸Å¿ì Ä¡¸íÀûÀÏ ¼ö ÀÖ´Ù. 
-			// - weak_ptr()À» ¶÷´ÙÀÇ ÂüÁ¶·Î °®°í ·¹ÆÛ·±½º¸¦ °ü¸®ÇØµµ µÈ´Ù. 
-			// - ¼Ò¸êÀÚ¿¡¼­ unsubscribe ÇÏ´Â ±¸Á¶¸¦ ÇÏ³ª ¸¸µé¾îµµ µÈ´Ù.
+			// ë©”ëª¨ë¦¬ ê¹¨ì§€ë©´ ë¬¸ì œê°€ ìƒê¸°ê³  ë²„ê·¸ì˜ ì†Œì§€ë„ ìžˆì–´ 
+			// ê¼­ unsubscribeë¥¼ í•´ì¤˜ì•¼ í•œë‹¤. ë§¤ìš° ì¹˜ëª…ì ì¼ ìˆ˜ ìžˆë‹¤. 
+			// - weak_ptr()ì„ ëžŒë‹¤ì˜ ì°¸ì¡°ë¡œ ê°–ê³  ë ˆí¼ëŸ°ìŠ¤ë¥¼ ê´€ë¦¬í•´ë„ ëœë‹¤. 
+			// - ì†Œë©¸ìžì—ì„œ unsubscribe í•˜ëŠ” êµ¬ì¡°ë¥¼ í•˜ë‚˜ ë§Œë“¤ì–´ë„ ëœë‹¤.
 			// 
 		}
 	}
