@@ -12,7 +12,7 @@
 namespace wise {
 namespace kernel {
 
-/// increasing sized buffer
+/// increasing size buffer
 /**
  * not thread-safe.
  * - needs to use a lock if used from multiple threads
@@ -60,16 +60,19 @@ public:
 		WISE_EXPECT(p != nullptr);
 		WISE_EXPECT(len > 0);
 
+		WISE_RETURN_IF(p == nullptr, 0);
+		WISE_RETURN_IF(len == 0, 0);
+
 		reserve(len);
 
 		WISE_ASSERT(buf_);
 		WISE_ASSERT(buf_->capacity() >= pos_ + len);
 
-		memcpy(buf_->data() + pos_, buf_->capacity() - pos_, (void*)p, len);
+		memcpy_s(buf_->data() + pos_, buf_->capacity() - pos_, (void*)p, len);
 
 		pos_ += len;
 
-		WISE_ENSURE(pos_ <= buf_->capacity());
+		WISE_ASSERT(pos_ <= buf_->capacity());
 
 		return len;
 	}
@@ -89,6 +92,15 @@ public:
 	/// false when underflow
 	bool read(uint8_t* p, std::size_t len)
 	{
+		WISE_ASSERT(p != nullptr);
+		WISE_ASSERT(len > 0);
+
+		WISE_RETURN_IF(p == nullptr, false);
+		WISE_RETURN_IF(len == 0, true);
+
+		WISE_ASSERT(pos_ <= buf_->capacity());
+		WISE_ASSERT(read_pos_ <= buf_->capacity());
+
 		if (pos_ < (read_pos_ + len))
 		{
 			return false; // not available
@@ -97,6 +109,9 @@ public:
 		std::memcpy((void*)p, data() + read_pos_, len);
 
 		read_pos_ += len;
+
+		WISE_ASSERT(pos_ <= buf_->capacity());
+		WISE_ASSERT(read_pos_ <= buf_->capacity());
 
 		return true;
 	}
@@ -129,9 +144,8 @@ public:
 
 		pos_ = new_size;
 
-		// STL resize changes : 
-		// - size(). therfore pos_ 
-		// - elements from prev size up to new size
+		WISE_ASSERT(pos_ <= buf_->capacity());
+		WISE_ASSERT(read_pos_ <= buf_->capacity());
 	}
 
 	const uint8_t* data() const
@@ -154,7 +168,7 @@ public:
 		WISE_RETURN_IF(!buf_, 0);
 
 		WISE_ASSERT(pos < size());
-		WISE_RETURN_IF(pos >= size(), 0);
+		WISE_THROW_IF_FMT(pos >= size(), "index out of range. {}/{}", pos, pos_);
 
 		return buf_->data()[pos];
 	}
@@ -168,6 +182,9 @@ public:
 		pos_ = pos;
 
 		rewind_read();
+
+		WISE_ASSERT(pos_ <= buf_->capacity());
+		WISE_ASSERT(read_pos_ <= buf_->capacity());
 	}
 
 	void rewind_read()
@@ -196,7 +213,7 @@ public:
 
 		count = std::min(count, size());
 
-		::memmove_s(
+		memmove_s(
 			buf_->data(), buf_->capacity(),
 			buf_->data() + count, pos_ - count
 		);
@@ -259,7 +276,7 @@ private:
 			{
 				auto nbuf = pool_.alloc(pos_ + len);
 
-				::memcpy_s(nbuf->data(), nbuf->capacity(), buf_->data(), pos_);
+				memcpy_s(nbuf->data(), nbuf->capacity(), buf_->data(), pos_);
 
 				pool_.release(buf_);
 

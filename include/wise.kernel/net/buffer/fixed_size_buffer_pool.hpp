@@ -21,16 +21,15 @@ public:
 	public:
 		using ptr = std::shared_ptr<buffer>;
 
-		buffer(uint8_t* data, std::size_t len)
+		explicit buffer(uint8_t* data, std::size_t len)
 			: data_(data)
 			, capacity_(len)
 		{
 			WISE_EXPECT(data_);
 			WISE_EXPECT(capacity_ > 0);
-
 		}
 
-		buffer(fixed_size_buffer_pool* pool, uint8_t* data, std::size_t len)
+		explicit buffer(fixed_size_buffer_pool* pool, uint8_t* data, std::size_t len)
 			: pool_(pool)
 			, data_(data)
 			, capacity_(len)
@@ -156,8 +155,8 @@ public:
 
 	void release(buffer::ptr& block)
 	{
-		WISE_RETURN_IF(!block);
-		WISE_RETURN_IF(!block->data());
+		WISE_THROW_IF(!block, "block. null pointer");
+		WISE_THROW_IF(!block->data(), "block data empty");
 		WISE_THROW_IF_FMT(
 			block->capacity() != length_, 
 			"fixed_size_buffer_pool. different length block. size:{}", 

@@ -55,9 +55,19 @@ public:
 		return wise_shared<buffer>(new uint8_t[required_size], required_size);
 	}
 
-	void release(buffer::ptr& block)
+	void release(buffer::ptr block)
 	{
-		block->get_pool()->release(block);
+		WISE_THROW_IF(!block, "block. null pointer");
+		WISE_THROW_IF(!block->data(), "block data empty");
+
+		if (block->get_pool() == nullptr)
+		{
+			block.reset(); // return to os
+		}
+		else
+		{
+			block->get_pool()->release(block);
+		}
 	}
 
 	void clear()
@@ -78,6 +88,11 @@ public:
 		return nullptr;
 	}
 
+	std::size_t get_max_size() const
+	{
+		return max_size_;
+	}
+
 	void dump_stat() const;
 
 private:
@@ -90,14 +105,16 @@ private:
 			pools_.push_back(wise_unique<fixed_size_buffer_pool>(size));
 
 			size <<= 1;
+			max_size_ = size;
 		}
 	}
 
 private:
 	using pools = std::vector<std::unique_ptr<fixed_size_buffer_pool>>;
 
-	config	config_;
-	pools	pools_;
+	config		config_;
+	pools		pools_;
+	std::size_t max_size_;
 };
 
 } // kernel

@@ -25,7 +25,7 @@ inline void sleep(tick_t ms)
 
 
 inline 
-errno_t memcpy(void* dest, std::size_t dest_len, void* src, std::size_t src_len)
+errno_t memcpy_s(void* dest, std::size_t dest_len, void* src, std::size_t src_len)
 {
 #ifdef _MSC_VER
 	return ::memcpy_s(dest, dest_len, src, src_len);

@@ -37,8 +37,12 @@ public:
 	/// p에서 len 만큼 쓰려고 시도하고 쓴 길이만큼 돌려준다. 
 	std::size_t append(const uint8_t* p, std::size_t len)
 	{
-		auto possible_len = std::min(len, Length - pos_);
+		WISE_RETURN_IF(p == nullptr, 0);
+		WISE_RETURN_IF(len == 0, 0);
 
+		WISE_ENSURE(Length >= pos_);
+
+		auto possible_len = std::min(len, Length - pos_);
 		WISE_RETURN_IF(possible_len == 0, 0);
 
 		uint8_t* dest = buf_.data() + pos_;

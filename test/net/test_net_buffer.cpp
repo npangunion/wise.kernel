@@ -53,7 +53,7 @@ TEST_CASE("fixed_size_buffer_pool", "net")
 			fixed_size_buffer_pool fsb(64);
 
 			auto bp = fixed_size_buffer_pool::buffer::ptr();
-			fsb.release(bp);
+			CHECK_THROWS(fsb.release(bp));
 		}
 	}
 }
@@ -86,6 +86,16 @@ TEST_CASE("segment", "net")
 			CHECK(s1.size() == 32);
 		}
 	}
+
+	SECTION("coverage")
+	{
+		segment<10> s1;
+		std::string d("0123456789");
+
+		CHECK(s1.append(d.c_str(), 0) == 0);
+		CHECK(s1.append((uint8_t*)nullptr, 0) == 0);
+		CHECK(s1.append((uint8_t*)nullptr, 5) == 0);
+	}
 }
 
 TEST_CASE("multiple_size_buffer_pool", "net")
@@ -100,8 +110,26 @@ TEST_CASE("multiple_size_buffer_pool", "net")
 		CHECK(bp->is_allocated());
 
 		pool.release(bp);
-
 		pool.dump_stat();
+	}
+	
+	SECTION("coverage")
+	{
+		SECTION("alloc out of pool")
+		{
+			multiple_size_buffer_pool pool;
+			
+			auto bp = pool.alloc(pool.get_max_size() * 2);
+			CHECK(bp->get_pool() == nullptr);
+			pool.release(bp);
+		}
+
+		SECTION("release nullptr")
+		{
+			multiple_size_buffer_pool pool;
+
+			CHECK_THROWS(pool.release(multiple_size_buffer_pool::buffer::ptr()));
+		}
 	}
 }
 
@@ -121,6 +149,11 @@ TEST_CASE("resize_buffer", "net")
 		CHECK(rb.size() == 3 * 1024 * d.length());
 		CHECK(rb.capacity() > rb.size());
 		CHECK(rb.at(15) == '7');
+	}
+
+	SECTION("coverage")
+	{
+
 	}
 }
 

@@ -1,6 +1,6 @@
 #include <pch.hpp>
 #include <wise.kernel/net/tcp/tcp_addr.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <wise.kernel/core/fmt.hpp>
 
 namespace wise {
 namespace kernel {
