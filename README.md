@@ -5,21 +5,23 @@ wise 프로젝트들 중 통신, 공간 처리, DB 처리 기능을 구현하는
 - 통신 
   - Tcp 
   - C++, C# 
-  - MsgPack
-  - Http, Https 
+  - bits 자체 프로토콜
+  - Http, Https (using beast)
 - 분산 처리 
   - 노드 
   - Task 
   - 채널 
   - Instance
 - 공간 처리 
-  - Navigation Mesh 
-  - Bullet Physics 
-  - Animated Characters w/ Attached collision shapes
+  - Navigation mesh (recast)
+  - Bullet physics 
+  - Animated characters 
 - DB 처리 
   - ODBC 
   - DB 쓰레드 처리 
   - DB 콜백 처리 
+- 기능 테스트 자동화 
+  - bot 서비스 
 
 
 ## 진행 
@@ -28,7 +30,6 @@ wise 프로젝트들 중 통신, 공간 처리, DB 처리 기능을 구현하는
 - 분산 처리 
 - 공간 처리 
 - DB 처리 
-
 
 
 ## 원칙 (Principles)
@@ -47,10 +48,5 @@ wise 프로젝트들 중 통신, 공간 처리, DB 처리 기능을 구현하는
 - performance 
 - debuggability 
 
-원칙을 지키려는 노력이 뛰어난 코드를 만드는 비결 중 하나이다. 훈련 또 훈련!
-
-
-
-
-
+원칙을 지키는 노력이 뛰어난 코드를 만드는 비결이다. 훈련 또 훈련!
 
