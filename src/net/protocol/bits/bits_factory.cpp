@@ -1,5 +1,6 @@
 #include <pch.hpp>
 #include <wise.kernel/net/protocol/bits/bits_factory.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packets.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/exception.hpp>
 
@@ -15,6 +16,11 @@ bits_factory& bits_factory::inst()
 
 void bits_factory::add(const topic& topic, creator c)
 {
+	if (topic.get_category() == bits_topic::category)
+	{
+		WISE_THROW("bits catetory cannot be used for application messages");
+	}
+
 	auto iter = map_.find(topic);
 
 	if (iter != map_.end())

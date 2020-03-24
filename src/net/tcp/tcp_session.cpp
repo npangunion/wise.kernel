@@ -232,8 +232,7 @@ tcp_session::result tcp_session::request_send()
 	// check send
 	{
 		std::lock_guard<lock_type> session_lock(session_mutex_);
-		WISE_ASSERT(!sending_);
-
+		WISE_RETURN_IF(sending_, result(true, reason::success_session_already_sending));
 
 		// lock 안에서 체크해야 함
 		WISE_RETURN_IF(!is_open(), result(false, reason::fail_socket_closed));

@@ -18,7 +18,7 @@ namespace
 struct bits_test_message : public bits_packet
 {
 	bits_test_message()
-		: bits_packet(topic(1, 1, 1))
+		: bits_packet(topic(2, 1, 1))
 		, name()
 		, id(0)
 	{
@@ -59,7 +59,7 @@ public:
 
 		// factory
 		bits_factory::inst().add(
-			topic(1, 1, 1), 
+			topic(2, 1, 1), 
 			[]() 
 			{ 
 				return wise_shared<bits_test_message>();
@@ -70,11 +70,19 @@ public:
 			topic(bits_topic::connected()),
 			[this](message::ptr m) 
 			{
-				on_ready(m);
+				on_connected(m);
 			});
 
 		ch_->subscribe(
-			topic(1, 1, 1), 
+			topic(bits_topic::accepted()),
+			[this](message::ptr m)
+			{
+				on_accepted(m);
+			});
+
+
+		ch_->subscribe(
+			topic(2, 1, 1), 
 			[this](message::ptr m) { on_echo(m); }
 		);
 
@@ -101,12 +109,33 @@ public:
 	}
 
 private: 
-	void on_ready(message::ptr m)
+	void on_connected(message::ptr m)
 	{
 		auto bp = std::static_pointer_cast<bits_syn_connected>(m);
+
+		bp->get_protocol()->bind(ch_);
+
 		auto em = wise_shared<bits_test_message>();
 
-		for (int i = 0; i < 512; ++i)
+		for (int i = 0; i < 128; ++i)
+		{
+			em->name.append("ABitsHello");
+		}
+
+		em->id = seq_++;
+
+		bp->send(em);
+	}
+
+	void on_accepted(message::ptr m)
+	{
+		auto bp = std::static_pointer_cast<bits_syn_accepted>(m);
+
+		bp->get_protocol()->bind(ch_);
+
+		auto em = wise_shared<bits_test_message>();
+
+		for (int i = 0; i < 128; ++i)
 		{
 			em->name.append("ABitsHello");
 		}
@@ -150,7 +179,7 @@ TEST_CASE("bits protocol")
 		SECTION("basic flow")
 		{
 			bits_factory::inst().add(
-				topic(1, 1, 1),
+				topic(2, 1, 1),
 				[]() { return wise_shared<bits_test_message>(); }
 			);
 
@@ -160,7 +189,7 @@ TEST_CASE("bits protocol")
 			message::ptr mp;
 
 			auto sid = ch1->subscribe(
-				topic(1, 1, 1),
+				topic(2, 1, 1),
 				[&mp](message::ptr m) {
 					WISE_INFO("message recv. topic: 0x{:x}",
 						m->get_topic().get_key());
@@ -200,7 +229,7 @@ TEST_CASE("bits protocol")
 			// factory 수준에서 미리 맞춘다. 
 
 			bits_factory::inst().add(
-				topic(1, 1, 1),
+				topic(2, 1, 1),
 				[]() {
 					auto mp = wise_shared<bits_test_message>();
 					mp->enable_checksum = true;
@@ -221,7 +250,7 @@ TEST_CASE("bits protocol")
 			channel::ptr ch1 = wise_shared<channel>("c1");
 
 			auto sid = ch1->subscribe(
-				topic(1, 1, 1),
+				topic(2, 1, 1),
 				[&mp](message::ptr m) {
 					WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
 					mp = m;
@@ -239,7 +268,7 @@ TEST_CASE("bits protocol")
 			bp->bind(ch1); // 동일 채널 사용
 
 
-			auto sp = bits_factory::inst().create(topic(1, 1, 1));
+			auto sp = bits_factory::inst().create(topic(2, 1, 1));
 			auto pkt = std::static_pointer_cast<bits_test_message>(sp);
 
 			pkt->name = "Hello w/ encryption";
@@ -267,7 +296,7 @@ TEST_CASE("bits protocol")
 		{
 
 			bits_factory::inst().add(
-				topic(1, 1, 1),
+				topic(2, 1, 1),
 				[]() { return wise_shared<bits_test_message>(); }
 			);
 
@@ -316,7 +345,7 @@ TEST_CASE("bits protocol")
 			{
 				// 나눠서 받을 경우 문제 없는 지 확인
 				bits_factory::inst().add(
-					topic(1, 1, 1),
+					topic(2, 1, 1),
 					[]() { return wise_shared<bits_test_message>(); }
 				);
 
@@ -326,7 +355,7 @@ TEST_CASE("bits protocol")
 				channel::ptr ch1 = wise_shared<channel>("c1");
 
 				auto sid = ch1->subscribe(
-					topic(1, 1, 1),
+					topic(2, 1, 1),
 					[&mp](message::ptr m) {
 						WISE_INFO("message recv. topic: 0x{:x}", m->get_topic().get_key());
 						mp = m;
@@ -392,7 +421,7 @@ TEST_CASE("bits protocol")
 
 			if (seq >= test_count)
 			{
-				// break;
+				break;
 			}
 
 			tester.execute();

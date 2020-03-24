@@ -56,24 +56,7 @@ sub::key_t sub_map::subscribe(const topic& topic, sub::cb_t& cb, sub::mode mode)
 
 bool sub_map::unsubscribe(sub::key_t key)
 {
-	// TODO:  중요한 개선
-	// 아래와 같이 복잡하게 할 필요 없이 unsubscribe 상태 표시만 하고
-	// channel::execute()에서 호출하여 주기적으로 지울 수 있는 함수를 만든다.
-	// mark and sweep 방식이 가장 깔끔하다.  
-	//
-
-	if (is_posting_)
-	{
-		if (posting_thread_ == get_current_thread_hash())
-		{
-			WISE_THROW("posting thread cannot unsubscribe while posting.");
-		}
-	}
-
 	std::unique_lock<std::shared_mutex> lock(mutex_);
-
-	// lock 
-	WISE_THROW_IF(is_posting_, "unsubscribe during post is not allowed");
 
 	auto iter = keys_.find(key);
 
@@ -149,7 +132,7 @@ std::size_t sub_map::get_subscription_count(const topic& topic, sub::mode mode) 
 	auto iter = target->find(topic);
 	WISE_RETURN_IF(iter == target->end(), 0);
 
-	return iter->second.subs.size();
+	return iter->second.subs_.size();
 }
 
 sub::key_t sub_map::subscribe(
@@ -165,7 +148,7 @@ sub::key_t sub_map::subscribe(
 	{
 		entry e;
 
-		e.topic = topic;
+		e.topic_ = topic;
 
 		auto key = subscribe(e, topic, cond, cb, mode);
 
@@ -188,7 +171,7 @@ sub::key_t sub_map::subscribe(
 {
 	auto key = seq_.next();
 
-	e.subs.push_back(
+	e.subs_.push_back(
 		sub(key, topic, cond, cb, mode)
 	);
 
@@ -215,7 +198,7 @@ bool sub_map::unsubscribe(entry_map& em, sub::key_t key)
 	WISE_ASSERT(ei != em.end());
 	WISE_RETURN_IF(ei == em.end(), false);
 
-	auto& subs = ei->second.subs;
+	auto& subs = ei->second.subs_;
 
 	auto si = std::find_if(
 		subs.begin(), subs.end(),
@@ -226,13 +209,8 @@ bool sub_map::unsubscribe(entry_map& em, sub::key_t key)
 	{
 		return false;
 	}
-
-	subs.erase(si);
-
-	if (subs.empty())
-	{
-		em.erase(ei);
-	}
+	
+	si->unsubscribe();
 
 	return true;
 }
@@ -255,7 +233,7 @@ std::size_t sub_map::post(const topic& topic, message::ptr m, sub::mode mode)
 		}
 	}
 
-	process_pending_unsubs();
+	purge_unsubscribed_entries();
 
 	return count;
 }
@@ -278,7 +256,7 @@ std::size_t sub_map::post(message::ptr m, sub::mode mode)
 		}
 	}
 
-	process_pending_unsubs();
+	purge_unsubscribed_entries();
 
 	return count;
 }
@@ -320,21 +298,20 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 		return 0;
 	}
 
-	auto& subs = iter->second.subs;
+	auto& subs = iter->second.subs_;
 
 	int count = 0;
 	auto total = subs.size();
 
 	WISE_ASSERT(total > 0);
 
-	is_posting_ = true;
 	posting_thread_ = get_current_thread_hash();
 
 	try
 	{
 		for (auto& sub : subs)
 		{
-			if (sub.post(m))
+			if (!sub.is_unsubscribed() && sub.post(m))
 			{
 				++count;
 
@@ -354,20 +331,35 @@ std::size_t sub_map::post_on_topic(entry_map& em, const topic& topic, message::p
 		);
 	}
 
-	is_posting_ = false;
-
 	return count;
 }
 
-void sub_map::process_pending_unsubs()
+void sub_map::purge_unsubscribed_entries()
 {
-	WISE_RETURN_IF(is_posting_);
-
-	sub::key_t key;
-
-	while (pending_unsubs_.pop(key))
+	if (purge_tick_.elapsed() < purge_sub_interval)
 	{
-		unsubscribe(key);
+		return;
+	}
+
+	purge_tick_.reset();
+
+	std::unique_lock<std::shared_mutex> lock(mutex_);
+
+	purge_unsubscribed(entries_immediate_);
+	purge_unsubscribed(entries_delayed_);
+}
+
+void sub_map::purge_unsubscribed(entry_map& m)
+{
+	for (auto& kv : m)
+	{
+		auto& subs = kv.second.subs_;
+
+		subs.erase(std::remove_if(
+			subs.begin(), 
+			subs.end(), 
+			[](sub& s) { return s.is_unsubscribed(); }), 
+			subs.end());
 	}
 }
 

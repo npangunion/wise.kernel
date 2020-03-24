@@ -51,6 +51,16 @@ public:
 		return true;
 	}
 
+	void unsubscribe()
+	{
+		unsub_ = true;
+	}
+
+	bool is_unsubscribed() const
+	{
+		return unsub_;
+	}
+
 	const topic& get_topic() const
 	{
 		return topic_;
@@ -73,6 +83,7 @@ private:
 	cb_t				cb_;
 	mode				mode_;
 	std::size_t			post_count_ = 0;
+	bool				unsub_ = false;
 };
 
 } // kernel

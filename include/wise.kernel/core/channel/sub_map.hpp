@@ -4,6 +4,7 @@
 #include <wise.kernel/core/sequence.hpp>
 #include <wise.kernel/core/logger.hpp>
 #include <wise.kernel/core/concurrent_queue.hpp>
+#include <wise.kernel/core/tick.hpp>
 #include <unordered_map>
 #include <shared_mutex>
 #include <vector>
@@ -69,10 +70,11 @@ public:
 private:
 	struct entry
 	{
-		topic				topic;
-		std::size_t			post_count = 0;
-		std::vector<sub>	subs;
+		topic				topic_;
+		std::size_t			post_count_ = 0;
+		std::vector<sub>	subs_;
 	};
+
 	using entry_map = std::unordered_map<topic, entry>;
 
 	struct entry_link
@@ -82,6 +84,9 @@ private:
 	};
 	using key_map = std::unordered_map<sub::key_t, entry_link>;
 
+	const int purge_sub_interval = 5000;
+
+private:
 	sub::key_t subscribe(
 		entry_map& em,
 		const topic& topic,
@@ -105,7 +110,9 @@ private:
 
 	std::size_t post_on_topic(entry_map& em, const topic& topic, message::ptr m);
 
-	void process_pending_unsubs();
+	void purge_unsubscribed_entries();
+
+	void purge_unsubscribed(entry_map& m);
 
 	uint64_t get_current_thread_hash() const;
 
@@ -117,9 +124,8 @@ private:
 	entry_map							entries_delayed_;
 	key_map								keys_;
 	sequence<sub::key_t>				seq_;
-	std::atomic<bool>					is_posting_ = false;
 	std::atomic<uint64_t>				posting_thread_ = 0;
-	concurrent_queue<sub::key_t>		pending_unsubs_;
+	simple_tick							purge_tick_;
 };
 
 } // kernel
