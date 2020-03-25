@@ -30,7 +30,9 @@ bool task::start()
 
 task::result task::execute(uint32_t runner_id)
 {
-	WISE_ASSERT(state_ != state::finished);
+	last_execution_time_ = 0;
+
+	WISE_RETURN_IF(state_ == state::finished, result::finished);
 
 	// 먼저 체크
 	if (state_ == state::cancelled)
@@ -45,7 +47,7 @@ task::result task::execute(uint32_t runner_id)
 
 	last_runner_id_ = runner_id;
 
-	last_waiting_time_ = queue_tick_.elapsed() * 0.001f;
+	last_waiting_time_ = queue_tick_.elapsed();
 	total_waiting_time_ += last_waiting_time_;
 
 	execution_timer_.reset();
@@ -54,7 +56,7 @@ task::result task::execute(uint32_t runner_id)
 
 	++execution_count_;
 
-	last_execution_time_ = execution_timer_.elapsed() * 0.001f;
+	last_execution_time_ = execution_timer_.elapsed();
 	total_execution_time_ += last_execution_time_;
 	average_execution_time_ = (average_execution_time_ + last_execution_time_) / 2;
 

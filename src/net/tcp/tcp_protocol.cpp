@@ -17,6 +17,7 @@ tcp_protocol::tcp_protocol(tcp_node* node, tcp::socket&& sock, bool accepted)
 /// destructor
 tcp_protocol::~tcp_protocol()
 {
+	session_.reset();
 }
 
 void tcp_protocol::begin()

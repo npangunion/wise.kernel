@@ -4,6 +4,7 @@
 #include <wise.kernel/core/tick.hpp>
 #include <wise.kernel/core/exception.hpp>
 #include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/util/util.hpp>
 
 namespace wise {
 namespace kernel {
@@ -144,7 +145,7 @@ void task_runner::run()
 				++continous_sleep_count_;
 
 				sleep_time = std::min<std::size_t>(
-					100, config_.idle_sleep_time_ms * continous_sleep_count_
+					5, config_.idle_sleep_time_ms * continous_sleep_count_
 					);
 			}
 			else
@@ -152,7 +153,7 @@ void task_runner::run()
 				continous_sleep_count_ = 0;
 			}
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+			sleep(sleep_time);
 
 			++total_sleep_count_;
 		}

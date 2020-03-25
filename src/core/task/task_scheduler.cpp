@@ -167,7 +167,7 @@ bool task_scheduler::pop(task::ptr& task)
 void task_scheduler::log_stat() const
 {
 	WISE_INFO(
-		"task_scheduler. runners: {}, queue: {}",
+		"task_scheduler. runners: {}, run queue: {}",
 		runners_.size(), run_queue_.unsafe_size()
 	);
 

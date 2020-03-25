@@ -40,7 +40,8 @@ public:
 	{
 		success,
 		fail,
-		exit
+		exit,
+		finished
 	};
 
 	enum class priority
@@ -64,8 +65,10 @@ public:
 	/// 특정 runner에서 실행. on_execute() 호출
 	result execute(uint32_t runner_id);
 
+	/// 실행을 멈춤
 	void pause();
 
+	/// 실행을 재개.
 	void resume();
 
 	/// cancel. execute returns exit if cancelled. then finished by task_runner.
@@ -74,7 +77,7 @@ public:
 	/// 종료. on_finish() 호출. 
 	void finish();
 
-	/// 실시간, 10, 100, 1000 밀리초 세 가지 레벨만 지원 한다. 
+	/// 실시간과 세 가지 레벨
 	void set_priority(priority prio)
 	{
 		priority_ = prio;
@@ -100,7 +103,7 @@ public:
 		return last_runner_id_;
 	}
 
-	float get_last_execution_time() const
+	tick_t get_last_execution_time() const
 	{
 		return last_execution_time_;
 	}
@@ -110,7 +113,7 @@ public:
 		return execution_count_;
 	}
 
-	float get_total_execution_time() const
+	tick_t get_total_execution_time() const
 	{
 		return total_execution_time_;
 	}
@@ -125,7 +128,7 @@ public:
 		queue_tick_.reset();
 	}
 
-	float get_total_waiting_time() const
+	tick_t get_total_waiting_time() const
 	{
 		return total_waiting_time_;
 	}
@@ -155,14 +158,14 @@ private:
 	std::string desc_ = "task unkown";
 
 	simple_tick execution_timer_;
-	unsigned int execution_count_;
+	unsigned int execution_count_ = 0;
 	std::atomic<priority> priority_ = priority::level_1;
 
-	float last_execution_time_ = 0.f;
-	float average_execution_time_ = 0.f;	// moving average
-	float total_execution_time_ = 0.f;
-	float last_waiting_time_ = 0.f;
-	float total_waiting_time_ = 0.f;
+	tick_t last_execution_time_ = 0;
+	tick_t average_execution_time_ = 0;	// moving average
+	tick_t total_execution_time_ = 0;
+	tick_t last_waiting_time_ = 0;
+	tick_t total_waiting_time_ = 0;
 
 	simple_tick queue_tick_;
 };

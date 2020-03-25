@@ -1,7 +1,8 @@
 ﻿#include <pch.hpp>
 #include <catch.hpp>
 #include <wise.kernel/core/task/task_scheduler.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <wise.kernel/util/util.hpp>
+#include <wise.kernel/core/fmt.hpp>
 
 #pragma warning(disable : 6319) // intellisense CHECK/REQUIRE 오류로 판단
 
@@ -22,8 +23,7 @@ public:
 private: 
 	result on_execute() override
 	{
-		// sleep(1);
-
+		sleep(1);
 		return result::success;
 	}
 };
@@ -65,12 +65,15 @@ TEST_CASE("task scheduler")
 		REQUIRE(rc);
 		REQUIRE(ts.get_runner_count() == config.runner_count);
 
-		const int test_count = 1;
+		const int test_count = 100;
 
 		for (int i = 0; i < test_count; ++i)
 		{
 			auto desc = fmt::format("task{}", i + 1);
+
 			auto tsk = wise_shared<my_task>(desc);
+
+			tsk->set_priority(task::priority::realtime);
 
 			ts.add(tsk);
 		}
@@ -78,8 +81,6 @@ TEST_CASE("task scheduler")
 		for (int i = 0; i < 10; ++i)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-			// ts.log_stat();
 		}
 
 		ts.finish();
