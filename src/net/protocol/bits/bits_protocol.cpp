@@ -235,9 +235,10 @@ protocol::result bits_protocol::on_recv(
 
 		auto res = mp->unpack(packer);
 
-		// TODO: 메세지 길이보다 unpack에서 더 사용하면 에러 처리가 필요하다. 
-		// final_len을 고려해야 한다. 
-		// 
+		//
+		// TODO: unpack에서 덜 사용한 바이트 길이가 있으면 에러 처리 
+		// 더 사용하는 건 unpack 실패로 나옴.
+		//
 
 		if (!res)
 		{
