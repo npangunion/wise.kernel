@@ -1,4 +1,4 @@
-#include <pch.hpp>
+ï»¿#include <pch.hpp>
 
 #include <wise.kernel/net/tcp/tcp_session.hpp>
 #include <wise.kernel/net/tcp/tcp_protocol.hpp>
@@ -24,9 +24,9 @@ tcp_session::tcp_session(tcp_protocol* proto, tcp::socket&& soc)
 
 void tcp_session::begin()
 {
-	// ´Ù¸¥ °÷¿¡ ÂüÁ¶µÇÁö ¾ÊÀº »óÅÂ¸¦ À¯Áö
-	// thread-unsafeÇÑ °Íµé ÂüÁ¶ ±İÁö. 
-	// service ÇÔ¼öµé È£Ãâ ÁÖÀÇ. (¶ô ÀÌ½´µé ¹ß»ı °¡´É)
+	// ë‹¤ë¥¸ ê³³ì— ì°¸ì¡°ë˜ì§€ ì•Šì€ ìƒíƒœë¥¼ ìœ ì§€
+	// thread-unsafeí•œ ê²ƒë“¤ ì°¸ì¡° ê¸ˆì§€. 
+	// service í•¨ìˆ˜ë“¤ í˜¸ì¶œ ì£¼ì˜. (ë½ ì´ìŠˆë“¤ ë°œìƒ ê°€ëŠ¥)
 
 	remote_addr_ = fmt::format(
 		"{0}:{1}",
@@ -79,7 +79,7 @@ tcp_session::~tcp_session()
 {
 	WISE_DEBUG("bye! {0}", get_desc());
 
-	// requires close before destruction. tcp_nodeÀÇ role.
+	// requires close before destruction. tcp_nodeì˜ role.
 	WISE_ASSERT(!is_busy());
 	WISE_ASSERT(!socket_.is_open());
 }
@@ -105,7 +105,7 @@ void tcp_session::disconnect()
 
 void tcp_session::close()
 {
-	// ¿¬°áÀÌ À¯È¿ÇÏ¸é ²÷°í ¼Ò¸êÀ» ½ÃµµÇÑ´Ù. 
+	// ì—°ê²°ì´ ìœ íš¨í•˜ë©´ ëŠê³  ì†Œë©¸ì„ ì‹œë„í•œë‹¤. 
 
 	// close
 	{
@@ -131,12 +131,12 @@ void tcp_session::close()
 			}
 		}
 
-		// ¼Ò¸êÀÌ °¡´ÉÇÏ¸é ¼Ò¸êÀ» Ã³¸®ÇÑ´Ù. 
-		// - app -> close -> destroy ¶Ç´Â
-		// - recv_comp -> error -> close -> destroy ¶Ç´Â 
-		// - send_comp -> error -> close -> destroy ÀÌ´Ù
+		// ì†Œë©¸ì´ ê°€ëŠ¥í•˜ë©´ ì†Œë©¸ì„ ì²˜ë¦¬í•œë‹¤. 
+		// - app -> close -> destroy ë˜ëŠ”
+		// - recv_comp -> error -> close -> destroy ë˜ëŠ” 
+		// - send_comp -> error -> close -> destroy ì´ë‹¤
 
-		// tcp_session ¶ô °É°í È£Ãâ
+		// tcp_session ë½ ê±¸ê³  í˜¸ì¶œ
 
 		// destroy
 
@@ -192,7 +192,7 @@ void tcp_session::error(const result& rc)
 
 	close();
 
-	// ERROR_UNEXP_NET_ERR·Î Àü´Ş
+	// ERROR_UNEXP_NET_ERRë¡œ ì „ë‹¬
 	error_code ec(0x3B, boost::system::system_category());
 	protocol_->on_error(ec);
 }
@@ -208,7 +208,7 @@ tcp_session::result tcp_session::request_recv()
 			return result(false, reason::fail_session_already_recving);
 		}
 
-		// lock ¾È¿¡¼­ Ã¼Å©ÇØ¾ß ÇÔ
+		// lock ì•ˆì—ì„œ ì²´í¬í•´ì•¼ í•¨
 		WISE_RETURN_IF(!is_open(), result(false, reason::fail_socket_closed));
 
 		recving_ = true;
@@ -216,7 +216,7 @@ tcp_session::result tcp_session::request_recv()
 
 	WISE_TRACE("{} request recv", get_desc());
 
-	// request recv. ÇÑ¹ø¿¡ ÇÏ³ª¸¸ ÀĞ°í À§¿¡¼­ ¸·È÷¹Ç·Î ¶ô ÇÊ¿ä ¾øÀ½
+	// request recv. í•œë²ˆì— í•˜ë‚˜ë§Œ ì½ê³  ìœ„ì—ì„œ ë§‰íˆë¯€ë¡œ ë½ í•„ìš” ì—†ìŒ
 	socket_.async_read_some(
 		boost::asio::buffer(recv_buf_.data(), recv_buf_.size()),
 		[this](error_code ec, std::size_t len) { this->on_recv_completed(ec, len); }
@@ -232,7 +232,7 @@ tcp_session::result tcp_session::request_send()
 		std::lock_guard<lock_type> session_lock(session_mutex_);
 		WISE_RETURN_IF(sending_, result(true, reason::success_session_already_sending));
 
-		// lock ¾È¿¡¼­ Ã¼Å©ÇØ¾ß ÇÔ
+		// lock ì•ˆì—ì„œ ì²´í¬í•´ì•¼ í•¨
 		WISE_RETURN_IF(!is_open(), result(false, reason::fail_socket_closed));
 	}
 
@@ -246,9 +246,10 @@ tcp_session::result tcp_session::request_send()
 		}
 	}
 
+	// get bufs and send. í•œë²ˆì— í•˜ë‚˜ë§Œ ë³´ë‚´ê³  ìœ„ì—ì„œ ë§‰íˆë¯€ë¡œ send_segs_mutex_ë§Œ ì‚¬ìš©
 	{
 		std::lock_guard<lock_type> session_lock(session_mutex_);
-		// get bufs and send. ÇÑ¹ø¿¡ ÇÏ³ª¸¸ º¸³»°í À§¿¡¼­ ¸·È÷¹Ç·Î send_mutex_¸¸ »ç¿ë
+		// get bufs and send. ï¿½Ñ¹ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ send_mutex_ï¿½ï¿½ ï¿½ï¿½ï¿½
 		sending_ = true;
 	}
 
@@ -265,7 +266,7 @@ tcp_session::result tcp_session::request_send()
 		// rvo and move will be fine
 		sending_segs_ = send_buffer_.transfer();
 
-		// ¶ô ¹ş¾î³ª¸é ¹Ù·Î Â÷´Â °æ¿ì ¹ß»ı 
+		// ë½ ë²—ì–´ë‚˜ë©´ ë°”ë¡œ ì°¨ëŠ” ê²½ìš° ë°œìƒ 
 		WISE_ASSERT(send_buffer_.size() == 0);
 	}
 
@@ -307,8 +308,8 @@ void tcp_session::on_recv_completed(error_code& ec, std::size_t len)
 
 		auto rc = protocol_->on_recv(recv_buf_.data(), len);
 
-		// protocol_->on_recv() ±îÁö Ã³¸®ÇÏ°í recving_À» Ç®¾î¾ß ÇÑ´Ù. 
-		// ¾È ±×·¯¸é ¼ÒÄÏÀÌ Áö¿öÁú ¼ö ÀÖ´Ù.
+		// protocol_->on_recv() ê¹Œì§€ ì²˜ë¦¬í•˜ê³  recving_ì„ í’€ì–´ì•¼ í•œë‹¤. 
+		// ì•ˆ ê·¸ëŸ¬ë©´ ì†Œì¼“ì´ ì§€ì›Œì§ˆ ìˆ˜ ìˆë‹¤.
 
 		// locked
 		{

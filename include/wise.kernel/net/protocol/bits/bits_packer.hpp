@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <wise.kernel/net/buffer/resize_buffer.hpp>
 #include <wise.kernel/core/logger.hpp>
@@ -84,12 +84,12 @@ public:
 	bits_packer(resize_buffer& buf)
 		: buf_(buf)
 	{
-		// ¸®Æ² ¿£µğ¾ğÀ» ±âº» (ÀÎÅÚ ±âÁØ)À¸·Î ÇÏ°í ºò ¿£µğ¾ğÀÏ °æ¿ì swapÇÑ´Ù.
+		// ë¦¬í‹€ ì—”ë””ì–¸ì„ ê¸°ë³¸ (ì¸í…” ê¸°ì¤€)ìœ¼ë¡œ í•˜ê³  ë¹… ì—”ë””ì–¸ì¼ ê²½ìš° swapí•œë‹¤.
 		int num = 1;
 		is_le_ = (*(char*)&num == 1); // 
 	}
 
-	/// ¹ÙÀÌÆ® ¹è¿­
+	/// ë°”ì´íŠ¸ ë°°ì—´
 	bool pack(uint8_t* buf, std::size_t len);
 	bool unpack(uint8_t* buf, std::size_t len);
 
@@ -97,7 +97,7 @@ public:
 	template <class T> bool pack(const T& s);
 	template <class T> bool unpack(T& s);
 
-	/// enum Å¸ÀÙ
+	/// enum íƒ€ì
 	template <class T> bool pack_enum(const T& s);
 	template <class T> bool unpack_enum(T& s);
 
@@ -128,7 +128,7 @@ public:
 	template <class T1, class T2> bool pack(const std::map<T1, T2>& v);
 	template <class T1, class T2> bool unpack(std::map<T1, T2>& v);
 
-	/// Á¤¼ö, ½Ç¼ö. Æ¯¼öÈ­·Î Ã³¸®
+	/// ì •ìˆ˜, ì‹¤ìˆ˜. íŠ¹ìˆ˜í™”ë¡œ ì²˜ë¦¬
 	DEFINE_PACK(uint8_t)
 	DEFINE_PACK(uint16_t)
 	DEFINE_PACK(uint32_t)
@@ -320,7 +320,7 @@ inline bool bits_packer::pack(const std::wstring& s)
 {
 	WISE_RETURN_IF(!is_valid_, false);
 
-	// wstringÀ» ÇÃ·¡Æû¿¡ ¸Â°Ô utf8 ¹®ÀÚ¿­·Î º¯È¯, ÀĞÀ» ¶§´Â utf8¿¡¼­ ÇÃ·¡Æû¿¡ ¸Â´Â ÀÎÄÚµùÀ¸·Î ´Ù½Ã º¯È¯
+	// wstringì„ í”Œë˜í¼ì— ë§ê²Œ utf8 ë¬¸ìì—´ë¡œ ë³€í™˜, ì½ì„ ë•ŒëŠ” utf8ì—ì„œ í”Œë˜í¼ì— ë§ëŠ” ì¸ì½”ë”©ìœ¼ë¡œ ë‹¤ì‹œ ë³€í™˜
 
 	if (s.length() > config::max_string_size)
 	{
@@ -348,7 +348,7 @@ inline bool bits_packer::unpack(std::wstring& s)
 
 	std::vector<unsigned char> u8s;
 
-	// TODO: unpack¿¡¼­ wstring ±æÀÌ Ã¼Å© ÇÊ¿ä
+	// TODO: unpackì—ì„œ wstring ê¸¸ì´ ì²´í¬ í•„ìš”
 
 	is_valid_ = unpack(u8s);
 	WISE_RETURN_IF(!is_valid_, false);
