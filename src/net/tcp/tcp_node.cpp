@@ -64,19 +64,32 @@ node::result tcp_node::on_start()
 
 void tcp_node::on_finish()
 {
-	std::unique_lock<std::shared_mutex> lock(mutex_);
+	std::size_t pcnt = 0;
 
-	protocols_.each(
-		[](protocols::ptr sp) {
-			auto tsp = std::static_pointer_cast<tcp_protocol>(sp);
-			tsp->disconnect();
+	// unique lock
+	{
+		std::unique_lock<std::shared_mutex> lock(mutex_);
+
+		protocols_.each(
+			[](protocols::ptr sp) {
+				auto tsp = std::static_pointer_cast<tcp_protocol>(sp);
+				tsp->disconnect();
+			}
+		);
+
+		pcnt = protocols_.get_used_count();
+	}
+
+	while (pcnt > 0)
+	{
+		sleep(5);
+
+		// shared lock
+		{
+			std::shared_lock<std::shared_mutex> lock(mutex_);
+			pcnt = protocols_.get_used_count();
 		}
-	);
-
-	// TODO: wait till tcp_session is cleared. 
-	// Is it a right way? 
-
-	protocols_.clear();
+	}
 }
 
 void tcp_node::on_accepted(key_t k, tcp::socket&& soc)

@@ -27,6 +27,8 @@ void tcp_protocol::begin()
 
 void tcp_protocol::disconnect()
 {
+	active_close_ = true;
+
 	session_->disconnect();
 }
 

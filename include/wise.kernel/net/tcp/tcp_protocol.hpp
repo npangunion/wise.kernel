@@ -29,27 +29,40 @@ public:
 	/// destructor
 	virtual ~tcp_protocol();
 
+	/// begin communication with tcp_session
 	void begin();
 
+	/// close csession from application
 	void disconnect();
 
+	/// is accpeted with an acceptor
 	bool is_accepted() const
 	{
 		return accepted_;
 	}
 
+	/// ip:port of local host 
 	const std::string& get_local_addr() const;
 
+	/// ip:port of remote host
 	const std::string& get_remote_addr() const;
 
+	/// get tcp_node
 	tcp_node* get_node() 
 	{
 		return node_;
 	}
 
+	/// get const tcp_node
 	const tcp_node* get_node() const
 	{
 		return node_;
+	}
+
+	/// app called disconnect
+	bool is_active_closed() const
+	{
+		return active_close_;
 	}
 
 protected:
@@ -68,7 +81,8 @@ protected:
 private:
 	tcp_node* node_ = nullptr;
 	std::unique_ptr<tcp_session> session_;
-	bool accepted_;
+	bool accepted_ = false;
+	bool active_close_ = false;
 };
 
 } // kernel

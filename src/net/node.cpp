@@ -48,9 +48,10 @@ node::result node::start()
 void node::finish()
 {
 	WISE_RETURN_IF(stop_);
-	stop_ = true;
-
 	on_finish();
+
+	// 종료 중에 정리를 위해 ios는 실행 필요
+	stop_ = true;
 
 	// post to all threads
 	for (auto& t : threads_)
@@ -65,7 +66,6 @@ void node::finish()
 		t.join();
 	}
 }
-
 
 bool node::bind(channel::ptr chan)
 {

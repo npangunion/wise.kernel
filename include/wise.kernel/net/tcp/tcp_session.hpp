@@ -94,7 +94,7 @@ protected:
 private:
 
 	/// close socket (shutdown and close).
-	void close(const error_code& ec);
+	void close();
 
 	/// 에러 처리 함수
 	void error(const error_code& ec);

@@ -104,6 +104,11 @@ public:
 		return seq_;
 	}
 
+	bool is_busy() const
+	{
+		return ch_->get_queue_size() > 0;
+	}
+
 	void clear()
 	{
 		ch_->clear();
@@ -116,16 +121,15 @@ private:
 
 		bp->get_protocol()->bind(ch_);
 
-		auto em = wise_shared<bits_test_message>();
-
-		for (int i = 0; i < 128; ++i)
+		// 많이 보내면 빠르게 진행한다.
+		for (int i = 0; i < 256; ++i)
 		{
+			auto em = wise_shared<bits_test_message>();
 			em->name.append("ABitsHello");
+			em->id = seq_++;
+
+			bp->send(em);
 		}
-
-		em->id = seq_++;
-
-		bp->send(em);
 	}
 
 	void on_accepted(message::ptr m)
@@ -134,16 +138,14 @@ private:
 
 		bp->get_protocol()->bind(ch_);
 
-		auto em = wise_shared<bits_test_message>();
-
-		for (int i = 0; i < 128; ++i)
+		for (int i = 0; i < 256; ++i)
 		{
+			auto em = wise_shared<bits_test_message>();
 			em->name.append("ABitsHello");
+			em->id = seq_++;
+
+			bp->send(em);
 		}
-
-		em->id = seq_++;
-
-		bp->send(em);
 	}
 
 	void on_echo(message::ptr m)
@@ -163,7 +165,7 @@ private:
 
 private: 
 	bits_node& bn_;
-	int seq_ = 0;
+	std::atomic<int> seq_ = 0;
 	channel::ptr ch_;
 };
 
@@ -393,12 +395,14 @@ TEST_CASE("bits protocol")
 	{
 		bits_protocol::cfg.enable_loopback = false;
 
+		mem_tracker::inst().disable();
+
 		tcp_node::config cfg;
 		bits_node bn(cfg);
 
 		echo_tester tester(bn);  // subscription
 
-		const int test_count = 10;
+		const int test_count = 2048;
 
 		bn.start();
 
@@ -409,8 +413,6 @@ TEST_CASE("bits protocol")
 
 		while (true)
 		{
-			wise::kernel::sleep(1);
-
 			auto seq = tester.get_seq();
 
 			if (seq >= test_count)
@@ -418,28 +420,23 @@ TEST_CASE("bits protocol")
 				break;
 			}
 
+			if (!tester.is_busy())
+			{
+				sleep(1);  
+			}
+
 			tester.execute();
 		}
 
 		WISE_INFO("echo test. elapsed: {}, count: {}", tick.elapsed(), test_count);
 
-		// TODO: session::ref의 해제 관련 처리
-
 		tester.clear();
 
 		bn.finish();
 
+		mem_tracker::inst().enable();
+
 		// 어딘가 남아 있다. 
 		// CHECK(bits_packet::alloc_ == bits_packet::dealloc_);
-
-		// 10만. 1초. 
-		// - 괜찮은 정도 
-		// - 전에 봤던 수치와 비슷 
-
-		// 10만. 5KB. 2초
-		// - 초당 250 메가 바이트 (2Gbps)
-		// - 단일 연결 
-		// - 초당 2Gbps로 괜찮은 것 같다. 
-		//   - send_op / recv_op가 CPU의 대부분을 차지
 	}
 }

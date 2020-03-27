@@ -91,7 +91,6 @@ tcp_session::result tcp_session::send(const uint8_t* data, std::size_t len)
 	// append 
 	{
 		std::lock_guard<lock_type> lock(send_mutex_);
-		// TODO: check send_buffer_ size. it needs to be configured. 
 		send_buffer_.append(data, len);
 	}
 
@@ -101,13 +100,10 @@ tcp_session::result tcp_session::send(const uint8_t* data, std::size_t len)
 void tcp_session::disconnect()
 {
 	WISE_DEBUG("close of {} requested from application", get_desc());
-
-	auto ec = errc::make_error_code(errc::success);
-
-	close(ec);
+	close();
 }
 
-void tcp_session::close(const error_code& ec)
+void tcp_session::close()
 {
 	// 연결이 유효하면 끊고 소멸을 시도한다. 
 
@@ -129,7 +125,7 @@ void tcp_session::close(const error_code& ec)
 				error_code rec;
 
 				socket_.shutdown(socket_.shutdown_both, rec);
-				socket_.close(rec);
+				socket_.close();
 
 				WISE_DEBUG("{0} close", get_desc());
 			}
@@ -153,9 +149,6 @@ void tcp_session::close(const error_code& ec)
 
 		// notify
 		destroyed_ = true;
-
-		(void)protocol_->on_error(ec);
-
 	}// locked
 }
 
@@ -182,7 +175,9 @@ void tcp_session::error(const error_code& ec)
 
 	log()->flush();
 
-	close(ec);		// will call destroy and protocol_->on_error()
+	close();		
+
+	protocol_->on_error(ec);
 }
 
 void tcp_session::error(const result& rc)
@@ -195,8 +190,11 @@ void tcp_session::error(const result& rc)
 
 	log()->flush();
 
+	close();
+
 	// ERROR_UNEXP_NET_ERR로 전달
-	close(error_code(0x3B, boost::system::system_category()));
+	error_code ec(0x3B, boost::system::system_category());
+	protocol_->on_error(ec);
 }
 
 tcp_session::result tcp_session::request_recv()
@@ -236,21 +234,26 @@ tcp_session::result tcp_session::request_send()
 
 		// lock 안에서 체크해야 함
 		WISE_RETURN_IF(!is_open(), result(false, reason::fail_socket_closed));
+	}
+
+	{
+		std::lock_guard<lock_type> segs_lock(send_mutex_);
 
 		// check data available
+		if (send_buffer_.size() == 0)
 		{
-			std::lock_guard<lock_type> segs_lock(send_mutex_);
-
-			if (send_buffer_.size() == 0)
-			{
-				return result(true, reason::success_session_no_data_to_send);
-			}
+			return result(true, reason::success_session_no_data_to_send);
 		}
 	}
 
-	// get bufs and send. 한번에 하나만 보내고 위에서 막히므로 send_segs_mutex_만 사용
 	{
-		std::lock_guard<lock_type> lock(send_mutex_);
+		std::lock_guard<lock_type> session_lock(session_mutex_);
+		// get bufs and send. 한번에 하나만 보내고 위에서 막히므로 send_mutex_만 사용
+		sending_ = true;
+	}
+
+	{
+		std::lock_guard<lock_type> segs_lock(send_mutex_);
 
 		WISE_ASSERT(send_buffer_.size() > 0);
 		WISE_ASSERT(sending_segs_.empty());
@@ -264,11 +267,7 @@ tcp_session::result tcp_session::request_send()
 
 		// 락 벗어나면 바로 차는 경우 발생 
 		WISE_ASSERT(send_buffer_.size() == 0);
-
-		sending_ = true;
 	}
-
-	// TODO: exception safe?
 
 	WISE_ASSERT(!sending_segs_.empty());
 
@@ -359,7 +358,6 @@ void tcp_session::on_send_completed(error_code& ec, std::size_t len)
 		if (!ec)
 		{
 			WISE_ASSERT(send_request_size_ == len);
-
 			protocol_->on_send(len);
 		}
 
