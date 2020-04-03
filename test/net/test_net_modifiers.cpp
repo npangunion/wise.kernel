@@ -68,7 +68,7 @@ TEST_CASE("cipher", "net")
 		cipher cs(4);
 		resize_buffer rb;
 
-		for (int i = 0; i < 2048; ++i)
+		for (int i = 0; i < 1; ++i)
 		{
 			std::size_t len = 0;
 

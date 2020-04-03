@@ -39,7 +39,7 @@ protocol::result bits_protocol::send(packet::ptr m)
 			topic::get_desc(m->get_topic())
 		);
 
-		return result(false, reason::fail_inavlid_bits_message);
+		return result(false, reason::fail_invalid_bits_message);
 	}
 
 	// TLS로 쓰레드별로 만듦. resize_buffer는 thread-safe하지 않음
@@ -235,14 +235,21 @@ protocol::result bits_protocol::on_recv(
 
 		auto res = mp->unpack(packer);
 
-		//
-		// TODO: unpack에서 덜 사용한 바이트 길이가 있으면 에러 처리 
-		// 더 사용하는 건 unpack 실패로 나옴.
-		//
+		if (recv_buf_.get_read_pos() < final_len)
+		{
+			// unpack에서 덜 사용한 바이트 길이가 있으면 에러 처리 
+			//
+			WISE_ERROR(
+				"bits_packet insufficient read. topic: {}, read: {}/{}", 
+				topic::get_desc(tp), 
+				recv_buf_.get_read_pos(), 
+				final_len);
+			return result(false, reason::fail_insufficient_unpack);
+		}
 
 		if (!res)
 		{
-			WISE_ERROR("bits_packet unpack error. topic: ", topic::get_desc(tp));
+			WISE_ERROR("bits_packet unpack error. topic: {}", topic::get_desc(tp));
 			return result(false, reason::fail_bits_unpack_error);
 		}
 

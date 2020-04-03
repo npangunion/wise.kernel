@@ -122,6 +122,12 @@ public:
 		return pos_;
 	}
 
+	/// 현재 읽는 위치 얻기
+	std::size_t get_read_pos() const
+	{
+		return read_pos_;
+	}
+
 	/// 현재 버퍼 크기 돌려줌
 	std::size_t capacity() const
 	{

@@ -54,7 +54,11 @@ public:
 	echo_tester(bits_node& bn)
 		: bn_(bn)
 	{
-		ch_ = wise_shared<channel>("tester");
+		channel::config cfg;
+
+		cfg.loop_post_limit = 1000;
+
+		ch_ = wise_shared<channel>("tester", cfg);
 		bn_.bind(ch_);
 
 		// factory
@@ -315,13 +319,12 @@ TEST_CASE("bits protocol")
 
 			fine_tick tick;
 
+			auto pkt = wise_shared<bits_test_message>();
+			pkt->name = "Hello";
+			pkt->id = 33;
+
 			for (int i = 0; i < test_count; ++i)
 			{
-				auto pkt = wise_shared<bits_test_message>();
-
-				pkt->name = "Hello";
-				pkt->id = 33;
-
 				bp->send(pkt);
 			}
 
@@ -402,7 +405,7 @@ TEST_CASE("bits protocol")
 
 		echo_tester tester(bn);  // subscription
 
-		const int test_count = 2048;
+		const int test_count = 1000;
 
 		bn.start();
 
@@ -422,13 +425,13 @@ TEST_CASE("bits protocol")
 
 			if (!tester.is_busy())
 			{
-				sleep(1);  
+				// sleep(1);  
 			}
 
 			tester.execute();
 		}
 
-		WISE_INFO("echo test. elapsed: {}, count: {}", tick.elapsed(), test_count);
+		WISE_INFO("echo test. elapsed: {}, count: {}", tick.elapsed(), tester.get_seq());
 
 		tester.clear();
 
@@ -436,7 +439,8 @@ TEST_CASE("bits protocol")
 
 		mem_tracker::inst().enable();
 
-		// 어딘가 남아 있다. 
-		// CHECK(bits_packet::alloc_ == bits_packet::dealloc_);
+		// 에코는 빠른 처리가 되지 않는다. 성능 측정에 적절한 방법은 아니다. 
+		// 대신 어느 정도의 성능을 갖는 지 대략 추정할 수 있다.
+		// 릴리스. 1백만, 2초. 랩탑. 괜찮은 편이다.
 	}
 }

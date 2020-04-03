@@ -234,25 +234,23 @@ tcp_session::result tcp_session::request_send()
 
 		// lock 안에서 체크해야 함
 		WISE_RETURN_IF(!is_open(), result(false, reason::fail_socket_closed));
-	}
 
-	{
-		std::lock_guard<lock_type> segs_lock(send_mutex_);
-
-		// check data available
-		if (send_buffer_.size() == 0)
+		// 버퍼 체크
 		{
-			return result(true, reason::success_session_no_data_to_send);
-		}
-	}
+			std::lock_guard<lock_type> segs_lock(send_mutex_);
 
-	// get bufs and send. 한번에 하나만 보내고 위에서 막히므로 send_segs_mutex_만 사용
-	{
-		std::lock_guard<lock_type> session_lock(session_mutex_);
-		// get bufs and send. �ѹ��� �ϳ��� ������ ������ �����Ƿ� send_mutex_�� ���
+			// check data available
+			if (send_buffer_.size() == 0)
+			{
+				return result(true, reason::success_session_no_data_to_send);
+			}
+		}
+
+		// return과 설정은 같이 체크해야 한다.
 		sending_ = true;
 	}
 
+	// 전송 처리
 	{
 		std::lock_guard<lock_type> segs_lock(send_mutex_);
 
@@ -366,6 +364,11 @@ void tcp_session::on_send_completed(error_code& ec, std::size_t len)
 		sending_segs_.clear();
 		sending_bufs_.clear();
 		send_request_size_ = 0;
+	}
+
+	// clear sending 
+	{
+		std::lock_guard<lock_type> sl(session_mutex_);
 		sending_ = false;
 	}
 
