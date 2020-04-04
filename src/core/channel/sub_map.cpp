@@ -253,14 +253,11 @@ std::size_t sub_map::post_topic(entry_map& em, const topic& topic, message::ptr 
 
 void sub_map::purge_wait()
 {
-	if (purge_tick_.elapsed() < purge_sub_interval)
+	if (purge_tick_.elapsed() >= purge_sub_interval)
 	{
-		return;
+		purge_tick_.reset();
+		purge();
 	}
-
-	purge_tick_.reset();
-
-	purge();
 }
 
 void sub_map::purge()
