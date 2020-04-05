@@ -405,7 +405,7 @@ TEST_CASE("bits protocol")
 
 		echo_tester tester(bn);  // subscription
 
-		const int test_count = 1000000;
+		const int test_count = 100;
 
 		bn.start();
 
