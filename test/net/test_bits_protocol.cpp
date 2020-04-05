@@ -405,7 +405,7 @@ TEST_CASE("bits protocol")
 
 		echo_tester tester(bn);  // subscription
 
-		const int test_count = 1000;
+		const int test_count = 1000000;
 
 		bn.start();
 
@@ -442,5 +442,6 @@ TEST_CASE("bits protocol")
 		// 에코는 빠른 처리가 되지 않는다. 성능 측정에 적절한 방법은 아니다. 
 		// 대신 어느 정도의 성능을 갖는 지 대략 추정할 수 있다.
 		// 릴리스. 1백만, 2초. 랩탑. 괜찮은 편이다.
+		// 릴리스. 1백만, 1초. i7 pc.
 	}
 }
