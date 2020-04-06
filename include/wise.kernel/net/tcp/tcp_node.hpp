@@ -39,9 +39,11 @@ public:
 	~tcp_node();
 
 	/// addr에서 listen. addr은 ip:port 형식. 
+	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
 	result listen(const std::string& addr);
 
 	/// connect to a addr. addr은 ip:port 형식
+	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
 	result connect(const std::string& addr);
 
 	tcp_protocol::ptr get(protocol::id_t id);
@@ -87,7 +89,6 @@ private:
 
 	/// called when connect failed
 	void on_connect_failed(key_t k, const error_code& ec);
-
 
 	// 새로운 연결에서 프로토콜 생성
 	void on_new_socket(
