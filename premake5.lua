@@ -61,10 +61,10 @@ project "wise.kernel"
 	files { "include/**", "src/**" }
 
 	excludes { "src/core/botan/arch/**" }
-	excludes { "include/wise.kernel/service/db/**" }
-	excludes { "include/wise.kernel/service/bot/**" }
-	excludes { "src/service/db/**" }
-	excludes { "src/service/bot/**" }
+	excludes { "include/wise.kernel/server/service/db/**" }
+	excludes { "include/wise.kernel/server/service/bot/**" }
+	excludes { "src/service/server/db/**" }
+	excludes { "src/service/server/bot/**" }
 
 	defines "_ENABLE_EXTENDED_ALIGNED_STORAGE"
 	warnings "extra"
