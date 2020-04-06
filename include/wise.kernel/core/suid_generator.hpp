@@ -1,4 +1,4 @@
-#pragma once 
+ï»¿#pragma once 
 
 #include <wise.kernel/core/null_mutex.hpp>
 #include <wise.kernel/core/logger.hpp>
@@ -14,16 +14,16 @@ using suid_t = uint64_t;
 
 /// 40 bit ms | 12 bit domain | 12 bit sequence
 /**
- * snowflake ¾Ë°í¸®ÁòÀ» ¼öÁ¤ÇÏ¿© ±¸Çö
- * 1ms¿¡ 4096°³±îÁö °íÀ¯ÇÑ ¾ÆÀÌµğ¸¦ »ı¼º. 
- * 1ms ÀÌ³»¿¡ 4096°³ ¿äÃ»ÀÌ ¿À¸é Àá½Ã sleepÀ¸·Î ´ë±â
- * ÀÌ¿Í °°ÀÌ ÀæÀº »ı¼ºÀÌ ¾ø´Â °æ¿ì¿¡¸¸ »ç¿ë °¡´É
+ * snowflake ì•Œê³ ë¦¬ì¦˜ì„ ìˆ˜ì •í•˜ì—¬ êµ¬í˜„
+ * 1msì— 4096ê°œê¹Œì§€ ê³ ìœ í•œ ì•„ì´ë””ë¥¼ ìƒì„±. 
+ * 1ms ì´ë‚´ì— 4096ê°œ ìš”ì²­ì´ ì˜¤ë©´ ì ì‹œ sleepìœ¼ë¡œ ëŒ€ê¸°
+ * ì´ì™€ ê°™ì´ ì¦ì€ ìƒì„±ì´ ì—†ëŠ” ê²½ìš°ì—ë§Œ ì‚¬ìš© ê°€ëŠ¥
  */
 template <typename Mutex = null_mutex>
 class suid_generator
 {
 public:
-	/// 12bit domainÀ¸·Î ±¸ºĞµÇ´Â °íÀ¯ ¾ÆÀÌµğ¸¦ »ı¼º
+	/// 12bit domainìœ¼ë¡œ êµ¬ë¶„ë˜ëŠ” ê³ ìœ  ì•„ì´ë””ë¥¼ ìƒì„±
 	suid_generator()
 		: domain_(0)
 	{
@@ -101,7 +101,7 @@ private:
 
 	uint64_t wait_next_ms()
 	{
-		// ¹Ğ¸®ÃÊ´ç 4096°³°¡ ³ÑÀ¸¸é Àç¿ì´Â °Ô °¡Àå ºü¸£´Ù. 
+		// ë°€ë¦¬ì´ˆë‹¹ 4096ê°œê°€ ë„˜ìœ¼ë©´ ì¬ìš°ëŠ” ê²Œ ê°€ì¥ ë¹ ë¥´ë‹¤. 
 		sleep(1);
 
 		++sleep_count_;
