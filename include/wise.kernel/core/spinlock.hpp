@@ -68,10 +68,10 @@ public:
 			const std::size_t prev_retries = retries_.load(std::memory_order_relaxed);
 
 			const std::size_t max_relax_retries = (std::min)(
-				static_cast<std::size_t>(WISE_FIBERS_SPIN_BEFORE_SLEEP0), 2 * prev_retries + 10);
+				static_cast<std::size_t>(WISE_FIBERS_SPIN_BEFORE_YIELD), 2 * prev_retries + 10);
 
 			const std::size_t max_sleep_retries = (std::min)(
-				static_cast<std::size_t>(WISE_FIBERS_SPIN_BEFORE_YIELD), 2 * prev_retries + 10);
+				static_cast<std::size_t>(WISE_FIBERS_SPIN_BEFORE_SLEEP0), 2 * prev_retries + 10);
 
 			while (spinlock_status::locked == state_.load(std::memory_order_relaxed))
 			{

@@ -16,6 +16,7 @@ class actor : public task
 {
 public: 
 	using id_t = uint64_t;
+	using ptr = std::shared_ptr<actor>;
 
 public:
 	actor(server& _server, id_t parent, id_t id);
@@ -23,6 +24,16 @@ public:
 	actor(server& _server, id_t id);
 
 	virtual ~actor();
+
+	id_t get_id() const
+	{
+		return id_;
+	}
+
+	id_t get_parent() const
+	{
+		return parent_;
+	}
 
 protected:
 	virtual bool init() = 0;
@@ -39,6 +50,16 @@ protected:
 		return server_;
 	}
 
+	channel& get_channel() const
+	{
+		return ch_;
+	}
+
+	timer& get_timer() const 
+	{
+		return timer_;
+	}
+
 private: 
 	/// task::on_start(). call init()
 	bool on_start() override;
@@ -50,9 +71,11 @@ private:
 	void on_finish() override;
 
 private: 
-	server& server_;
-	channel ch_;
-	timer timer_;
+	server&			server_;
+	const id_t		parent_ = 0;
+	const id_t		id_ = 0;
+	mutable channel	ch_;
+	mutable timer	timer_;
 };
 
 } // kernel
