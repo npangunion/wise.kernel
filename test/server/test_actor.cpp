@@ -21,10 +21,25 @@ private:
 	{
 		WISE_INFO("simple_actor:{:x} start", get_id());
 
-		auto ta = [this](timer::id_t i) { WISE_INFO("simple_actor:{:x} timer", get_id()); };
-		get_timer().once(10, ta);
+		auto ta = [this](timer::id_t ti) { 
+			WISE_UNUSED(ti);  
+			on_timer(); 
+		};
+
+		auto id = get_timer().set(100);
+		get_timer().add(id, ta);
 
 		return true;
+	}
+
+	result run()
+	{
+		return result::success;
+	}
+
+	void on_timer()
+	{
+		WISE_INFO("on_timer");
 	}
 
 	void fini()
@@ -63,12 +78,29 @@ TEST_CASE("actor", "server")
 
 			s.run();
 
-			sleep(1000);
-
 			s.finish();
 		}
 	}
 
+	SECTION("actor execution")
+	{
+		// timer, channel
+
+		server s;
+
+		if (s.start())
+		{
+			auto ap = s.create<simple_actor>("simple_actor");
+
+			CHECK(s.get_local_actor(ap->get_id()) == ap);
+
+			s.run();
+
+			sleep(10000);
+
+			s.finish();
+		}
+	}
 
 }
 

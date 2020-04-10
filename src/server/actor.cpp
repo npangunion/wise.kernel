@@ -22,6 +22,7 @@ actor::actor(server& _server, id_t id)
 	, parent_(0)
 	, id_(id)
 {
+	set_desc(fmt::format("actor_{:x}", id));
 }
 
 actor::~actor()
@@ -38,7 +39,7 @@ task::result actor::on_execute()
 	ch_.execute();
 	timer_.execute();
 
-	return task::result::success;
+	return run();
 }
 
 void actor::on_finish()

@@ -37,6 +37,8 @@ public:
 
 protected:
 	virtual bool init() = 0;
+	
+	virtual result run() { return result::success;  }
 
 	virtual void fini() = 0;
 
