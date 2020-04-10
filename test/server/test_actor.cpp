@@ -94,9 +94,11 @@ TEST_CASE("actor", "server")
 
 			CHECK(s.get_local_actor(ap->get_id()) == ap);
 
-			s.run();
-
-			sleep(10000);
+			for (int i = 0; i < 1000; ++i)
+			{
+				s.run();
+				sleep(1);
+			}
 
 			s.finish();
 		}
