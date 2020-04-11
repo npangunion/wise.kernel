@@ -1,6 +1,6 @@
 #pragma once
-#include <wise/net/protocol/zen/zen_message.hpp>
-#include <wise/net/protocol/zen/zen_packer.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packet.hpp>
+#include <wise.kernel/net/protocol/bits/bits_packer.hpp>
 
 #include <stdint.h>
 #include <map>
@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace common {
+namespace detail {
 
 enum class TestEnum
 {
@@ -27,12 +28,14 @@ struct hello
 
 
 } // common
+} // detail
 
 // struct serialization section
-namespace wise {
+namespace wise { 
+namespace kernel { 
 
-// ::common::hello serialization begin { 
-template<> inline bool pack(zen_packer& packer, const ::common::hello& tv) 
+// ::common::detail::hello serialization begin { 
+template<> inline bool pack(bits_packer& packer, const ::common::detail::hello& tv) 
 {
 	packer.pack(tv.v);
 	packer.pack(tv.iv);
@@ -41,7 +44,7 @@ template<> inline bool pack(zen_packer& packer, const ::common::hello& tv)
 	return packer.is_valid();
 }
 
-template<> inline bool unpack(zen_packer& packer, ::common::hello& tv) 
+template<> inline bool unpack(bits_packer& packer, ::common::detail::hello& tv) 
 {
 	packer.unpack(tv.v);
 	packer.unpack(tv.iv);
@@ -49,7 +52,8 @@ template<> inline bool unpack(zen_packer& packer, ::common::hello& tv)
 	packer.unpack_enum(tv.test);
 	return packer.is_valid();
 }
-// } ::common::hello serialization end
+// } ::common::detail::hello serialization end
 
+} // kernel
 } // wise
 

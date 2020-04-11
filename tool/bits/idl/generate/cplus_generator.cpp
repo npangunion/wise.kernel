@@ -2116,13 +2116,13 @@ result cplus_generator::generate_expression_value(const idl_field* field, const 
 result cplus_generator::generate_prolog()
 {
 	os_ << "#pragma once" << std::endl;
-	os_ << "#include <wise/net/protocol/bits/bits_packet.hpp>" << std::endl;
-	os_ << "#include <wise/net/protocol/bits/bits_packer.hpp>" << std::endl;
+	os_ << "#include <wise.kernel/net/protocol/bits/bits_packet.hpp>" << std::endl;
+	os_ << "#include <wise.kernel/net/protocol/bits/bits_packer.hpp>" << std::endl;
 	os_ << std::endl;
 
 	if (program_->has_tx())
 	{
-		os_ << "#include <wise/service/db/tx.hpp>" << std::endl;
+		os_ << "#include <wise.kernel/service/db/tx.hpp>" << std::endl;
 		os_ << std::endl;
 	}
 
@@ -2137,7 +2137,7 @@ result cplus_generator::generate_prolog()
 
 result cplus_generator::generate_hx_prolog()
 {
-	os_ << "#include <wise/server/service/hx.hpp>" << std::endl;
+	os_ << "#include <wise.kernel/server/service/hx.hpp>" << std::endl;
 	os_ << std::endl;
 
 	return result(true, "Success");

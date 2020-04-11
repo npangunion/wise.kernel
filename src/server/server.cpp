@@ -30,7 +30,7 @@ server::result server::start()
 		WISE_RETURN_IF(!rc, result(false, error_code::fail_start_task_scheduler));
 	}
 
-	actor_id_generator_.setup(domain_);
+	id_generator_.setup(domain_);
 
 	return result(true, error_code::success);
 }

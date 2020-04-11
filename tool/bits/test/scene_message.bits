@@ -1,0 +1,158 @@
+include "game_topics.bits"
+
+namespace real
+
+enum scene_result
+{
+	success, 
+	fail_timeout,
+	fail_create_scene
+	fail_scene_not_found,
+	fail_scene_handler_not_found,
+	fail_scene_user_in_invalid_state, 
+	fail_scene_user_not_found
+}
+
+struct scene_user_info 
+{
+	ustring nickname;
+
+	u64 uid = 0; 
+	u64 did = 0;
+	u64 did_character = 0;
+	u32 elo = 0;
+}
+
+message req_enter_scene
+{
+	topic game.scene_service.req_enter_scene; 
+
+	opt ( enable_cipher );
+	opt ( enable_checksum );
+
+	scene_user_info me;
+
+	u64 scene_id = 0;
+} 
+
+message res_enter_scene
+{
+	topic game.scene_service.res_enter_scene;
+
+	scene_result result;
+}
+
+message req_reenter_scene
+{
+	topic game.scene_service.req_reenter_scene; 
+
+	opt ( enable_cipher );
+	opt ( enable_checksum );
+
+	u64 scene_id = 0;
+	u64 uid = 0;
+} 
+
+message res_reenter_scene
+{
+	topic game.scene_service.res_reenter_scene;
+
+	scene_result result;
+}
+
+message req_leave_scene
+{
+	topic game.scene_service.req_leave_scene; 
+} 
+
+message res_leave_scene
+{
+	topic game.scene_service.res_leave_scene;
+
+	scene_result result;
+}
+
+message syn_master_scene_handler : wise::hx
+{
+	topic game.scene_master.syn_master_scene_handler; 
+
+	u32 domain
+} 
+
+message req_ss_create_scene : wise::hx
+{
+	topic game.scene_master.req_ss_create_scene;
+
+	u64 scene_id = 0;		// 
+	u64 uid_1 = 0;
+	u64 uid_2 = 0;
+	string options;			// 게임 정보를 json으로 포함
+} 
+
+message res_ss_create_scene : wise::hx
+{
+	topic game.scene_master.res_ss_create_scene;
+
+	scene_result result;
+
+	u64 scene_id = 0;	
+} 
+
+message req_ss_enter_scene : wise::hx
+{
+	topic game.scene_master.req_ss_enter_scene;
+
+	u64 scene_id = 0; 
+	scene_user_info me;
+} 
+
+message res_ss_enter_scene : wise::hx
+{
+	topic game.scene_master.res_ss_enter_scene;
+
+	scene_result result;
+
+	u64 scene_id = 0; 
+	u64	uid;
+} 
+
+message req_ss_leave_scene : wise::hx
+{
+	topic game.scene_master.req_ss_leave_scene;
+
+	u64 scene_id = 0; 
+	u64 uid = 0;
+} 
+
+message res_ss_leave_scene : wise::hx
+{
+	topic game.scene_master.res_ss_leave_scene;
+
+	scene_result result;
+
+	u64 scene_id = 0; 
+	u64	uid;
+} 
+
+message req_ss_dispose_scene : wise::hx
+{
+	topic game.scene_master.req_ss_dispose_scene;
+
+	u64 scene_id = 0; 
+	string reason;		// 명시적으로 기록하여 추적 가능하도록 함
+} 
+
+message res_ss_dispose_scene : wise::hx
+{
+	topic game.scene_master.res_ss_dispose_scene;
+
+	scene_result result;
+
+	u64 scene_id = 0; 
+} 
+
+//
+// 여기까지 되면 게임 프로토콜 추가해서 게임 진행
+// scene_instance의 하위 클래스로 게임을 두고 
+// on_enter 등의 논리를 구현하게 한다. 
+// 

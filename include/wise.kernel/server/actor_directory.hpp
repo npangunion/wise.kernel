@@ -15,12 +15,12 @@ public:
 
 	~actor_directory();
 
-	bool add(actor::ref r)
+	bool add(actor::ref aref)
 	{
-		WISE_THROW_IF(has(r->get_id()), fmt::format("duplicate id for actor. id:{}", ap->get_id()).c_str());
+		WISE_THROW_IF(has(aref.get_id()), fmt::format("duplicate id for actor. id:{}", aref.get_id()).c_str());
 
 		std::unique_lock<std::shared_mutex> ul(lock_);
-		actors_.insert(actor_map::value_type(ap->get_id(), ap));
+		actors_.insert(actor_map::value_type(aref.get_id(), aref));
 
 		return true;
 	}
@@ -44,11 +44,6 @@ public:
 		return actor::ref();
 	}
 
-	void del(actor::ptr ap)
-	{
-		del(ap->get_id());
-	}
-
 	void del(actor::id_t id)
 	{
 		std::unique_lock<std::shared_mutex> ul(lock_);
@@ -56,7 +51,7 @@ public:
 	}
 
 private: 
-	using actor_map = std::map < actor::id_t, actor::ptr>;
+	using actor_map = std::map < actor::id_t, actor::ref>;
 
 	void cleanup();
 

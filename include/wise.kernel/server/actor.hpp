@@ -19,7 +19,7 @@ public:
 	using id_t = uint64_t;
 	using ptr = std::shared_ptr<actor>;
 
-	enum class mode
+	enum class mode : uint8_t
 	{
 		none,
 		local,
@@ -34,8 +34,15 @@ public:
 			: mode_(mode::none)
 		{}
 
-		ref(ptr _actor, bool is_client = false)
+		ref(ptr _actor)
 			: actor_(_actor)
+			, mode_(mode::local)
+		{
+		}
+
+		ref(protocol::ptr pp, id_t id, bool is_client)
+			: protocol_(pp)
+			, id_(id)
 		{
 			if (is_client)
 			{
@@ -45,12 +52,6 @@ public:
 			{
 				mode_ = mode::peer;
 			}
-		}
-
-		ref(protocol::ptr pp, id_t id)
-			: mode_(mode::remote)
-			, protocol_(pp)
-		{
 		}
 
 		id_t get_id() const
@@ -63,6 +64,11 @@ public:
 			}
 
 			return id_;
+		}
+
+		mode get_mode() const
+		{
+			return mode_;
 		}
 
 		bool send(packet::ptr p)
@@ -82,6 +88,14 @@ public:
 				auto rc = protocol_->send(p);
 				return !!rc;
 			}
+		}
+
+		bool operator==(const ref& rhs) const
+		{
+			return mode_ == rhs.mode_ &&
+				actor_ == rhs.actor_ &&
+				id_ == rhs.id_ &&
+				protocol_ == rhs.protocol_;
 		}
 
 	private:

@@ -1,0 +1,136 @@
+include "game_topics.bits"
+
+namespace real
+
+enum match_result
+{
+	success, 
+	fail_invalid_state,
+	fail_match_handler_not_found,
+	fail_scene_handler_not_found, 
+	fail_scene_service_not_found,
+	fail_timeout,
+	fail_create_scene
+}
+
+enum match_state 
+{
+	match_started, 
+	match_waiting_scene_create, 
+	match_waiting_scene_join
+}
+
+struct match_user_info 
+{
+	ustring nickname;
+
+	u64 uid = 0; 
+	u64 did = 0;
+	u32 elo = 0;
+}
+
+message req_match
+{
+	topic game.user.req_match; 
+
+	opt ( enable_cipher );
+	opt ( enable_checksum );
+	opt ( enable_sequence );
+
+	u32 domain = 0;
+} 
+
+message res_match 
+{
+	topic game.user.res_match; 
+
+	opt ( enable_cipher );
+
+	match_result result;
+
+	match_user_info peer;
+
+	u64		scene_id = 0;
+	string  addr;
+}
+
+message syn_match_state
+{
+	topic game.user.syn_match_state; 
+
+	match_state state;
+} 
+
+
+message syn_master_match_handler : wise::hx
+{
+	topic game.match_master.syn_master_match_handler; 
+
+	u32 domain
+} 
+
+message req_master_match : wise::hx
+{
+	topic game.match_master.req_master_match; 
+
+	u32 domain
+
+	match_user_info user;
+} 
+
+message res_master_match : wise::hx
+{
+	topic game.match_master.res_master_match; 
+
+	match_result result;
+
+	match_user_info me;
+	match_user_info peer;
+
+	u64		scene_id = 0;
+	string  addr;
+} 
+
+message req_master_cancel_match : wise::hx
+{
+	topic game.match_master.req_master_cancel_match;
+
+	u64 uid = 0;
+} 
+
+message res_master_cancel_match : wise::hx
+{
+	topic game.match_master.res_master_cancel_match;
+
+	u64 uid = 0;
+} 
+
+message req_master_create_scene : wise::hx
+{
+	topic game.match_master.req_master_create_scene;
+
+	match_user_info user_1;
+	match_user_info user_2;
+
+	string options;			// ���� ������ json���� ����
+} 
+
+message res_master_create_scene : wise::hx
+{
+	topic game.match_master.res_master_create_scene;
+
+	match_result result;
+
+	u64		uid_1;
+	u64		uid_2;
+
+	u64		scene_id;
+	string	addr;
+} 
+
+message syn_master_match_state : wise::hx
+{
+	topic game.match_master.syn_master_match_state;
+
+	match_state state;
+}

@@ -12,19 +12,21 @@ namespace kernel {
 
 using suid_t = uint64_t;
 
-/// 40 bit ms | 12 bit domain | 12 bit sequence
+/// 40 bit ms | 16 bit domain | 8 bit sequence
 /**
+ * 16비트 도메인을 서버 아이디로 지정. 
  * snowflake 알고리즘을 수정하여 구현
- * 1ms에 4096개까지 고유한 아이디를 생성. 
- * 1ms 이내에 4096개 요청이 오면 잠시 sleep으로 대기
- * 이와 같이 잦은 생성이 없는 경우에만 사용 가능
+ * 1ms에 256개 고유한 아이디를 생성. 
+ * 1ms 이내에 256개 요청이 오면 잠시 sleep으로 대기
+ * 40bit면 거의 영원히 사용 가능.
+ * 잦은 생성이 없는 경우에 매우 오래 사용하는 고유 아이디
  */
 template <typename Mutex = null_mutex>
-class suid_generator
+class actor_id_generator
 {
 public:
 	/// 12bit domain으로 구분되는 고유 아이디를 생성
-	suid_generator()
+	actor_id_generator()
 		: domain_(0)
 	{
 	}
@@ -33,6 +35,7 @@ public:
 	{
 		domain_ = domain;
 		WISE_THROW_IF(domain_ == 0, "domain_ must be positive number");
+		WISE_THROW_IF(domain_ >= 0x3FFF, "domain_ number must be less than 0x3FFF");
 	}
 
 	/// roughly following snow-flake algorithm implementation
@@ -60,7 +63,7 @@ public:
 
 			if (last_ms_ == now_ms)
 			{
-				seq_ = (seq_ + 1) & 0x0FFF;
+				seq_ = (seq_ + 1) & 0x00FF;
 
 				if (seq_ == 0)
 				{
@@ -74,7 +77,10 @@ public:
 				seq_ = 0;
 			}
 
-			now_id = ((now_ms & 0xFFFFFFFFFF) << 24) | ((domain_ & 0x0FFF) << 12) | (seq_ & 0x0FFFF);
+			uint64_t ms = (now_ms & 0xFFFFFFFFFF) << 24;
+			uint64_t dm = (domain_ & 0xFFFF) << 8;
+			uint64_t sp = (seq_ & 0x00FF);
+			now_id = (ms | dm | sp);
 			WISE_ASSERT(now_id != last_id_);
 
 			last_ms_ = now_ms;
@@ -87,6 +93,11 @@ public:
 		}
 
 		return now_id;
+	}
+
+	uint16_t get_domain(suid_t id) const
+	{
+		return (id >> 8) & 0x000000000000FFFF;
 	}
 
 private:
@@ -115,7 +126,7 @@ private:
 	}
 
 private:
-	uint16_t domain_;
+	uint64_t domain_;
 	Mutex mutex_;
 	uint64_t last_ms_ = 0;
 	uint16_t seq_;

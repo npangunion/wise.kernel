@@ -1,0 +1,94 @@
+include "game_topics.bits"
+
+namespace real
+
+enum game_result 
+{
+	success,
+	fail_enter_timeout, 
+	fail_ready_timeout,
+	fail_input_timeout, 
+	failed_with_user_left
+}
+
+enum rsp_kind
+{
+	none,
+	rock, 
+	scissors, 
+	paper
+}
+
+struct game_user_info 
+{
+	ustring nickname;
+	u64 uid = 0;
+	u32 elo = 0;
+}
+
+message syn_enter_player
+{
+	topic game.play.syn_enter_player;
+
+	game_user_info user;
+} 
+
+message syn_leave_player
+{
+	topic game.play.syn_leave_player;
+
+	u64 uid = 0;
+} 
+
+message syn_begin_ready
+{
+	topic game.play.syn_begin_ready;
+}
+
+message req_player_ready
+{
+	topic game.play.req_player_ready;
+}
+
+message res_player_ready
+{
+	topic game.play.res_player_ready;
+}
+
+message syn_start_play
+{
+	topic game.play.syn_start_play;
+}
+
+message req_input_rsp
+{
+	topic game.play.req_input_rsp;
+
+	rsp_kind rsp;
+}
+
+message syn_rsp_result
+{
+	topic game.play.syn_rsp_result;
+
+	game_result result;
+
+	u64 winner = 0;			// 0 when tie
+
+	rsp_kind me; 
+	rsp_kind other;
+}
+
+message syn_game_end
+{
+	topic game.play.syn_game_end;
+
+	game_result result;
+}
+
+message syn_game_invalid_state
+{
+	topic game.play.syn_game_invalid_state;
+
+	string reason;
+}

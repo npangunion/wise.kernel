@@ -1,0 +1,26 @@
+include "game_topics.bits"
+
+namespace real; 
+
+/**
+ * game query
+ */
+tx db_load_game
+{    
+	topic auth.query.load_game;
+
+	tx_query [UspLoadGame];
+
+	tx_bind 
+	{
+		tx_return result;  // result: 0 - success
+	}
+    
+	tx_result 
+	{
+        tx_single 
+		{
+            u32			did = 0;		// db id 
+        }
+	}
+}

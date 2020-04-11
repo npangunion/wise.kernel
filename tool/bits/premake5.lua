@@ -26,6 +26,7 @@ workspace "wise.bits"
 	
 function includeBOOST()
 	includedirs (BOOST_HOME)
+	libdirs (BOOST_HOME .. "/stage/lib")
 end	
 
 function includeSPDLOG()
@@ -77,6 +78,8 @@ project "wise.bits"
 
 	warnings "extra"
 	buildoptions { "/std:c++17" }
+	flags { "MultiProcessorCompile" }
+
 	
 	filter { 'files:idl/idl_parser.cpp' }
 		flags { 'NoPCH' }

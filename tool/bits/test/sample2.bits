@@ -1,4 +1,4 @@
-namespace common 
+namespace common::detail
 
 enum TestEnum 
 {

@@ -39,7 +39,7 @@ private:
 
 	void on_timer()
 	{
-		WISE_INFO("on_timer");
+		WISE_INFO("actor:{:x}. on_timer.", get_id());
 	}
 
 	void fini()
@@ -55,6 +55,14 @@ private:
 
 TEST_CASE("actor", "server")
 {
+	SECTION("id")
+	{
+		actor_id_generator<> gen;
+		gen.setup(16001);
+
+		auto id = gen.next();
+		CHECK(gen.get_domain(id) == 16001);
+	}
 
 	SECTION("creation")
 	{
@@ -72,9 +80,9 @@ TEST_CASE("actor", "server")
 
 		if (s.start())
 		{
-			auto ap = s.create<simple_actor>("simple_actor");
+			auto aref = s.create<simple_actor>("simple_actor");
 
-			CHECK(s.get_local_actor(ap->get_id()) == ap);
+			CHECK(s.get_actor(aref.get_id()) == aref);
 
 			s.run();
 
@@ -90,9 +98,9 @@ TEST_CASE("actor", "server")
 
 		if (s.start())
 		{
-			auto ap = s.create<simple_actor>("simple_actor");
+			auto aref = s.create<simple_actor>("simple_actor");
 
-			CHECK(s.get_local_actor(ap->get_id()) == ap);
+			CHECK(s.get_actor(aref.get_id()) == aref);
 
 			for (int i = 0; i < 1000; ++i)
 			{

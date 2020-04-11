@@ -1,7 +1,7 @@
 #include <pch.hpp>
 #include <catch.hpp>
 #include <wise.kernel/core/fmt.hpp>
-#include <wise.kernel/core/suid_generator.hpp>
+#include <wise.kernel/server/actor_id_generator.hpp>
 
 namespace {
 
@@ -31,7 +31,7 @@ TEST_CASE("design")
 
 	SECTION("suid")
 	{
-		wise::kernel::suid_generator generator;
+		wise::kernel::actor_id_generator generator;
 		generator.setup(1);
 
 		CHECK(generator.next() <= generator.next());
