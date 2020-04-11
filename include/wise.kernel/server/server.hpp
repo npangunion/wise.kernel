@@ -36,10 +36,11 @@ public:
 	void finish();
 
 	template <typename ACTOR, typename... Args>
-	std::shared_ptr<ACTOR> create(Args... args);
+	actor::ref create(Args... args);
 
-	actor::ptr get_local_actor(actor::id_t id)
+	actor::ref get_actor(actor::id_t id)
 	{
+		// TODO: 액터 디렉토리를 투명하게 만들기
 		return local_actors_.get(id);
 	}
 
@@ -49,13 +50,13 @@ private:
 private: 
 	task_scheduler				scheduler_;
 	task_scheduler::config		scheduler_cfg_;
-	actor_directory				local_actors_;
+	actor_directory				actors_;
 	suid_generator<spinlock>	actor_id_generator_;
 	uint16_t					domain_ = 0;
 };
 
 template <typename ACTOR, typename... Args>
-std::shared_ptr<ACTOR> server::create(Args... args)
+actor::ref server::create(Args... args)
 {
 	auto ap = wise_shared<ACTOR>(
 		*this, 
@@ -63,10 +64,10 @@ std::shared_ptr<ACTOR> server::create(Args... args)
 		std::forward<Args>(args)...
 	);
 
-	local_actors_.add(ap);
+	actors_.add(ap);
 	scheduler_.add(ap);
 
-	return ap;
+	return actors_.get(ap->get_id());
 }
 
 } // kernel
