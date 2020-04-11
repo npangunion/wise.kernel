@@ -1,10 +1,8 @@
 #include <pch.hpp>
 #include <wise.kernel/server/actor_directory.hpp>
 
-namespace wise
-{
-namespace kernel
-{
+namespace wise {
+namespace kernel {
 
 actor_directory::actor_directory()
 {

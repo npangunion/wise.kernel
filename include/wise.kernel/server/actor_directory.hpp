@@ -3,10 +3,8 @@
 #include <wise.kernel/server/actor.hpp>
 #include <shared_mutex>
 
-namespace wise
-{
-namespace kernel
-{
+namespace wise {
+namespace kernel {
 
 class actor_directory
 {
@@ -17,7 +15,10 @@ public:
 
 	bool add(actor::ref aref)
 	{
-		WISE_THROW_IF(has(aref.get_id()), fmt::format("duplicate id for actor. id:{}", aref.get_id()).c_str());
+		WISE_THROW_IF(has(aref.get_id()), 
+			fmt::format("duplicate id for actor. id:{:x}", 
+				aref.get_id()).c_str()
+		);
 
 		std::unique_lock<std::shared_mutex> ul(lock_);
 		actors_.insert(actor_map::value_type(aref.get_id(), aref));
