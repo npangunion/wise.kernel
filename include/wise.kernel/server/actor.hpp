@@ -4,6 +4,7 @@
 #include <wise.kernel/core/task/task.hpp>
 #include <wise.kernel/core/timer.hpp>
 #include <wise.kernel/net/protocol.hpp>
+#include <wise.kernel/util/json.hpp>
 #include <stdint.h>
 
 namespace wise
@@ -38,12 +39,16 @@ public:
 			: actor_(_actor)
 			, mode_(mode::local)
 		{
+			WISE_THROW_IF(!actor_, "actor is not valid");
+			id_ = actor_->get_id();
 		}
 
-		ref(protocol::ptr pp, id_t id, bool is_client)
+		ref(protocol::ptr pp, id_t id, bool is_client = false)
 			: protocol_(pp)
 			, id_(id)
 		{
+			WISE_THROW_IF(id_ == 0, "actor id is not valid");
+
 			if (is_client)
 			{
 				mode_ = mode::client;
@@ -60,7 +65,7 @@ public:
 
 			if (mode_ == mode::local)
 			{
-				return actor_->get_id();
+				WISE_ASSERT(actor_->get_id() == id_);
 			}
 
 			return id_;
@@ -90,6 +95,21 @@ public:
 			}
 		}
 
+		void set_name(const std::string& name)
+		{
+			name_ = name;
+		}
+
+		const std::string& get_name() const
+		{
+			return name_;
+		}
+
+		bool has_name() const
+		{
+			return name_.length() > 0;
+		}
+
 		bool operator==(const ref& rhs) const
 		{
 			return mode_ == rhs.mode_ &&
@@ -99,18 +119,19 @@ public:
 		}
 
 	private:
-		ptr actor_;
-		id_t id_ = 0;
-		protocol::ptr protocol_;
-		mode mode_;
+		ptr				actor_;
+		id_t			id_ = 0;
+		protocol::ptr	protocol_;
+		mode			mode_;
+		std::string		name_;
 	};
 
 public:
-	actor(server& _server, id_t parent, id_t id);
-
 	actor(server& _server, id_t id);
 
 	virtual ~actor();
+
+	virtual bool setup(const nlohmann::json& _json);
 
 	std::size_t publish(packet::ptr pp)
 	{
@@ -120,11 +141,6 @@ public:
 	id_t get_id() const
 	{
 		return id_;
-	}
-
-	id_t get_parent() const
-	{
-		return parent_;
 	}
 
 protected:
@@ -166,7 +182,6 @@ private:
 
 private: 
 	server&			server_;
-	const id_t		parent_ = 0;
 	const id_t		id_ = 0;
 	mutable channel	ch_;
 	mutable timer	timer_;

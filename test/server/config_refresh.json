@@ -1,0 +1,7 @@
+{
+  "name": "test",
+  "array": [
+    { "service": { "type": "peer" } },
+    { "service": { "type": "peer" } }
+  ]
+}

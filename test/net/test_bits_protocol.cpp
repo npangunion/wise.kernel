@@ -118,6 +118,11 @@ public:
 		ch_->clear();
 	}
 
+	channel::ptr get_channel() const
+	{
+		return ch_;
+	}
+
 private: 
 	void on_connected(message::ptr m)
 	{
@@ -409,8 +414,8 @@ TEST_CASE("bits protocol")
 
 		bn.start();
 
-		bn.listen("0.0.0.0:7777");
-		bn.connect("127.0.0.1:7777");
+		bn.listen("0.0.0.0:7777", tester.get_channel());
+		bn.connect("127.0.0.1:7777", tester.get_channel());
 
 		fine_tick tick;
 

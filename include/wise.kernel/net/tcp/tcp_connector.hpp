@@ -28,7 +28,8 @@ public:
 	tcp_connector(
 		tcp_node* node,
 		uint16_t id,
-		const std::string& addr);
+		const std::string& addr,
+		channel::ptr ch);
 
 	~tcp_connector();
 
@@ -46,6 +47,7 @@ private:
 	tcp_node* node_ = nullptr;
 	uint16_t id_ = 0;
 	tcp_addr addr_;
+	channel::ptr ch_;
 	tcp::socket socket_;
 };
 

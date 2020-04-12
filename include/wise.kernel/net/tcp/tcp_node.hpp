@@ -40,11 +40,11 @@ public:
 
 	/// addr에서 listen. addr은 ip:port 형식. 
 	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
-	result listen(const std::string& addr);
+	result listen(const std::string& addr, channel::ptr ch);
 
 	/// connect to a addr. addr은 ip:port 형식
 	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
-	result connect(const std::string& addr);
+	result connect(const std::string& addr, channel::ptr ch);
 
 	tcp_protocol::ptr get(protocol::id_t id);
 
@@ -79,20 +79,21 @@ private:
 	using channel_map = std::map<channel::key_t, channel::ptr>;
 
 private:
-	void on_accepted(key_t k, tcp::socket&& soc);
+	void on_accepted(key_t k, tcp::socket&& soc, channel::ptr ch);
 
 	/// called when accept failed
 	void on_accept_failed(key_t k, const error_code& ec);
 
 	/// called when connected
-	void on_connected(key_t k, tcp::socket&& soc);
+	void on_connected(key_t k, tcp::socket&& soc, channel::ptr ch);
 
 	/// called when connect failed
 	void on_connect_failed(key_t k, const error_code& ec);
 
 	// 새로운 연결에서 프로토콜 생성
 	void on_new_socket(
-		tcp::socket&& soc, 
+		tcp::socket&& soc,
+		channel::ptr ch,
 		bool accepted);
 
 private:

@@ -95,9 +95,14 @@ public:
 		return now_id;
 	}
 
-	uint16_t get_domain(suid_t id) const
+	uint16_t get_domain_of(suid_t id) const
 	{
 		return (id >> 8) & 0x000000000000FFFF;
+	}
+
+	uint16_t get_domain() const
+	{
+		return domain_;
 	}
 
 private:
@@ -126,7 +131,7 @@ private:
 	}
 
 private:
-	uint64_t domain_;
+	uint16_t domain_;
 	Mutex mutex_;
 	uint64_t last_ms_ = 0;
 	uint16_t seq_;

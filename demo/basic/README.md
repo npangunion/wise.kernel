@@ -17,9 +17,12 @@ basic.exe session_count packet_count
 
 ## 구현 
 
-
+bot 서비스를 구현하고 봇들로 테스트 한다. 
+bot이 있으면 분산 시스템의 기능 테스트가 매우 편하다. 
 
 ## 결과 
+
+
 
 
 

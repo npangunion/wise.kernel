@@ -9,10 +9,12 @@ namespace kernel {
 tcp_connector::tcp_connector(
 	tcp_node* node,
 	uint16_t id,
-	const std::string& addr)
+	const std::string& addr,
+	channel::ptr ch)
 	: node_(node)
 	, id_(id)
 	, addr_(addr)
+	, ch_(ch)
 	, socket_(node->ios())
 {
 }
@@ -37,7 +39,7 @@ void tcp_connector::on_connected(const error_code& ec)
 {
 	if (!ec) // 이 쪽이 성공
 	{
-		node_->on_connected(id_, std::move(socket_));
+		node_->on_connected(id_, std::move(socket_), ch_);
 	}
 	else
 	{

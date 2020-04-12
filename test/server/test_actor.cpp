@@ -61,7 +61,7 @@ TEST_CASE("actor", "server")
 		gen.setup(16001);
 
 		auto id = gen.next();
-		CHECK(gen.get_domain(id) == 16001);
+		CHECK(gen.get_domain_of(id) == 16001);
 	}
 
 	SECTION("creation")
@@ -71,46 +71,8 @@ TEST_CASE("actor", "server")
 		simple_actor sa(s, 1, "name");
 
 		CHECK(sa.get_id() == 1);
-		CHECK(sa.get_parent() == 0);
 	}
 
-	SECTION("actor from server")
-	{
-		server s; 
-
-		if (s.start())
-		{
-			auto aref = s.create<simple_actor>("simple_actor");
-
-			CHECK(s.get_actor(aref.get_id()) == aref);
-
-			s.run();
-
-			s.finish();
-		}
-	}
-
-	SECTION("actor execution")
-	{
-		// timer, channel
-
-		server s;
-
-		if (s.start())
-		{
-			auto aref = s.create<simple_actor>("simple_actor");
-
-			CHECK(s.get_actor(aref.get_id()) == aref);
-
-			for (int i = 0; i < 1000; ++i)
-			{
-				s.run();
-				sleep(1);
-			}
-
-			s.finish();
-		}
-	}
 
 }
 

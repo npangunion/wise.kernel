@@ -1,0 +1,12 @@
+{
+  "domain": 1,
+  "scheduler": {
+    "runner_count" :  2 
+  },
+  "actors": [
+    {
+      "type": "simple_actor", 
+      "name": "simple_1" 
+    }
+  ]
+}

@@ -19,19 +19,19 @@ tcp_node::~tcp_node()
 {
 }
 
-node::result tcp_node::listen(const std::string& addr)
+node::result tcp_node::listen(const std::string& addr, channel::ptr ch)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 
 	auto id = seq_.next();
-	auto ptr = wise_shared<tcp_acceptor>(this, id, addr);
+	auto ptr = wise_shared<tcp_acceptor>(this, id, addr, ch);
 
 	acceptors_[id] = ptr; // 실패한 acceptor도 보관
 
 	return ptr->listen();
 }
 
-node::result tcp_node::connect(const std::string& addr)
+node::result tcp_node::connect(const std::string& addr, channel::ptr ch)
 {
 	tcp_connector::ptr ptr;
 
@@ -40,7 +40,7 @@ node::result tcp_node::connect(const std::string& addr)
 		std::unique_lock<std::shared_mutex> lock(mutex_);
 
 		auto id = seq_.next();
-		ptr = wise_shared<tcp_connector>(this, id, addr);
+		ptr = wise_shared<tcp_connector>(this, id, addr, ch);
 
 		// connect 호출하면 connector를 넣기 전에 응답이 오는 경우가 있어 
 		// 먼저 맵에 추가해야 한다. 
@@ -92,7 +92,7 @@ void tcp_node::on_finish()
 	}
 }
 
-void tcp_node::on_accepted(key_t k, tcp::socket&& soc)
+void tcp_node::on_accepted(key_t k, tcp::socket&& soc, channel::ptr ch)
 {
 	// shared lock
 	{
@@ -107,7 +107,7 @@ void tcp_node::on_accepted(key_t k, tcp::socket&& soc)
 		}
 	}
 
-	on_new_socket(std::move(soc), true);
+	on_new_socket(std::move(soc), ch, true);
 }
 
 void tcp_node::on_accept_failed(key_t k, const error_code& ec)
@@ -133,7 +133,7 @@ void tcp_node::on_accept_failed(key_t k, const error_code& ec)
 	}
 }
 
-void tcp_node::on_connected(key_t k, tcp::socket&& soc)
+void tcp_node::on_connected(key_t k, tcp::socket&& soc, channel::ptr ch)
 {
 	// shared lock
 	{
@@ -147,7 +147,7 @@ void tcp_node::on_connected(key_t k, tcp::socket&& soc)
 		}
 	}
 
-	on_new_socket(std::move(soc), false);
+	on_new_socket(std::move(soc), ch, false);
 
 	// unique lock
 	{
@@ -198,6 +198,7 @@ void tcp_node::on_error(protocol::ptr p, const error_code& ec)
 
 void tcp_node::on_new_socket(
 	tcp::socket&& soc, 
+	channel::ptr ch,
 	bool accepted)
 {
 	protocol::ptr proto = create_protocol(std::move(soc), accepted);
@@ -207,6 +208,7 @@ void tcp_node::on_new_socket(
 		std::unique_lock<std::shared_mutex> lock(mutex_);
 		auto id = protocols_.add(proto);
 		proto->set_id(id);
+		proto->bind(ch);
 	}
 
 	/// 락 풀고 초기화 및 수신 시작

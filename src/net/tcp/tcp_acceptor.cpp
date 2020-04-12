@@ -6,10 +6,11 @@
 namespace wise {
 namespace kernel {
 
-tcp_acceptor::tcp_acceptor( tcp_node* node, uint16_t id, const std::string& addr)
+tcp_acceptor::tcp_acceptor( tcp_node* node, uint16_t id, const std::string& addr, channel::ptr ch)
 	: node_(node)
 	, id_(id)
 	, addr_(addr)
+	, ch_(ch)
 	, socket_(node->ios())
 	, acceptor_(node->ios())
 {
@@ -93,7 +94,7 @@ void tcp_acceptor::on_accepted(const error_code& ec)
 {
 	if (!ec)
 	{
-		node_->on_accepted(id_, std::move(socket_));
+		node_->on_accepted(id_, std::move(socket_), ch_);
 	}
 	else
 	{
