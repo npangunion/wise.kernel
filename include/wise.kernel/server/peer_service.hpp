@@ -13,7 +13,7 @@ public:
 	{
 	}
 
-	bool setup(nlohmann::json& _json);
+	bool setup(nlohmann::json& _json) override;
 	
 private:
 	bool init() override;
@@ -21,7 +21,8 @@ private:
 	void fini() override;
 
 private:
-
+	// peers
+	// remote actors 
 };
 
 } // kernel
