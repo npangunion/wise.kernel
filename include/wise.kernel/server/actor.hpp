@@ -118,6 +118,18 @@ public:
 				protocol_ == rhs.protocol_;
 		}
 
+		operator bool() const
+		{
+			WISE_RETURN_IF(id_ == 0, false);
+
+			if (mode_ == mode::local)
+			{
+				return !!actor_;
+			}
+
+			return !!protocol_;
+		}
+
 	private:
 		ptr				actor_;
 		id_t			id_ = 0;

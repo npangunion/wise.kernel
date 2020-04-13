@@ -13,10 +13,12 @@ public:
 	{
 	}
 
-	bool setup(nlohmann::json& _json) override;
+	bool setup(const nlohmann::json& _json) override;
 	
 private:
 	bool init() override;
+
+	result run() override;
 
 	void fini() override;
 

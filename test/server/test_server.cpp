@@ -56,7 +56,7 @@ TEST_CASE("server", "server")
 			CHECK(rc);
 
 			auto aref = s1.get_actor("simple_1");
-			CHECK(aref.get_id() > 0);
+			CHECK(!!aref);
 
 			s1.finish();
 		}
@@ -116,9 +116,35 @@ TEST_CASE("server", "server")
 		}
 	}
 
-	SECTION("bits interface")
+	SECTION("peer_service")
 	{
-		
+		server s1 ;
+		server s2;
+
+		s1.start("../test/server/config_peer_1.json");
+		s2.start("../test/server/config_peer_2.json");
+
+		for (int i = 0; i < 5000; ++i)
+		{
+			s1.run();
+			s2.run();
+
+			sleep(1);
+		}
+
+		auto ps1 = s1.get_actor("peer_service");
+		auto ps2 = s2.get_actor("peer_service");
+
+		// check
+
+		s1.finish();
+		s2.finish();
+	}	
+
+	SECTION("peer_service and public actors")
+	{	
+		// public actor announces itself to peers w/ syn_actor_up
+		// 
 	}
 }
 
