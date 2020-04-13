@@ -1,0 +1,13 @@
+{
+  "domain": 1,
+  "scheduler": {
+    "runner_count" :  1 
+  },
+  "actors": [
+    {
+      "type": "peer_service", 
+      "name": "peer_service", 
+      "listen":  "0.0.0.0:7707"
+    }
+  ]
+}

@@ -276,9 +276,9 @@ result cplus_generator::generate_include(const idl_node* node)
 
 	std::string path = in->get_path_string();
 
-	WISE_EXPECT(path.size() > 3);
+	WISE_EXPECT(path.size() > 4);
 
-	auto np = path.substr(0, path.size() - 4);
+	auto np = path.substr(0, path.size() - 5);
 
 	np.append(".hpp");
 

@@ -147,7 +147,7 @@ public:
 
 	std::size_t publish(packet::ptr pp)
 	{
-		ch_.publish(pp);
+		ch_->publish(pp);
 	}
 
 	id_t get_id() const
@@ -172,7 +172,7 @@ protected:
 		return server_;
 	}
 
-	channel& get_channel() const
+	channel::ptr get_channel() const
 	{
 		return ch_;
 	}
@@ -180,6 +180,12 @@ protected:
 	timer& get_timer() const 
 	{
 		return timer_;
+	}
+
+	template <typename EVT> 
+	std::shared_ptr<EVT> cast(message::ptr m)
+	{
+		return std::static_pointer_cast<EVT>(m);
 	}
 
 private: 
@@ -195,9 +201,13 @@ private:
 private: 
 	server&			server_;
 	const id_t		id_ = 0;
-	mutable channel	ch_;
+	channel::ptr	ch_;
 	mutable timer	timer_;
 };
 
+
 } // kernel
 } // wise
+
+#define WISE_SUBSCRIBE_SELF(evt, func) get_channel()->subscribe(evt::get_topic(), WISE_CHANNEL_CB(func))
+

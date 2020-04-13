@@ -19,15 +19,6 @@ struct bits_topic
 		disconnected,
 	};
 
-	static topic connected()
-	{
-		return topic(category, group, (uint16_t)type::connected);
-	}
-
-	static topic connect_failed()
-	{
-		return topic(category, group, (uint16_t)type::connect_failed);
-	}
 
 	static topic accepted()
 	{
@@ -47,27 +38,51 @@ struct bits_topic
 
 struct bits_syn_connected : public bits_packet
 {
+	static topic get_topic()
+	{
+		return topic(
+			bits_topic::category, 
+			bits_topic::group, 
+			(uint16_t)bits_topic::type::connected);
+	}
+
 	bits_syn_connected()
-		: bits_packet(bits_topic::connected())
+		: bits_packet(get_topic())
 	{
 	}
 };
 
 struct bits_syn_connect_failed : public bits_packet
 {
+	static topic get_topic()
+	{
+		return topic(
+			bits_topic::category,
+			bits_topic::group,
+			(uint16_t)bits_topic::type::connect_failed);
+	}
+
 	std::string remote_addr;
 	boost::system::error_code ec;
 
 	bits_syn_connect_failed()
-		: bits_packet(bits_topic::connect_failed())
+		: bits_packet(get_topic())
 	{
 	}
 };
 
 struct bits_syn_accepted : public bits_packet
 {
+	static topic get_topic()
+	{
+		return topic(
+			bits_topic::category,
+			bits_topic::group,
+			(uint16_t)bits_topic::type::accepted);
+	}
+
 	bits_syn_accepted()
-		: bits_packet(bits_topic::accepted())
+		: bits_packet(get_topic())
 	{
 	}
 };
@@ -75,10 +90,18 @@ struct bits_syn_accepted : public bits_packet
 
 struct bits_syn_disconnected: public bits_packet
 {
+	static topic get_topic()
+	{
+		return topic(
+			bits_topic::category,
+			bits_topic::group,
+			(uint16_t)bits_topic::type::disconnected);
+	}
+
 	boost::system::error_code ec;
 
 	bits_syn_disconnected()
-		: bits_packet(bits_topic::disconnected())
+		: bits_packet(get_topic())
 	{
 	}
 };

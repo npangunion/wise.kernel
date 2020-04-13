@@ -22,6 +22,14 @@ private:
 
 	void fini() override;
 
+	void on_connected(message::ptr m);
+
+	void on_connect_failed(message::ptr m);
+
+	void on_accepted(message::ptr m);
+	
+	void on_disconnected(message::ptr m);
+
 private:
 	// peers
 	// remote actors 

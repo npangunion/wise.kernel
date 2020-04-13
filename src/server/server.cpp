@@ -1,7 +1,9 @@
 #include <pch.hpp>
 #include <wise.kernel/server/server.hpp>
-#include <wise.kernel/server/actor_factory.hpp>
+#include <wise.kernel/server/client_service.hpp>
+#include <wise.kernel/server/peer_service.hpp>
 #include <wise.kernel/server/cleanup_stack.hpp>
+#include <wise.kernel/server/server_packets_factory.hpp>
 #include <fstream>
 
 namespace wise
@@ -11,6 +13,10 @@ namespace kernel
 
 server::server()
 {
+	WISE_ADD_ACTOR(peer_service);
+	WISE_ADD_ACTOR(client_service);
+
+	add_server_packets();
 }
 
 server::~server()

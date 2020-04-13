@@ -1,0 +1,17 @@
+namespace server
+
+enum cluster
+{
+	category = 2,		// server 
+	group = 2,			// cluster 
+
+	syn_peer_up = 1, 
+	syn_peer_down,
+
+	syn_actor_up,
+	syn_actor_down,
+
+	syn_client_up,
+	syn_client_down,
+}
+

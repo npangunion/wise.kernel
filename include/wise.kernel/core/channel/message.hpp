@@ -61,7 +61,7 @@ std::shared_ptr<T> cast(message::ptr mp)
 } // wise
 
 // macro for channel class callback lambda 
-#define WISE_CHANNEL_CB(func) [this](wise::message::ptr mp){ this->func(mp); }
+#define WISE_CHANNEL_CB(func) [this](wise::kernel::message::ptr mp){ this->func(mp); }
 
 // 매크로로 메세지 타잎을 알 수 있도록 한다.
 #define WISE_MESSAGE_DESC(desc) const char* get_desc() const override { return (#desc); }

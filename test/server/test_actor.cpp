@@ -72,8 +72,6 @@ TEST_CASE("actor", "server")
 
 		CHECK(sa.get_id() == 1);
 	}
-
-
 }
 
 

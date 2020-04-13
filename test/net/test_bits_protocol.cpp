@@ -71,14 +71,14 @@ public:
 
 		// sub to messages
 		ch_->subscribe(
-			topic(bits_topic::connected()),
+			topic(bits_syn_connected::get_topic()),
 			[this](message::ptr m) 
 			{
 				on_connected(m);
 			});
 
 		ch_->subscribe(
-			topic(bits_topic::accepted()),
+			topic(bits_syn_accepted::get_topic()),
 			[this](message::ptr m)
 			{
 				on_accepted(m);
@@ -91,7 +91,7 @@ public:
 		);
 
 		ch_->subscribe(
-			topic(bits_topic::disconnected()),
+			topic(bits_syn_disconnected::get_topic()),
 			[this](message::ptr m) 
 			{
 				on_closed(m); 

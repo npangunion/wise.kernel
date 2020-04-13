@@ -8,10 +8,10 @@ namespace kernel
 {
 
 actor::actor(server& _server, id_t id)
-	: ch_(fmt::format("actor_{}", id))
-	, server_(_server)
+	: server_(_server)
 	, id_(id)
-{
+{ 
+	ch_ = wise_shared<channel>(fmt::format("actor_{}", id));
 	set_desc(fmt::format("actor_{:x}", id));
 }
 
@@ -32,7 +32,7 @@ bool actor::on_start()
 
 task::result actor::on_execute()
 {
-	ch_.execute();
+	ch_->execute();
 	timer_.execute();
 
 	return run();
