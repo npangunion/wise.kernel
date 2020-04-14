@@ -19,7 +19,7 @@ TEST_CASE("peer_service", "server")
 			s1.run();
 			s2.run();
 
-			sleep(1);
+			YieldProcessor();
 		}
 
 		auto ps1 = s1.get_actor("peer_service");
@@ -32,7 +32,7 @@ TEST_CASE("peer_service", "server")
 		for (int i = 0; i < 1000; ++i)
 		{
 			s2.run();
-			sleep(1);
+			YieldProcessor();
 		}
 
 		s2.finish();

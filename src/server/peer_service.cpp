@@ -104,23 +104,24 @@ void peer_service::fini()
 void peer_service::on_syn_peer_up(message::ptr m)
 {
 	auto ec = cast<syn_peer_up>(m);
-	
 	auto iter = peers_.find(ec->get_protocol()->get_id());
+
 	if (iter != peers_.end())
 	{
 		WISE_ASSERT(iter->second.protocol_ == ec->get_protocol());
 
 		iter->second.domain_ = ec->domain;
 
-		WISE_INFO("peer up. domain: {}, addr: {}", 
-			ec->domain, iter->second.protocol_->get_remote_addr()
-		);
+		WISE_INFO("peer up. domain:{}, addr:{}", 
+			ec->domain, iter->second.protocol_->get_remote_addr());
 
 		if (!iter->second.protocol_->is_accepted())
 		{
 			// connected host replies to the syn_peer_up
 			send_syn_peer_up(iter->second.protocol_);
 		}
+
+		// TODO: public 액터들 현재 정보 syn_actor_up으로 전달
 	}
 }
 
@@ -154,7 +155,9 @@ void peer_service::on_connected(message::ptr m)
 	auto ec = cast<bits_syn_connected>(m);
 	auto pr = ec->get_protocol();
 	auto bp = std::static_pointer_cast<bits_protocol>(pr);
+
 	auto iter = remotes_.find(bp->get_remote_addr());
+
 	if (iter != remotes_.end())
 	{
 		ec->get_protocol()->bind(get_channel());
@@ -220,6 +223,7 @@ void peer_service::on_disconnected(message::ptr m)
 	// reconnect
 	{
 		auto iter = remotes_.find(tp->get_remote_addr());
+
 		if (iter != remotes_.end())
 		{
 			iter->second.state_ = remote::state::disconnected;
@@ -241,7 +245,7 @@ void peer_service::on_disconnected(message::ptr m)
 		}
 		else
 		{
-			WISE_INFO("unkown peer disconnected. addr: {}", tp->get_remote_addr());
+			WISE_INFO("unkown peer disconnected. addr:{}", tp->get_remote_addr());
 		}
 	}
 }
@@ -249,6 +253,7 @@ void peer_service::on_disconnected(message::ptr m)
 void peer_service::reconnect(const std::string& addr)
 {
 	auto iter = remotes_.find(addr);
+
 	if (iter != remotes_.end())
 	{
 		iter->second.state_ = remote::state::connecting;
