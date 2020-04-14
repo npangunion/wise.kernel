@@ -86,7 +86,10 @@ public:
 
 		ch_->subscribe(
 			topic(2, 1, 1), 
-			[this](message::ptr m) { on_echo(m); }
+			[this](message::ptr m) 
+			{ 
+				on_echo(m); 
+			}
 		);
 
 		ch_->subscribe(
@@ -130,7 +133,7 @@ private:
 		bp->get_protocol()->bind(ch_);
 
 		// 많이 보내면 빠르게 진행한다.
-		for (int i = 0; i < 256; ++i)
+		for (int i = 0; i < 1; ++i)
 		{
 			auto em = wise_shared<bits_test_message>();
 			em->name.append("ABitsHello");
@@ -146,7 +149,7 @@ private:
 
 		bp->get_protocol()->bind(ch_);
 
-		for (int i = 0; i < 256; ++i)
+		for (int i = 0; i < 1; ++i)
 		{
 			auto em = wise_shared<bits_test_message>();
 			em->name.append("ABitsHello");

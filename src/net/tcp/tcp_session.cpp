@@ -13,8 +13,6 @@ using namespace boost::system;
 namespace wise {
 namespace kernel {
 
-tcp_session::segment_buffer tcp_session::seg_buffer_accessor_;
-
 tcp_session::tcp_session(tcp_protocol* proto, tcp::socket&& soc)
 	: protocol_(proto)
 	, socket_(std::move(soc))

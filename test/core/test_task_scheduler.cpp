@@ -65,7 +65,7 @@ TEST_CASE("task scheduler")
 		REQUIRE(rc);
 		REQUIRE(ts.get_runner_count() == config.runner_count);
 
-		const int test_count = 100;
+		const int test_count = 1;
 
 		for (int i = 0; i < test_count; ++i)
 		{

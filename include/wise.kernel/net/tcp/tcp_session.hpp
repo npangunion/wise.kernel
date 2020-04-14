@@ -118,8 +118,6 @@ private:
 	using segment_buffer = segment_buffer<32 * 1024>;
 	using seg = typename segment_buffer::seg;
 
-	static segment_buffer			seg_buffer_accessor_;
-
 	tcp_protocol*					protocol_ = nullptr;
 	tcp::socket						socket_;
 	std::string						local_addr_;

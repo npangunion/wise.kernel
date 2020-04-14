@@ -145,7 +145,7 @@ void peer_service::on_syn_actor_down(message::ptr m)
 
 void peer_service::on_peer_down(uint16_t domain)
 {
-	WISE_INFO("peer down. domain: {}", domain);
+	WISE_INFO("peer down. domain:{}", domain);
 
 	// process actor down on the host of domain
 }
@@ -241,7 +241,7 @@ void peer_service::on_disconnected(message::ptr m)
 			on_peer_down(iter->second.domain_);
 			peers_.erase(iter);
 
-			WISE_INFO("peer disconnected. protocol:{:x}, addr:{}", tp->get_id(), tp->get_remote_addr());
+			WISE_INFO("peer disconnected. protocol:0x{:x}, addr:{}", tp->get_id(), tp->get_remote_addr());
 		}
 		else
 		{
@@ -270,7 +270,7 @@ void peer_service::send_syn_peer_up(protocol::ptr pp)
 
 	pp->send(spu);
 
-	WISE_DEBUG("syn_peer_up sent to {:x}", pp->get_id());
+	WISE_DEBUG("syn_peer_up sent to protoocl:0x{:x}", pp->get_id());
 }
 
 } // kernel 

@@ -3,6 +3,7 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 #include <wise.kernel/core/logger.hpp>
+#include <wise.kernel/util/util.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -18,5 +19,12 @@ int main(int argc, char* argv[])
     }
 
     int numFailed = session.run();
+
+    WISE_INFO("end of test");
+
+    wise::kernel::log()->flush();
+
+    wise::kernel::sleep(1000);
+
     return numFailed;
 }

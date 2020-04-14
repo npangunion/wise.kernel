@@ -84,7 +84,7 @@ void tcp_node::on_finish()
 		pcnt = protocols_.get_used_count();
 	}
 
-	while (pcnt > 0)
+	while (pcnt > 0) // wait till all protocols are cleared
 	{
 		sleep(5);
 
@@ -94,6 +94,8 @@ void tcp_node::on_finish()
 			pcnt = protocols_.get_used_count();
 		}
 	}
+
+	WISE_ENSURE(pcnt == 0);
 }
 
 void tcp_node::on_accepted(key_t k, tcp::socket&& soc, channel::ptr ch)
@@ -197,7 +199,8 @@ void tcp_node::on_error(protocol::ptr p, const error_code& ec)
 		protocols_.del(p->get_id());
 	}
 
-	notify_disconnect(std::static_pointer_cast<tcp_protocol>(p), ec);
+	auto tp = std::static_pointer_cast<tcp_protocol>(p);
+	notify_disconnect(tp, ec);
 }
 
 void tcp_node::on_new_socket(
@@ -225,7 +228,7 @@ void tcp_node::on_new_socket(
 	tp->begin();
 
 	WISE_INFO(
-		"new protocol. id:{:x}, local:{}, remote:{}", 
+		"new protocol. id:0x{:x}, local:{}, remote:{}", 
 		tp->get_id(), 
 		tp->get_local_addr(), 
 		tp->get_remote_addr());

@@ -48,6 +48,9 @@ node::result node::start()
 void node::finish()
 {
 	WISE_RETURN_IF(stop_);
+
+	WISE_INFO("asio node finishing...");
+
 	on_finish();
 
 	// 종료 중에 정리를 위해 ios는 실행 필요
@@ -65,6 +68,8 @@ void node::finish()
 	{
 		t.join();
 	}
+
+	WISE_INFO("asio node finished");
 }
 
 void node::run()

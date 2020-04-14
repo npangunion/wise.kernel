@@ -124,7 +124,10 @@ void channel::clear()
 
 	while (q_.pop(m))
 	{
-		WISE_INFO("channel:{}. clear message:0x{:x}", key_, m->get_topic().get_key());
+		if (config_.log_remaining_messages_on_exit)
+		{
+			WISE_INFO("channel:{}. clear message:0x{:x}", key_, m->get_topic().get_key());
+		}
 	}
 
 	map_.clear();

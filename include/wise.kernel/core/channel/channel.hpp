@@ -71,6 +71,9 @@ public:
 		/// 토픽에 등록된 콜백이 없을 경우 로그 남김
 		bool log_no_sub_when_post = false;
 
+		/// log remaining messages in queue on exit
+		bool log_remaining_messages_on_exit = false;
+
 		/// 소멸자에서 포스팅 전체 처리하고 종료할 지 여부
 		// 안전하지 못 하여 옵션을 제거
 		// bool post_all_when_destroyed = true;

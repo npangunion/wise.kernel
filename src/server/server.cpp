@@ -73,6 +73,7 @@ void server::finish()
 {
 	scheduler_.finish();
 	bits_node_->finish();
+	actors_.cleanup();
 }
 
 server::result server::listen(const std::string& addr, channel::ptr ch)
