@@ -1,7 +1,7 @@
 {
   "domain": 1,
   "scheduler": {
-    "runner_count" :  1 
+    "runner_count" : 2 
   },
   "actors": [
     {
