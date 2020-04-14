@@ -14,7 +14,7 @@ TEST_CASE("peer_service", "server")
 		s1.start("../test/server/config_peer_1.json");
 		s2.start("../test/server/config_peer_2.json");
 
-		for (int i = 0; i < 5000; ++i)
+		for (int i = 0; i < 1000; ++i)
 		{
 			s1.run();
 			s2.run();
@@ -28,6 +28,13 @@ TEST_CASE("peer_service", "server")
 		// check
 
 		s1.finish();
+
+		for (int i = 0; i < 1000; ++i)
+		{
+			s2.run();
+			sleep(1);
+		}
+
 		s2.finish();
 	}
 

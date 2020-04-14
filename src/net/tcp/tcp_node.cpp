@@ -225,7 +225,7 @@ void tcp_node::on_new_socket(
 	tp->begin();
 
 	WISE_INFO(
-		"new protocol. id:{:x} local:{} remote:{}", 
+		"new protocol. id:{:x}, local:{}, remote:{}", 
 		tp->get_id(), 
 		tp->get_local_addr(), 
 		tp->get_remote_addr());

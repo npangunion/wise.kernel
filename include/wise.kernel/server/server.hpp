@@ -69,6 +69,11 @@ public:
 		return actors_.get(name);
 	}
 
+	uint16_t get_domain() const
+	{
+		return domain_;
+	}
+
 private: 
 	/// start with default configuratin
 	result start();

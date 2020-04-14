@@ -57,6 +57,8 @@ private:
 
 	void on_syn_actor_down(message::ptr m);
 
+	void on_peer_down(uint16_t domain);
+
 	void on_connected(message::ptr m);
 
 	void on_connect_failed(message::ptr m);
@@ -66,6 +68,8 @@ private:
 	void on_disconnected(message::ptr m);
 
 	void reconnect(const std::string& addr);
+
+	void send_syn_peer_up(protocol::ptr pp);
 
 private:
 	tick_t		reconnet_interval_ = 5000;

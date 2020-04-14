@@ -90,6 +90,13 @@ actor::result peer_service::run()
 
 void peer_service::fini()
 {
+	for (auto& kvp : peers_)
+	{
+		kvp.second.protocol_->disconnect();
+	}
+
+	peers_.clear();
+	remotes_.clear();
 
 	WISE_INFO("peer_service finished");
 }
@@ -97,13 +104,30 @@ void peer_service::fini()
 void peer_service::on_syn_peer_up(message::ptr m)
 {
 	auto ec = cast<syn_peer_up>(m);
+	
+	auto iter = peers_.find(ec->get_protocol()->get_id());
+	if (iter != peers_.end())
+	{
+		WISE_ASSERT(iter->second.protocol_ == ec->get_protocol());
 
+		iter->second.domain_ = ec->domain;
+
+		WISE_INFO("peer up. domain: {}, addr: {}", 
+			ec->domain, iter->second.protocol_->get_remote_addr()
+		);
+
+		if (!iter->second.protocol_->is_accepted())
+		{
+			// connected host replies to the syn_peer_up
+			send_syn_peer_up(iter->second.protocol_);
+		}
+	}
 }
 
 void peer_service::on_syn_peer_down(message::ptr m)
 {
 	auto ec = cast<syn_peer_down>(m);
-
+	on_peer_down(ec->domain);
 }
 
 void peer_service::on_syn_actor_up(message::ptr m)
@@ -118,23 +142,35 @@ void peer_service::on_syn_actor_down(message::ptr m)
 
 }
 
+void peer_service::on_peer_down(uint16_t domain)
+{
+	WISE_INFO("peer down. domain: {}", domain);
+
+	// process actor down on the host of domain
+}
+
 void peer_service::on_connected(message::ptr m)
 {
 	auto ec = cast<bits_syn_connected>(m);
 	auto pr = ec->get_protocol();
-	auto tp = std::static_pointer_cast<tcp_protocol>(pr);
-	auto iter = remotes_.find(tp->get_remote_addr());
+	auto bp = std::static_pointer_cast<bits_protocol>(pr);
+	auto iter = remotes_.find(bp->get_remote_addr());
 	if (iter != remotes_.end())
 	{
 		ec->get_protocol()->bind(get_channel());
 		iter->second.state_ = remote::state::connected;
 		iter->second.tick_.reset();
 
-		WISE_INFO("peer_service connected to {}", tp->get_remote_addr());
+		peer p;
+		p.protocol_ = bp;
+		p.domain_ = 0;
+
+		peers_.insert(peer_map::value_type(p.protocol_->get_id(), p));
+		WISE_INFO("peer_service connected to {}. waiting peer up.", bp->get_remote_addr());
 	}
 	else
 	{
-		WISE_ERROR("on_connected. unknown peer. {}", tp->get_remote_addr());
+		WISE_ERROR("on_connected. unknown peer. {}", bp->get_remote_addr());
 	}
 }
 
@@ -162,8 +198,16 @@ void peer_service::on_accepted(message::ptr m)
 	auto ec = cast<bits_syn_accepted>(m);
 	ec->get_protocol()->bind(get_channel());
 
-	auto tp = std::static_pointer_cast<tcp_protocol>(ec->get_protocol());
-	WISE_INFO("peer_service accepted {}", tp->get_remote_addr());
+	auto bp = std::static_pointer_cast<bits_protocol>(ec->get_protocol());
+
+	peer p; 
+	p.protocol_ = bp; 
+	p.domain_ = 0;
+
+	peers_.insert(peer_map::value_type(p.protocol_->get_id(), p));
+	WISE_INFO("peer_service accepted {}", bp->get_remote_addr());
+
+	send_syn_peer_up(p.protocol_);
 }
 	
 void peer_service::on_disconnected(message::ptr m)
@@ -172,15 +216,34 @@ void peer_service::on_disconnected(message::ptr m)
 
 	auto pr = ec->get_protocol();
 	auto tp = std::static_pointer_cast<tcp_protocol>(pr);
-	auto iter = remotes_.find(tp->get_remote_addr());
-	if (iter != remotes_.end())
+
+	// reconnect
 	{
-		iter->second.state_ = remote::state::disconnected;
-		get_timer().once(reconnet_interval_, 
-			[tp, this] (timer::id_t ) { reconnect(tp->get_remote_addr()); });
+		auto iter = remotes_.find(tp->get_remote_addr());
+		if (iter != remotes_.end())
+		{
+			iter->second.state_ = remote::state::disconnected;
+			get_timer().once(reconnet_interval_,
+				[tp, this](timer::id_t) { reconnect(tp->get_remote_addr()); });
+		}
 	}
 
-	// TODO: process syn_peer_down, syn_actor_down for the remote host
+	// peer down
+	{
+		auto iter = peers_.find(tp->get_id());
+
+		if (iter != peers_.end())
+		{
+			on_peer_down(iter->second.domain_);
+			peers_.erase(iter);
+
+			WISE_INFO("peer disconnected. protocol:{:x}, addr:{}", tp->get_id(), tp->get_remote_addr());
+		}
+		else
+		{
+			WISE_INFO("unkown peer disconnected. addr: {}", tp->get_remote_addr());
+		}
+	}
 }
 
 void peer_service::reconnect(const std::string& addr)
@@ -193,6 +256,16 @@ void peer_service::reconnect(const std::string& addr)
 
 		get_server().connect(addr, get_channel());
 	}
+}
+
+void peer_service::send_syn_peer_up(protocol::ptr pp)
+{
+	auto spu = std::make_shared<syn_peer_up>();
+	spu->domain = get_server().get_domain();
+
+	pp->send(spu);
+
+	WISE_DEBUG("syn_peer_up sent to {:x}", pp->get_id());
 }
 
 } // kernel 
