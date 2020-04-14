@@ -1,24 +1,24 @@
 include "server_topics.bits"
 
-namespace wise::kernel
+namespace cluster::messages
 
 message syn_peer_up 
 {
-	topic server.cluster.syn_peer_up;
+	topic cluster.topics.syn_peer_up;
 
 	u16 domain = 0;
 }
 
 message syn_peer_down
 {
-	topic server.cluster.syn_peer_down;
+	topic cluster.topics.syn_peer_down;
 
 	u16 domain = 0;
 }
 
 message syn_actor_up
 {
-	topic server.cluster.syn_actor_up;
+	topic cluster.topics.syn_actor_up;
 
 	u64 id = 0;
 	string type;
@@ -27,7 +27,7 @@ message syn_actor_up
 
 message syn_actor_down
 {
-	topic server.cluster.syn_actor_down;
+	topic cluster.topics.syn_actor_down;
 
 	u64 id = 0;
 }

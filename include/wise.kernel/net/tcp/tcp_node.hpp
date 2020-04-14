@@ -38,22 +38,22 @@ public:
 
 	~tcp_node();
 
-	/// addr에서 listen. addr은 ip:port 형식. 
-	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
+	/// listen on addr with ip:port (ex. "0.0.0.0:7700") 
 	result listen(const std::string& addr, channel::ptr ch);
 
-	/// connect to a addr. addr은 ip:port 형식
-	/// TODO: 기본 채널을 갖고 시작해야 함. disconnect 통지를 받아야 함
+	/// connect to addr with ip:port (ex. "127.0.0.1:7700") 
 	result connect(const std::string& addr, channel::ptr ch);
 
+	/// get protocol with an id. access w/ shared_mutex
 	tcp_protocol::ptr get(protocol::id_t id);
 
+	/// get tcp_node::config to check a current configuration
 	const config& get_config() const
 	{
 		return config_;
 	}
 
-	/// internal. callled when protocol error
+	/// internal. callled when an error occurrs in protocol
 	void on_error(protocol::ptr p, const error_code& ec);
 
 protected:
@@ -61,10 +61,7 @@ protected:
 
 	void on_finish() override;
 
-	virtual protocol::ptr create_protocol(
-		tcp::socket&& sock, 
-		bool accepted) = 0;
-
+	virtual protocol::ptr create_protocol(tcp::socket&& sock, bool accepted) = 0;
 	virtual void notify_accepted(tcp_protocol::ptr p) = 0;
 	virtual void notify_connected(tcp_protocol::ptr p) = 0;
 	virtual void notify_connect_failed(const std::string& addr, const error_code& ec) = 0;

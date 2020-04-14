@@ -9,8 +9,8 @@
 
 #include "server_topics.hpp"
 
-namespace wise {
-namespace kernel {
+namespace cluster {
+namespace messages {
 
 class syn_peer_up : public wise::kernel::bits_packet
 {
@@ -23,9 +23,9 @@ public: // topic and constructor
 	static const wise::kernel::topic& get_topic() 
 	{
 		static wise::kernel::topic topic_( 
-			static_cast<wise::kernel::topic::category_t>(server::cluster::category), 
-			static_cast<wise::kernel::topic::group_t>(server::cluster::group), 
-			static_cast<wise::kernel::topic::type_t>(server::cluster::syn_peer_up)
+			static_cast<wise::kernel::topic::category_t>(cluster::topics::category), 
+			static_cast<wise::kernel::topic::group_t>(cluster::topics::group), 
+			static_cast<wise::kernel::topic::type_t>(cluster::topics::syn_peer_up)
 		);
 
 		return topic_;
@@ -66,9 +66,9 @@ public: // topic and constructor
 	static const wise::kernel::topic& get_topic() 
 	{
 		static wise::kernel::topic topic_( 
-			static_cast<wise::kernel::topic::category_t>(server::cluster::category), 
-			static_cast<wise::kernel::topic::group_t>(server::cluster::group), 
-			static_cast<wise::kernel::topic::type_t>(server::cluster::syn_peer_down)
+			static_cast<wise::kernel::topic::category_t>(cluster::topics::category), 
+			static_cast<wise::kernel::topic::group_t>(cluster::topics::group), 
+			static_cast<wise::kernel::topic::type_t>(cluster::topics::syn_peer_down)
 		);
 
 		return topic_;
@@ -111,9 +111,9 @@ public: // topic and constructor
 	static const wise::kernel::topic& get_topic() 
 	{
 		static wise::kernel::topic topic_( 
-			static_cast<wise::kernel::topic::category_t>(server::cluster::category), 
-			static_cast<wise::kernel::topic::group_t>(server::cluster::group), 
-			static_cast<wise::kernel::topic::type_t>(server::cluster::syn_actor_up)
+			static_cast<wise::kernel::topic::category_t>(cluster::topics::category), 
+			static_cast<wise::kernel::topic::group_t>(cluster::topics::group), 
+			static_cast<wise::kernel::topic::type_t>(cluster::topics::syn_actor_up)
 		);
 
 		return topic_;
@@ -158,9 +158,9 @@ public: // topic and constructor
 	static const wise::kernel::topic& get_topic() 
 	{
 		static wise::kernel::topic topic_( 
-			static_cast<wise::kernel::topic::category_t>(server::cluster::category), 
-			static_cast<wise::kernel::topic::group_t>(server::cluster::group), 
-			static_cast<wise::kernel::topic::type_t>(server::cluster::syn_actor_down)
+			static_cast<wise::kernel::topic::category_t>(cluster::topics::category), 
+			static_cast<wise::kernel::topic::group_t>(cluster::topics::group), 
+			static_cast<wise::kernel::topic::type_t>(cluster::topics::syn_actor_down)
 		);
 
 		return topic_;
@@ -190,7 +190,7 @@ public: WISE_MESSAGE_DESC( syn_actor_down )
 };
 
 
-} // wise
-} // kernel
+} // cluster
+} // messages
 
 

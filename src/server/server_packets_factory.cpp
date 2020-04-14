@@ -7,8 +7,8 @@
 
 void add_server_packets()
 {
-	WISE_ADD_BITS(::wise::kernel::syn_peer_up);
-	WISE_ADD_BITS(::wise::kernel::syn_peer_down);
-	WISE_ADD_BITS(::wise::kernel::syn_actor_up);
-	WISE_ADD_BITS(::wise::kernel::syn_actor_down);
+	WISE_ADD_BITS(::cluster::messages::syn_peer_up);
+	WISE_ADD_BITS(::cluster::messages::syn_peer_down);
+	WISE_ADD_BITS(::cluster::messages::syn_actor_up);
+	WISE_ADD_BITS(::cluster::messages::syn_actor_down);
 }

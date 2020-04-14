@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-namespace server {
+namespace cluster {
 
-enum class cluster
+enum class topics
 {
 	category = 2,
 	group = 2,
@@ -22,6 +22,6 @@ enum class cluster
 };
 
 
-} // server
+} // cluster
 
 

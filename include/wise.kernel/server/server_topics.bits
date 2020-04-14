@@ -1,6 +1,6 @@
-namespace server
+namespace cluster
 
-enum cluster
+enum topics
 {
 	category = 2,		// server 
 	group = 2,			// cluster 
