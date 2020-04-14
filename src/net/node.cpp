@@ -67,54 +67,6 @@ void node::finish()
 	}
 }
 
-bool node::bind(channel::ptr chan)
-{
-	if (has_channel(chan->get_key()))
-	{
-		std::shared_lock<std::shared_mutex> lock(mutex_);
-		auto iter = channels_.find(chan->get_key());
-
-		if (iter->second == chan)
-		{
-			return true; // allow it
-		}
-
-		WISE_THROW("illegal bind of a different channel with same key");
-	}
-
-	std::unique_lock<std::shared_mutex> lock(mutex_);
-	channels_.insert(channel_map::value_type(chan->get_key(), chan));
-
-	return true;
-}
-
-void node::publish(packet::ptr m)
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-
-	for (auto& kv : channels_)
-	{
-		kv.second->publish(std::static_pointer_cast<message>(m));
-	}
-}
-
-void node::unbind(channel::ptr chan)
-{
-	unbind(chan->get_key());
-}
-
-void node::unbind(channel::key_t key)
-{
-	std::unique_lock<std::shared_mutex> lock(mutex_);
-	channels_.erase(key);
-}
-
-bool node::has_channel(channel::key_t key) const
-{
-	std::shared_lock<std::shared_mutex> lock(mutex_);
-	return channels_.find(key) != channels_.end();
-}
-
 void node::run()
 {
 	while (!stop_)

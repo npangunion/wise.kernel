@@ -21,6 +21,8 @@ tcp_node::~tcp_node()
 
 node::result tcp_node::listen(const std::string& addr, channel::ptr ch)
 {
+	WISE_THROW_IF(!ch, "listen must have a valid channel.");
+
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 
 	auto id = seq_.next();
@@ -33,6 +35,8 @@ node::result tcp_node::listen(const std::string& addr, channel::ptr ch)
 
 node::result tcp_node::connect(const std::string& addr, channel::ptr ch)
 {
+	WISE_THROW_IF(!ch, "connect must have a valid channel.");
+
 	tcp_connector::ptr ptr;
 
 	// unqiue lock
@@ -158,7 +162,7 @@ void tcp_node::on_connected(key_t k, tcp::socket&& soc, channel::ptr ch)
 	}
 }
 
-void tcp_node::on_connect_failed(key_t k, const error_code& ec)
+void tcp_node::on_connect_failed(key_t k, const error_code& ec, channel::ptr ch)
 {
 	tcp_connector::ptr cnt;
 
@@ -170,7 +174,7 @@ void tcp_node::on_connect_failed(key_t k, const error_code& ec)
 		if (iter != connectors_.end())
 		{
 			cnt = iter->second;
-			notify_connect_failed(cnt->get_addr().get_raw(), ec);
+			notify_connect_failed(cnt->get_addr().get_raw(), ec, ch);
 		}
 
 		seq_.release(k);

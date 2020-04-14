@@ -49,7 +49,7 @@ void tcp_connector::on_connected(const error_code& ec)
 			ec.message()
 		);
 
-		node_->on_connect_failed(id_, ec);
+		node_->on_connect_failed(id_, ec, ch_);
 	}
 }
 

@@ -23,41 +23,32 @@ bool peer_service::setup(const nlohmann::json& _json)
 	WISE_SUBSCRIBE_SELF(syn_actor_up, on_syn_actor_up);
 	WISE_SUBSCRIBE_SELF(syn_actor_down, on_syn_actor_down);
 
-	auto jl = _json["listen"];
+	auto jl = _json.find("listen");
 
-	if (!jl.is_null())
+	if (jl != _json.end())
 	{
-		auto addr = jl.get<std::string>();
-		auto rc = get_server().listen(addr, get_channel());
-
-		if (!rc)
-		{
-			WISE_ERROR("failed to listen on {}", addr);
-			return false;
-		}
+		listen_addr_ = (*jl).get<std::string>();
 	}
 
-	auto jri = _json["reconnect_interval"];
+	auto jri = _json.find("reconnect_interval");
 
-	if (!jri.is_null())
+	if (jri != _json.end())
 	{
-		reconnet_interval_ = jri.get<tick_t>();
+		reconnet_interval_ = (*jri).get<tick_t>();
 		WISE_ASSERT(reconnet_interval_ >= 100);
 	}
 
-	auto jc = _json["connect"];
+	auto jc = _json.find("connect");
 
-	if (!jc.is_null())
+	if (jc != _json.end())
 	{
-		auto addr = jc.get<std::string>();
+		auto addr = (*jc).get<std::string>();
 
 		remote r; 
-		r.state_ = remote::state::connecting;
+		r.state_ = remote::state::created;
 		r.addr_ = addr;
 		r.tick_.reset();
-
 		remotes_.insert(remote_map::value_type(r.addr_, r));
-		get_server().connect(addr, get_channel());
 	}
 
 	return true;
@@ -65,6 +56,30 @@ bool peer_service::setup(const nlohmann::json& _json)
 
 bool peer_service::init()
 {
+	if (listen_addr_.length() > 0)
+	{
+		auto rc = get_server().listen(listen_addr_, get_channel());
+
+		if (!rc)
+		{
+			WISE_ERROR("peer_service failed to listen on {}", listen_addr_);
+			return false;
+		}
+	}
+
+	for (auto& rkv : remotes_)
+	{
+		if (rkv.second.state_ == remote::state::created)
+		{
+			rkv.second.state_ = remote::state::connecting;
+			WISE_INFO("connecting remote {}", rkv.second.addr_);
+
+			get_server().connect(rkv.second.addr_, get_channel());
+		}
+	}
+
+	WISE_INFO("peer_service initialized");
+
 	return true;
 }
 
@@ -76,6 +91,7 @@ actor::result peer_service::run()
 void peer_service::fini()
 {
 
+	WISE_INFO("peer_service finished");
 }
 
 void peer_service::on_syn_peer_up(message::ptr m)
@@ -113,6 +129,8 @@ void peer_service::on_connected(message::ptr m)
 		ec->get_protocol()->bind(get_channel());
 		iter->second.state_ = remote::state::connected;
 		iter->second.tick_.reset();
+
+		WISE_INFO("peer_service connected to {}", tp->get_remote_addr());
 	}
 	else
 	{
@@ -130,8 +148,8 @@ void peer_service::on_connect_failed(message::ptr m)
 		ec->get_protocol()->bind(get_channel());
 		iter->second.state_ = remote::state::disconnected;
 
-		std::string addr = ec->remote_addr;
-		get_timer().once(reconnet_interval_, [addr, this](timer::id_t ) { reconnect(addr); });
+		get_timer().once(reconnet_interval_, 
+			[ec, this](timer::id_t ) { reconnect(ec->remote_addr); });
 	}
 	else
 	{
@@ -143,6 +161,9 @@ void peer_service::on_accepted(message::ptr m)
 {
 	auto ec = cast<bits_syn_accepted>(m);
 	ec->get_protocol()->bind(get_channel());
+
+	auto tp = std::static_pointer_cast<tcp_protocol>(ec->get_protocol());
+	WISE_INFO("peer_service accepted {}", tp->get_remote_addr());
 }
 	
 void peer_service::on_disconnected(message::ptr m)
@@ -155,8 +176,8 @@ void peer_service::on_disconnected(message::ptr m)
 	if (iter != remotes_.end())
 	{
 		iter->second.state_ = remote::state::disconnected;
-		std::string addr = tp->get_remote_addr();
-		get_timer().once(reconnet_interval_, [addr, this] (timer::id_t ) { reconnect(addr); });
+		get_timer().once(reconnet_interval_, 
+			[tp, this] (timer::id_t ) { reconnect(tp->get_remote_addr()); });
 	}
 
 	// TODO: process syn_peer_down, syn_actor_down for the remote host
@@ -168,6 +189,8 @@ void peer_service::reconnect(const std::string& addr)
 	if (iter != remotes_.end())
 	{
 		iter->second.state_ = remote::state::connecting;
+		WISE_INFO("reconnecting {}", addr);
+
 		get_server().connect(addr, get_channel());
 	}
 }

@@ -25,27 +25,26 @@ void bits_node::notify_accepted(tcp_protocol::ptr p)
 {
 	auto bp = wise_shared<bits_syn_accepted>();
 	bp->bind(p);
-
-	publish(bp);
+	p->publish(bp);
 }
 
 void bits_node::notify_connected(tcp_protocol::ptr p)
 {
 	auto bp = wise_shared<bits_syn_connected>();
 	bp->bind(p);
-
-	publish(bp);
+	p->publish(bp);
 }
 
 void bits_node::notify_connect_failed(
 	const std::string& addr,
-	const error_code& ec)
+	const error_code& ec, 
+	channel::ptr ch)
 {
 	auto bp = wise_shared<bits_syn_connect_failed>();
 	bp->remote_addr = addr;
 	bp->ec = ec;
 
-	publish(bp);
+	ch->publish(bp);
 }
 
 void bits_node::notify_disconnect(tcp_protocol::ptr p, const error_code& ec)
@@ -54,7 +53,7 @@ void bits_node::notify_disconnect(tcp_protocol::ptr p, const error_code& ec)
 	bp->bind(p);
 	bp->ec = ec;
 
-	publish(bp);
+	p->publish(bp);
 }
 
 } // kernel

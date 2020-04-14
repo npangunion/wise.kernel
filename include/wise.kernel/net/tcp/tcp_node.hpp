@@ -64,7 +64,7 @@ protected:
 	virtual protocol::ptr create_protocol(tcp::socket&& sock, bool accepted) = 0;
 	virtual void notify_accepted(tcp_protocol::ptr p) = 0;
 	virtual void notify_connected(tcp_protocol::ptr p) = 0;
-	virtual void notify_connect_failed(const std::string& addr, const error_code& ec) = 0;
+	virtual void notify_connect_failed(const std::string& addr, const error_code& ec, channel::ptr ch) = 0;
 	virtual void notify_disconnect(tcp_protocol::ptr p, const error_code& ec) = 0;
 
 private:
@@ -85,7 +85,7 @@ private:
 	void on_connected(key_t k, tcp::socket&& soc, channel::ptr ch);
 
 	/// called when connect failed
-	void on_connect_failed(key_t k, const error_code& ec);
+	void on_connect_failed(key_t k, const error_code& ec, channel::ptr ch);
 
 	// 새로운 연결에서 프로토콜 생성
 	void on_new_socket(

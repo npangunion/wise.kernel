@@ -25,7 +25,7 @@ void bits_factory::add(const topic& topic, creator c)
 
 	if (iter != map_.end())
 	{
-		WISE_WARN(
+		WISE_DEBUG(
 			"bits_packet w/ topic[{}:{}:{}] is alreay added!",
 			topic.get_category(), topic.get_group(), topic.get_type());
 

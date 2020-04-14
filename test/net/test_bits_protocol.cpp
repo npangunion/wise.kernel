@@ -59,7 +59,6 @@ public:
 		cfg.loop_post_limit = 1000;
 
 		ch_ = wise_shared<channel>("tester", cfg);
-		bn_.bind(ch_);
 
 		// factory
 		bits_factory::inst().add(
@@ -414,8 +413,8 @@ TEST_CASE("bits protocol")
 
 		bn.start();
 
-		bn.listen("0.0.0.0:7777", tester.get_channel());
-		bn.connect("127.0.0.1:7777", tester.get_channel());
+		bn.listen("0.0.0.0:7771", tester.get_channel());
+		bn.connect("127.0.0.1:7771", tester.get_channel());
 
 		fine_tick tick;
 

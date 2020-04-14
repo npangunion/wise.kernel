@@ -73,7 +73,7 @@ tcp_acceptor::result tcp_acceptor::listen()
 		return result(true, reason::fail_acceptor_listen);
 	}
 
-	WISE_INFO("accepting on addr: {}", addr_.port());
+	WISE_INFO("accepting on addr: {}", addr_.get_raw());
 
 	do_accept();
 

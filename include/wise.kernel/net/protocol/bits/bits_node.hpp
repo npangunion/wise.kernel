@@ -23,7 +23,8 @@ private:
 
 	void notify_connect_failed(
 		const std::string& addr, 
-		const error_code& ec) override;
+		const error_code& ec, 
+		channel::ptr ch) override;
 
 	void notify_disconnect(
 		tcp_protocol::ptr p, 

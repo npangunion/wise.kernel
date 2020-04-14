@@ -47,16 +47,6 @@ public:
 		return ios_; 
 	}
 
-	bool bind(channel::ptr chan);
-
-	void publish(packet::ptr m);
-
-	void unbind(channel::ptr chan);
-
-	void unbind(channel::key_t key);
-
-	bool has_channel(channel::key_t key) const;
-
 protected:
 	virtual result on_start() = 0;
 
@@ -64,7 +54,6 @@ protected:
 
 private:
 	using threads = std::vector<std::thread>;
-	using channel_map = std::map<channel::key_t, channel::ptr>;
 
 private:
 	void run();
@@ -75,7 +64,6 @@ private:
 	std::atomic<bool>			stop_ = true;
 	threads						threads_;
 	mutable std::shared_mutex	mutex_;
-	channel_map					channels_;
 };
 
 } // kernel

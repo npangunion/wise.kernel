@@ -22,13 +22,13 @@ private:
 	{
 		enum class state
 		{
-			none,
+			created,
 			connecting,
 			disconnected,
 			connected
 		};
 
-		state		state_ = state::none;
+		state		state_ = state::created;
 		std::string addr_;
 		simple_tick tick_; // connected tick
 	};
@@ -71,6 +71,7 @@ private:
 	tick_t		reconnet_interval_ = 5000;
 	remote_map	remotes_;
 	peer_map	peers_;
+	std::string listen_addr_;
 };
 
 } // kernel
