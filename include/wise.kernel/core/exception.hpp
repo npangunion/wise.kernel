@@ -30,8 +30,6 @@ protected:
 		: std::exception(m)
 	{
 		desc_ = fmt::format("{}: {} on {} {}", cls, std::exception::what(), file, line);
-
-		WISE_ERROR("{}", desc_);
 	}
 
 private:
