@@ -102,7 +102,7 @@ public:
 	void cleanup();
 
 private: 
-	using actor_map = std::map < actor::id_t, actor::ref>;
+	using actor_map = std::map<actor::id_t, actor::ref>;
 	using name_index = index<std::string, actor::id_t>;
 
 private:
