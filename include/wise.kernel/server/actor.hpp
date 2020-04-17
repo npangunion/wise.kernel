@@ -14,6 +14,7 @@ namespace kernel
 
 class server;
 
+/// actor with a channel running as a task
 class actor : public task
 {
 public: 
@@ -74,6 +75,21 @@ public:
 		mode get_mode() const
 		{
 			return mode_;
+		}
+
+		bool is_local() const
+		{
+			return mode_ == mode::local;
+		}
+
+		bool is_remote() const
+		{
+			return mode_ == mode::peer;
+		}
+
+		bool is_client() const
+		{
+			return mode_ == mode::client;
 		}
 
 		bool send(packet::ptr p)
@@ -139,27 +155,35 @@ public:
 	};
 
 public:
+	/// constructor
 	actor(server& _server, id_t id);
 
+	/// destructor
 	virtual ~actor();
 
+	/// setup with json configuration
 	virtual bool setup(const nlohmann::json& _json);
 
+	/// publish a packet to my channel
 	std::size_t publish(packet::ptr pp)
 	{
 		ch_->publish(pp);
 	}
 
+	/// get id 
 	id_t get_id() const
 	{
 		return id_;
 	}
 
 protected:
+	/// initialize 
 	virtual bool init() = 0;
 	
+	/// called from execute in task_runner
 	virtual result run() { return result::success;  }
 
+	/// finish
 	virtual void fini() = 0;
 
 	server& get_server()
@@ -205,9 +229,9 @@ private:
 	mutable timer	timer_;
 };
 
-
 } // kernel
 } // wise
 
-#define WISE_SUBSCRIBE_SELF(evt, func) get_channel()->subscribe(evt::get_topic(), WISE_CHANNEL_CB(func))
+#define WISE_SUBSCRIBE_SELF(evt, func) \
+	get_channel()->subscribe(evt::get_topic(), WISE_CHANNEL_CB(func))
 
