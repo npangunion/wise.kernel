@@ -60,6 +60,38 @@ public:
 			}
 		}
 
+		bool bind(channel::ptr ch)
+		{
+			if (mode_ == mode::peer || mode_ == mode::client)
+			{
+				WISE_ASSERT(protocol_);
+				return protocol_->bind(ch);
+			}
+
+			return true;
+		}
+
+		skey_t bind(const topic& pic, channel::ptr ch)
+		{
+			if (mode_ == mode::local)
+			{
+				return actor_->get_channel()->subscribe(
+					pic, [ch](message::ptr m) { ch->publish(m); }
+				);
+			}
+
+			return 0;
+		}
+
+		void unbind(channel::key_t key)
+		{
+			if (mode_ == mode::peer || mode_ == mode::client)
+			{
+				WISE_ASSERT(protocol_);
+				return protocol_->unbind(key);
+			}
+		}
+
 		id_t get_id() const
 		{
 			WISE_ASSERT(mode_ != mode::none);
