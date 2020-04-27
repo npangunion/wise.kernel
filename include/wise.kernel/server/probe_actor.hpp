@@ -57,9 +57,8 @@ private:
 
 	void on_syn_actor_down(message::ptr m);
 
-	void on_peer_down(uint16_t domain);
-
 private:
+
 };
 
 } // kernel

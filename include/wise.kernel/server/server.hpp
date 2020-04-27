@@ -4,6 +4,7 @@
 #include <wise.kernel/server/actor_id_generator.hpp>
 #include <wise.kernel/server/actor_directory.hpp>
 #include <wise.kernel/server/actor_factory.hpp>
+#include <wise.kernel/server/actor_cluster_serivce.hpp>
 #include <wise.kernel/net/protocol/bits/bits_node.hpp>
 #include <wise.kernel/core/task/task_scheduler.hpp>
 #include <wise.kernel/core/result.hpp>

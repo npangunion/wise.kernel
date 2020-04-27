@@ -58,11 +58,5 @@ void probe_actor::on_syn_actor_down(message::ptr m)
 {
 }
 
-void probe_actor::on_peer_down(uint16_t domain)
-{
-	WISE_INFO("peer down. domain:{}", domain);
-
-}
-
 } // kernel 
 } // wise
