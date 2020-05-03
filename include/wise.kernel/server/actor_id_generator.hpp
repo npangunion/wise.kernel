@@ -35,7 +35,7 @@ public:
 	{
 		domain_ = domain;
 		WISE_THROW_IF(domain_ == 0, "domain_ must be positive number");
-		WISE_THROW_IF(domain_ >= 0x3FFF, "domain_ number must be less than 0x3FFF");
+		WISE_THROW_IF(domain_ >= 0xFFFF, "domain_ number must be less than 0xFFFF");
 	}
 
 	/// roughly following snow-flake algorithm implementation
@@ -63,7 +63,7 @@ public:
 
 			if (last_ms_ == now_ms)
 			{
-				seq_ = (seq_ + 1) & 0x00FF;
+				seq_ = (seq_ + 1) & 0xFF;
 
 				if (seq_ == 0)
 				{
@@ -79,7 +79,7 @@ public:
 
 			uint64_t ms = (now_ms & 0xFFFFFFFFFF) << 24;
 			uint64_t dm = (domain_ & 0xFFFF) << 8;
-			uint64_t sp = (seq_ & 0x00FF);
+			uint64_t sp = (seq_ & 0xFF);
 			now_id = (ms | dm | sp);
 			WISE_ASSERT(now_id != last_id_);
 
@@ -134,7 +134,7 @@ private:
 	uint16_t domain_;
 	Mutex mutex_;
 	uint64_t last_ms_ = 0;
-	uint16_t seq_;
+	uint16_t seq_ = 0;
 	suid_t last_id_ = 0;
 	int sleep_count_ = 0;
 };

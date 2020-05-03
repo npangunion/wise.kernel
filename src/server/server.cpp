@@ -1,7 +1,7 @@
 #include <pch.hpp>
 #include <wise.kernel/server/server.hpp>
 #include <wise.kernel/server/client_service.hpp>
-#include <wise.kernel/server/peer_service.hpp>
+#include <wise.kernel/server/actor_cluster.hpp>
 #include <wise.kernel/server/cleanup_stack.hpp>
 #include <wise.kernel/server/server_packets_factory.hpp>
 #include <fstream>
@@ -12,8 +12,8 @@ namespace kernel
 {
 
 server::server()
+	: cluster_(*this)
 {
-	WISE_ADD_ACTOR(peer_service);
 	WISE_ADD_ACTOR(client_service);
 
 	add_server_packets();
@@ -100,21 +100,6 @@ server::result server::connect(const std::string& addr, channel::ptr ch)
 	return result(true, error_code::success);
 }
 
-actor::ref server::add_actor(actor::ptr ap)
-{
-	actors_.add(actor::ref(ap));
-	scheduler_.add(ap);
-
-	return actors_.get(ap->get_id());
-}
-
-actor::ref server::add_actor(const std::string& name, actor::ptr ap)
-{
-	actors_.add(name, actor::ref(ap));
-	scheduler_.add(ap);
-
-	return actors_.get(ap->get_id());
-}
 
 bool server::load_config()
 {

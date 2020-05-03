@@ -2,9 +2,8 @@
 
 #include <wise.kernel/server/actor.hpp>
 #include <wise.kernel/server/actor_id_generator.hpp>
-#include <wise.kernel/server/actor_directory.hpp>
 #include <wise.kernel/server/actor_factory.hpp>
-#include <wise.kernel/server/actor_cluster_serivce.hpp>
+#include <wise.kernel/server/actor_cluster.hpp>
 #include <wise.kernel/net/protocol/bits/bits_node.hpp>
 #include <wise.kernel/core/task/task_scheduler.hpp>
 #include <wise.kernel/core/result.hpp>
@@ -49,6 +48,12 @@ public:
 
 	/// connec to address
 	result connect(const std::string& addr, channel::ptr ch);
+	
+	/// schedule actor as a task
+	void schedule(actor::ptr ap)
+	{
+		scheduler_.add(ap);
+	}
 
 	/// create an actor of ACTOR type
 	template <typename ACTOR, typename... Args>
@@ -61,13 +66,13 @@ public:
 	/// get actor with id
 	actor::ref get_actor(actor::id_t id)
 	{
-		return actors_.get(id);
+		return cluster_.get(id);
 	}
 
 	/// get actor with name
 	actor::ref get_actor(const std::string& name)
 	{
-		return actors_.get(name);
+		return cluster_.get(name);
 	}
 
 	uint16_t get_domain() const
@@ -78,12 +83,6 @@ public:
 private: 
 	/// start with default configuratin
 	result start();
-
-	/// add actor with id
-	actor::ref add_actor(actor::ptr ap);
-
-	/// add actor with id and set name index
-	actor::ref add_actor(const std::string& name, actor::ptr ap);
 
 	/// load configuration
 	bool load_config();
@@ -104,36 +103,23 @@ private:
 	std::string						config_file_;
 	task_scheduler					scheduler_;
 	task_scheduler::config			scheduler_cfg_;
-	actor_directory					actors_;
-	actor_id_generator<spinlock>	id_generator_;
 	uint16_t						domain_ = 0;
 	nlohmann::json					json_;
 	std::unique_ptr<bits_node>		bits_node_;
 	tcp_node::config				bits_config_;
+	actor_cluster					cluster_;
 };
 
 template <typename ACTOR, typename... Args>
 actor::ref server::create(Args... args)
 {
-	auto ap = wise_shared<ACTOR>(
-		*this, 
-		id_generator_.next(), 
-		std::forward<Args>(args)...
-	);
-
-	return add_actor(ap);
+	return cluster_.create<ACTOR>(std::forward(Args)...);
 }
 
 template <typename ACTOR, typename... Args>
 actor::ref server::create_with_name(const std::string& name, Args... args)
 {
-	auto ap = wise_shared<ACTOR>(
-		*this,
-		id_generator_.next(),
-		std::forward<Args>(args)...
-		);
-
-	return add_actor(name, ap);
+	return cluster_.create_with_name<ACTOR>(std::forward(Args)...);
 }
 
 } // kernel

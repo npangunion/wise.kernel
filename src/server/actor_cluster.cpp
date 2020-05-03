@@ -1,5 +1,5 @@
 #include <pch.hpp>
-#include <wise.kernel/server/peer_service.hpp>
+#include <wise.kernel/server/actor_cluster.hpp>
 #include <wise.kernel/server/server.hpp>
 #include <wise.kernel/server/server_packets.hpp>
 #include <wise.kernel/net/protocol/bits/bits_packets.hpp>
@@ -9,7 +9,7 @@ using namespace cluster::messages;
 namespace wise {
 namespace kernel {
 
-bool peer_service::setup(const nlohmann::json& _json)
+bool actor_cluster::setup(const nlohmann::json& _json)
 {
 	// 연결 메세지
 	WISE_SUBSCRIBE_SELF(bits_syn_accepted, on_accepted);
@@ -54,7 +54,7 @@ bool peer_service::setup(const nlohmann::json& _json)
 	return true;
 }
 
-bool peer_service::init()
+bool actor_cluster::start()
 {
 	if (listen_addr_.length() > 0)
 	{
@@ -62,7 +62,7 @@ bool peer_service::init()
 
 		if (!rc)
 		{
-			WISE_ERROR("peer_service failed to listen on {}", listen_addr_);
+			WISE_ERROR("actor_cluster failed to listen on {}", listen_addr_);
 			return false;
 		}
 	}
@@ -78,17 +78,16 @@ bool peer_service::init()
 		}
 	}
 
-	WISE_INFO("peer_service initialized");
+	WISE_INFO("actor_cluster initialized");
 
 	return true;
 }
 
-actor::result peer_service::run() 
+void actor_cluster::run() 
 {
-	return result::success;
 }
 
-void peer_service::fini()
+void actor_cluster::finish()
 {
 	for (auto& kvp : peers_)
 	{
@@ -98,10 +97,26 @@ void peer_service::fini()
 	peers_.clear();
 	remotes_.clear();
 
-	WISE_INFO("peer_service finished");
+	WISE_INFO("actor_cluster finished");
 }
 
-void peer_service::on_syn_peer_up(message::ptr m)
+actor::ref actor_cluster::add_actor(actor::ptr ap)
+{
+	directory_.add(actor::ref(ap));
+	get_server().schedule(ap);
+
+	return actors_.get(ap->get_id());
+}
+
+actor::ref actor_cluster::add_actor(const std::string& name, actor::ptr ap)
+{
+	directory_.add(name, actor::ref(ap));
+	get_server().schedule(ap);
+
+	return actors_.get(ap->get_id());
+}
+
+void actor_cluster::on_syn_peer_up(message::ptr m)
 {
 	auto ec = cast<syn_peer_up>(m);
 	auto iter = peers_.find(ec->get_protocol()->get_id());
@@ -125,32 +140,32 @@ void peer_service::on_syn_peer_up(message::ptr m)
 	}
 }
 
-void peer_service::on_syn_peer_down(message::ptr m)
+void actor_cluster::on_syn_peer_down(message::ptr m)
 {
 	auto ec = cast<syn_peer_down>(m);
 	on_peer_down(ec->domain);
 }
 
-void peer_service::on_syn_actor_up(message::ptr m)
+void actor_cluster::on_syn_actor_up(message::ptr m)
 {
 	auto ec = cast<syn_actor_up>(m);
 
 }
 
-void peer_service::on_syn_actor_down(message::ptr m)
+void actor_cluster::on_syn_actor_down(message::ptr m)
 {
 	auto ec = cast<syn_actor_down>(m);
 
 }
 
-void peer_service::on_peer_down(uint16_t domain)
+void actor_cluster::on_peer_down(uint16_t domain)
 {
 	WISE_INFO("peer down. domain:{}", domain);
 
 	// process actor down on the host of domain
 }
 
-void peer_service::on_connected(message::ptr m)
+void actor_cluster::on_connected(message::ptr m)
 {
 	auto ec = cast<bits_syn_connected>(m);
 	auto pr = ec->get_protocol();
@@ -169,7 +184,7 @@ void peer_service::on_connected(message::ptr m)
 		p.domain_ = 0;
 
 		peers_.insert(peer_map::value_type(p.protocol_->get_id(), p));
-		WISE_INFO("peer_service connected to {}. waiting peer up.", bp->get_remote_addr());
+		WISE_INFO("actor_cluster connected to {}. waiting peer up.", bp->get_remote_addr());
 	}
 	else
 	{
@@ -177,7 +192,7 @@ void peer_service::on_connected(message::ptr m)
 	}
 }
 
-void peer_service::on_connect_failed(message::ptr m)
+void actor_cluster::on_connect_failed(message::ptr m)
 {
 	auto ec = cast<bits_syn_connect_failed>(m);
 
@@ -196,7 +211,7 @@ void peer_service::on_connect_failed(message::ptr m)
 	}
 }
 
-void peer_service::on_accepted(message::ptr m)
+void actor_cluster::on_accepted(message::ptr m)
 {
 	auto ec = cast<bits_syn_accepted>(m);
 	ec->get_protocol()->bind(get_channel());
@@ -208,12 +223,12 @@ void peer_service::on_accepted(message::ptr m)
 	p.domain_ = 0;
 
 	peers_.insert(peer_map::value_type(p.protocol_->get_id(), p));
-	WISE_INFO("peer_service accepted {}", bp->get_remote_addr());
+	WISE_INFO("actor_cluster accepted {}", bp->get_remote_addr());
 
 	send_syn_peer_up(p.protocol_);
 }
 	
-void peer_service::on_disconnected(message::ptr m)
+void actor_cluster::on_disconnected(message::ptr m)
 {
 	auto ec = cast<bits_syn_disconnected>(m);
 
@@ -250,7 +265,7 @@ void peer_service::on_disconnected(message::ptr m)
 	}
 }
 
-void peer_service::reconnect(const std::string& addr)
+void actor_cluster::reconnect(const std::string& addr)
 {
 	auto iter = remotes_.find(addr);
 
@@ -263,7 +278,7 @@ void peer_service::reconnect(const std::string& addr)
 	}
 }
 
-void peer_service::send_syn_peer_up(protocol::ptr pp)
+void actor_cluster::send_syn_peer_up(protocol::ptr pp)
 {
 	auto spu = std::make_shared<syn_peer_up>();
 	spu->domain = get_server().get_domain();

@@ -16,11 +16,11 @@ bool probe_actor::setup(const nlohmann::json& _json)
 
 bool probe_actor::init()
 {
-	// 서버 메세지
-	auto aref = server_.get_local_actor("peer_service");
+	// cluster message
+	auto aref = get_server().get_actor("actor_cluster");
 
-	auto sid = aref.bind(syn_peer_up, get_channel());
-	auto sid = aref.bind(syn_peer_down, get_channel());
+	auto sid1 = aref.bind(syn_peer_up::get_topic(), get_channel());
+	auto sid2 = aref.bind(syn_peer_down::get_topic(), get_channel());
 
 	WISE_SUBSCRIBE_SELF(syn_peer_up, on_syn_peer_up);
 	WISE_SUBSCRIBE_SELF(syn_peer_down, on_syn_peer_down);
