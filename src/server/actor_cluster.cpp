@@ -38,11 +38,12 @@ bool actor_cluster::setup(const nlohmann::json& _json)
 		WISE_ASSERT(reconnet_interval_ >= 100);
 	}
 
-	auto jc = _json.find("connect");
+	auto jremotes = _json.find("remotes");
 
-	if (jc != _json.end())
+	for ( auto& jr : jremotes)
 	{
-		auto addr = (*jc).get<std::string>();
+		auto jaddr = jr.find("addr");
+		auto addr = jaddr.get<std::string>();
 
 		remote r; 
 		r.state_ = remote::state::created;
@@ -85,6 +86,7 @@ bool actor_cluster::start()
 
 void actor_cluster::run() 
 {
+	timer_.execute();
 }
 
 void actor_cluster::finish()
@@ -98,6 +100,34 @@ void actor_cluster::finish()
 	remotes_.clear();
 
 	WISE_INFO("actor_cluster finished");
+}
+
+actor::ref actor_cluster::create(const nlohmann::json& _json)
+{
+	auto type = jactor["type"].get<std::string>();
+	auto ap = actor_factory::inst().create(type, server_, id_generator_.next());
+
+	if (!ap)
+	{
+		WISE_ERROR("failed to create actor: {}", type);
+		return actor::ref();
+	}
+
+	auto rc = ap->setup(jactor);
+
+	if (!rc)
+	{
+		WISE_ERROR("failed to setup actor: {}", type);
+		return actor::ref();
+	}
+
+	if (jactor["name"].is_null())
+	{
+		return add_actor(ap);
+	}
+
+	auto name = jactor["name"].get<std::string>();
+	return add_actor(name, ap);
 }
 
 actor::ref actor_cluster::add_actor(actor::ptr ap)

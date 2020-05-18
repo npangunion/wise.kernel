@@ -1,14 +1,15 @@
 {
   "domain": 2,
   "scheduler": {
-    "runner_count" :  1 
+    "runner_count": 1
   },
-  "actors": [
-    {
-      "type": "peer_service",
-      "name": "peer_service",
-      "connect": "127.0.0.1:7707", 
-      "reconnect":  5000
-    }
-  ]
+  "cluster": {
+    "remotes": [
+      {
+        "name": "local_1",
+        "addr": "127.0.0.1:7707"
+      }
+    ],
+    "reconnect": 5000
+  }
 }

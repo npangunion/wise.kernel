@@ -22,6 +22,7 @@ public:
 		  success
 		, fail_start_task_scheduler
 		, fail_start_bits_node
+		, fail_start_actor_cluster
 		, fail_load_config
 		, fail_listen
 		, fail_connect
@@ -89,6 +90,9 @@ private:
 
 	/// load server configuration including domain
 	bool load_server_config();
+
+	/// load cluster configuration
+	bool load_cluster_config();
 
 	/// load bits_node configuration
 	bool load_bits_config();

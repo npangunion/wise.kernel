@@ -1,8 +1,11 @@
 #pragma once
 
 #include <wise.kernel/server/actor_directory.hpp>
+#include <wise.kernel/server/actor_id_generator.hpp>
 #include <wise.kernel/net/protocol/bits/bits_protocol.hpp>
 #include <wise.kernel/core/tick.hpp>
+#include <wise.kernel/core/timer.hpp>
+#include <wise.kernel/util/json.hpp>
 
 namespace wise {
 namespace kernel {
@@ -25,6 +28,8 @@ public:
 	void run();
 
 	void finish();
+
+	actor::ref create(const nlohmann::json& _json);
 
 	/// create an actor of ACTOR type
 	template <typename ACTOR, typename... Args>
@@ -94,6 +99,11 @@ private:
 
 	void send_syn_peer_up(protocol::ptr pp);
 
+	timer& get_timer()
+	{
+		return timer_;
+	}
+
 private:
 	server&							server_;
 	tick_t							reconnet_interval_ = 5000;
@@ -103,6 +113,7 @@ private:
 	std::string						client_addr_;
 	actor_directory					directory_;
 	actor_id_generator<spinlock>	id_generator_;
+	timer							timer_;
 };
 
 template <typename ACTOR, typename... Args>
@@ -114,7 +125,7 @@ actor::ref actor_cluster::create(Args... args)
 		std::forward<Args>(args)...
 		);
 
-	return add_actor(ap);
+	return directory_.add(ap);
 }
 
 template <typename ACTOR, typename... Args>
@@ -126,7 +137,7 @@ actor::ref actor_cluster::create_with_name(const std::string& name, Args... args
 		std::forward<Args>(args)...
 		);
 
-	return add_actor(name, ap);
+	return directory_.add(name, ap);
 }
 
 } // kernel

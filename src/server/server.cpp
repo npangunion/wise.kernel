@@ -59,12 +59,19 @@ server::result server::start()
 		cs.push([this]() { scheduler_.finish(); });
 	}
 
+	// cluster
+	{
+		bool rc = cluster_.start();
+		WISE_RETURN_IF(!rc && cs.set_fail(), result(false, error_code::fail_start_actor_cluster));
+	}
+
 	return result(true, error_code::success);
 }
 
 server::result server::run()
 {
 	scheduler_.schedule();
+	cluster_.run();
 
 	return result(true, error_code::success);
 }
@@ -73,6 +80,8 @@ void server::finish()
 {
 	scheduler_.finish();
 	bits_node_->finish();
+	cluster_.finish();
+
 	actors_.cleanup();
 }
 
@@ -117,6 +126,9 @@ bool server::load_config()
 	try
 	{
 		auto rc = load_server_config();
+		WISE_RETURN_IF(!rc, false);
+
+		rc = load_cluster_config();
 		WISE_RETURN_IF(!rc, false);
 
 		rc = load_bits_config();
@@ -203,6 +215,14 @@ bool server::load_bits_config()
 	return true;
 }
 
+bool server::load_cluster_config()
+{
+	auto jcluster = json_["cluster"];
+	WISE_RETURN_IF(jcluster.is_null(), false);
+
+	return cluster_.setup(jcluster);
+}
+
 bool server::load_scheduler_config()
 {
 	scheduler_cfg_.runner_count = json_["scheduler"]["runner_count"].get<int>();
@@ -216,36 +236,12 @@ bool server::load_actors()
 		"domain must be set before loading actors"
 	);
 
-	auto cactors = json_["actors"];
+	auto jactors = json_.find("actors");
 
-	for (auto& cactor : cactors)
+	for (auto& jactor : jactors)
 	{
-		auto type = cactor["type"].get<std::string>();
-
-		auto ap = actor_factory::inst().create(type, *this, id_generator_.next());
-		if (!ap)
-		{
-			WISE_ERROR("failed to create actor: {}", type);
-			return false;
-		}
-
-		auto rc = ap->setup(cactor);
-
-		if (!rc)
-		{
-			WISE_ERROR("failed to setup actor: {}", type);
-			return false;
-		}
-
-		if (cactor["name"].is_null())
-		{
-			add_actor(ap);
-		}
-		else
-		{
-			auto name = cactor["name"].get<std::string>();
-			add_actor(name, ap);
-		}
+		auto aref = cluster_.create(jactor);
+		WISE_RETURN_IF(!aref, false); // fail early
 	}
 
 	return true;
